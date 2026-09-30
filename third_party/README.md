@@ -5,7 +5,7 @@ This directory is reserved for locally fetched upstream projects used to underst
 Run:
 
 ```bash
-./tools/fetch_upstream_tools.sh
+bash tools/fetch_upstream_tools.sh
 ```
 
 The script checks out pinned revisions under `third_party/upstream/`. That directory is ignored by Git so upstream source is not silently mixed into the clean-room reconstruction.
