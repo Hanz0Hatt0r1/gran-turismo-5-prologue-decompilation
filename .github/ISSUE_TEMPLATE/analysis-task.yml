@@ -1,0 +1,30 @@
+name: Analysis task
+description: Track a reverse-engineering task
+title: "[Analysis] "
+body:
+  - type: input
+    id: subsystem
+    attributes:
+      label: Subsystem
+      placeholder: Rendering, physics, UI, startup, etc.
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Build / region / update
+      placeholder: Unknown is acceptable initially
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Existing evidence
+  - type: textarea
+    id: done
+    attributes:
+      label: Completion criteria
