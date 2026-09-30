@@ -1,4 +1,4 @@
-# Local game material and sensitive files
+# Proprietary/local game material
 *.iso
 *.bin
 *.img
@@ -20,7 +20,18 @@
 *.sav
 *.sfo
 
-# Archives and extracted assets
+game/
+game_files/
+disc/
+disc_image/
+firmware/
+keys/
+dumps/
+extracted/
+decrypted/
+assets_original/
+
+# Archives
 *.zip
 *.7z
 *.rar
@@ -29,16 +40,25 @@
 *.pak
 *.arc
 
-# Local analysis output
+# Local analysis/build output
 build/
 dist/
 output/
 outputs/
 scratch/
 tmp/
+.cache/
 *.log
 
-# Editor, OS, and Python cache
+# Reverse-engineering databases
+*.gpr
+*.rep/
+*.i64
+*.idb
+*.til
+*.nam
+
+# Editor / OS / Python
 .DS_Store
 Thumbs.db
 .idea/
