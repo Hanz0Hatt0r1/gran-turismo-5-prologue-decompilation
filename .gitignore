@@ -1,0 +1,48 @@
+# Local game material and sensitive files
+*.iso
+*.bin
+*.img
+*.rom
+*.pkg
+*.rap
+*.rif
+*.key
+*.keys
+*.pem
+*.p12
+*.pfx
+*.edat
+*.self
+*.sprx
+*.rpx
+*.dump
+*.dmp
+*.sav
+*.sfo
+
+# Archives and extracted assets
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.pak
+*.arc
+
+# Local analysis output
+build/
+dist/
+output/
+outputs/
+scratch/
+tmp/
+*.log
+
+# Editor, OS, and Python cache
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+__pycache__/
+*.py[cod]
+.venv/
