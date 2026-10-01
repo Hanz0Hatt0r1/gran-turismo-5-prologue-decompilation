@@ -10,6 +10,17 @@ constexpr uint32_t kPfs2Magic = 0x5B745162;
 constexpr int32_t kGameDataBroken = static_cast<int32_t>(0x8002B606u);
 constexpr uint16_t kFsSysmodule = 0x000e;
 
+struct Pfs2Header {
+    uint32_t magic;
+    uint32_t toc_node_index;
+    uint32_t compressed_toc_size;
+    uint32_t expanded_toc_size;
+    uint64_t serial_number;
+    uint64_t total_volume_size;
+    char title_id[0x80];
+};
+static_assert(sizeof(Pfs2Header) == 0xA0);
+
 enum class BootState : int {
     Initial = 0,
     GameData = 1,
@@ -96,47 +107,55 @@ int boot_main(int argc, char** argv)
     alternate_pdipfs_path.append("/PDIPFS/");
     alternate_pdipfs_path.append(make_pdipfs_component(2));
 
-    // The observed decision tree uses file existence plus normalized-path
-    // comparison to decide whether patch/game-data launch is valid.
+    // The exact business names for these marker files are not recovered yet.
+    // What is confirmed is the decision direction below.
     if (path_exists(updating_path.c_str())) {
-        // fall through to volume validation
-    } else if (path_exists(epatch_path.c_str()) &&
-               paths_match_after_normalization(epatch_path.c_str(),
-                                               emain_path.c_str())) {
-        state = BootState::GameData;
-    } else if (path_exists(alternate_pdipfs_path.c_str())) {
-        if (paths_match_after_normalization(alternate_pdipfs_path.c_str(),
-                                            pdipfs_path.c_str())) {
-            // volume validation path
-        } else {
+        if (path_exists(epatch_path.c_str())) {
+            state = BootState::GameData;
+            if (!paths_match_after_normalization(epatch_path.c_str(),
+                                                 emain_path.c_str())) {
+                handle_broken_game_data();
+                return -1;
+            }
+        }
+
+        if (path_exists(alternate_pdipfs_path.c_str()) &&
+            !paths_match_after_normalization(alternate_pdipfs_path.c_str(),
+                                             pdipfs_path.c_str())) {
             handle_broken_game_data();
             return -1;
         }
     }
 
-    PfsHeaderCandidate candidate{};
+    Pfs2Header candidate{};
     read_or_build_pfs_header(candidate, launch_b, pdipfs_path.c_str(), 0);
 
-    if (candidate.magic != kPfs2Magic) {
-        // Re-enters the failure / state-machine path.
-        return -1;
-    }
+    const bool candidate_is_usable =
+        candidate.magic == kPfs2Magic &&
+        binary_compare(candidate.title_id, disc_header.title_id) == 0 &&
+        candidate.serial_number >= disc_header.serial_number;
 
-    // Additional header/sequence comparisons follow. A larger/equal
-    // sequence condition selects game-data boot and copies the resolved
-    // game-data path into the active boot path.
-    if (pfs_candidate_is_acceptable(candidate, disc_header)) {
-        if (state == BootState::GameData) {
+    if (candidate_is_usable) {
+        // One branch additionally requires EMAIN.SELF to exist before
+        // replacing the active path; both accepted branches then mark
+        // the source as installed game data.
+        if (state == BootState::GameData || path_exists(emain_path.c_str())) {
             bounded_copy(boot->active_path,
                          boot->game_data_path_b,
                          sizeof(boot->active_path));
-            boot->boot_source = "boot_from=gamedata";
         }
+
+        boot->boot_source = "boot_from=gamedata";
+        state = BootState::GameData;
+    } else {
+        // This is a fallback/update condition, not the fatal broken-data path.
+        state = BootState::Initial;
     }
 
     // State strings are written through a global launch/configuration slot:
     //   Initial  -> "install_condition=need_patch_update"
     //   GameData -> "install_condition=need_nothing"
+    //   Failed   -> returns -1 after cleanup
 
     while (!boot_state_poll_a()) {
         // asynchronous startup work
