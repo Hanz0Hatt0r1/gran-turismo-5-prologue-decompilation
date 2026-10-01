@@ -284,6 +284,12 @@ class ImportFunction:
     stub_code_va: int
     import_slot_va: int
 
+@dataclass(frozen=True)
+class FunctionCandidate:
+    code_va: int
+    score: int
+    evidence: Tuple[str, ...]
+
 
 def find_proc_prx_param(elf: PS3ELF) -> Optional[Dict[str, int]]:
     """Read the process PRX parameter block from PT_LOOS+2 (0x60000002)."""
@@ -385,9 +391,9 @@ def normalize_ppc_instruction(ins: int) -> int:
     return ins
 
 
-def function_ranges(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_size: int = 0x4000) -> List[Tuple[int, int]]:
-    """Return conservative code ranges from sorted OPD entry points."""
-    funcs = sorted(set(d.code_va for d in descriptors if elf.in_executable_segment(d.code_va)))
+def function_ranges_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Tuple[int, int]]:
+    """Return conservative ranges from sorted candidate function entry points."""
+    funcs = sorted(set(va for va in starts if elf.in_executable_segment(va)))
     rows: List[Tuple[int, int]] = []
     for i, va in enumerate(funcs):
         seg = next((p for p in elf.program_headers if p.type == PT_LOAD and (p.flags & 1) and p.vaddr <= va < p.vaddr + p.filesz), None)
@@ -404,8 +410,108 @@ def function_ranges(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_
     return rows
 
 
+def function_ranges(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_size: int = 0x4000) -> List[Tuple[int, int]]:
+    return function_ranges_from_starts(elf, (d.code_va for d in descriptors), max_size=max_size)
+
+
+def _ppc_branch_target(ins: int, va: int) -> Optional[int]:
+    if ((ins >> 26) & 0x3F) != 18:
+        return None
+    disp = ins & 0x03FFFFFC
+    if disp & 0x02000000:
+        disp -= 0x04000000
+    return disp if ((ins >> 1) & 1) else va + disp
+
+
+def _is_stack_prologue(ins: int) -> bool:
+    # stdu r1, negative_frame(r1) on PPC64.
+    if ((ins >> 26) & 0x3F) != 62 or ((ins >> 21) & 0x1F) != 1 or ((ins >> 16) & 0x1F) != 1 or (ins & 3) != 1:
+        return False
+    ds = (ins >> 2) & 0x3FFF
+    if ds & 0x2000:
+        ds -= 0x4000
+    disp = ds * 4
+    return -0x8000 <= disp < 0
+
+
+def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor]) -> List[FunctionCandidate]:
+    """Discover PPU function starts with explicit evidence and confidence scores.
+
+    OPD entries and direct call targets are high-confidence. A standard PPC64
+    stack-frame prologue is strong structural evidence. The instruction after a
+    return is retained as lower-confidence evidence for leaf-function discovery,
+    but is not used by default for cross-build fingerprinting.
+    """
+    evidence: Dict[int, set] = {}
+
+    def add(va: int, kind: str) -> None:
+        if va % 4 == 0 and elf.in_executable_segment(va):
+            evidence.setdefault(va, set()).add(kind)
+
+    for d in descriptors:
+        add(d.code_va, "opd")
+    entry_code = elf.read_u32_va(elf.entry)
+    if entry_code is not None:
+        add(entry_code, "entry")
+
+    for ph in elf.program_headers:
+        if ph.type != PT_LOAD or not (ph.flags & 1) or ph.filesz < 4:
+            continue
+        end_off = min(len(elf.data), ph.offset + ph.filesz)
+        for off in range(ph.offset, end_off - 3, 4):
+            va = ph.vaddr + (off - ph.offset)
+            ins = _u32(elf.data, off)
+            if ((ins >> 26) & 0x3F) == 18 and (ins & 1):  # bl / bla
+                target = _ppc_branch_target(ins, va)
+                if target is not None:
+                    add(target, "direct-call")
+            if _is_stack_prologue(ins):
+                add(va, "stack-prologue")
+            if ins == 0x4E800020:  # blr
+                nxt = va + 4
+                for _ in range(8):
+                    no = elf.va_to_offset(nxt)
+                    if no is None or no + 4 > len(elf.data):
+                        break
+                    ni = _u32(elf.data, no)
+                    if ni in (0, 0x60000000):
+                        nxt += 4
+                        continue
+                    add(nxt, "after-blr")
+                    break
+
+    weights = {"entry": 5, "opd": 4, "direct-call": 4, "stack-prologue": 3, "after-blr": 2}
+    rows = []
+    for va, kinds in evidence.items():
+        ordered = tuple(sorted(kinds))
+        rows.append(FunctionCandidate(va, sum(weights[k] for k in ordered), ordered))
+    return sorted(rows, key=lambda r: r.code_va)
+
+
+def build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
+    rows: List[Fingerprint] = []
+    for va, end in function_ranges_from_starts(elf, starts, max_size=max_size):
+        size = end - va
+        off = elf.va_to_offset(va)
+        if off is None or size <= 0:
+            continue
+        words = [normalize_ppc_instruction(_u32(elf.data, off + x)) for x in range(0, size, 4)]
+        raw = b"".join(struct.pack(">I", w) for w in words)
+        prefix = raw[: min(len(raw), 256)]
+        rows.append(
+            Fingerprint(
+                code_va=va,
+                size=size,
+                insns=len(words),
+                sha_full=hashlib.sha1(raw).hexdigest(),
+                sha_prefix=hashlib.sha1(prefix).hexdigest(),
+            )
+        )
+    return rows
+
+
 def find_toc_string_refs(
-    elf: PS3ELF, toc: int, descriptors: Sequence[FunctionDescriptor], strings: Sequence[Tuple[int, str]]
+    elf: PS3ELF, toc: int, function_starts: Sequence[int], strings: Sequence[Tuple[int, str]]
 ) -> List[Dict[str, object]]:
     """Recover common 32-bit TOC loads whose slot points at an ASCII string.
 
@@ -417,7 +523,7 @@ def find_toc_string_refs(
     text_by_va = dict(strings)
     string_vas = set(text_by_va)
     out: List[Dict[str, object]] = []
-    for start, end in function_ranges(elf, descriptors):
+    for start, end in function_ranges_from_starts(elf, function_starts):
         off = elf.va_to_offset(start)
         if off is None:
             continue
@@ -485,25 +591,7 @@ def build_function_hints(
 
 
 def build_fingerprints(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_size: int = 0x4000) -> List[Fingerprint]:
-    rows: List[Fingerprint] = []
-    for va, end in function_ranges(elf, descriptors, max_size=max_size):
-        size = end - va
-        off = elf.va_to_offset(va)
-        if off is None or size <= 0:
-            continue
-        words = [normalize_ppc_instruction(_u32(elf.data, off + x)) for x in range(0, size, 4)]
-        raw = b"".join(struct.pack(">I", w) for w in words)
-        prefix = raw[: min(len(raw), 256)]
-        rows.append(
-            Fingerprint(
-                code_va=va,
-                size=size,
-                insns=len(words),
-                sha_full=hashlib.sha1(raw).hexdigest(),
-                sha_prefix=hashlib.sha1(prefix).hexdigest(),
-            )
-        )
-    return rows
+    return build_fingerprints_from_starts(elf, (d.code_va for d in descriptors), max_size=max_size)
 
 
 _SOURCE_RE = re.compile(r"(?i)(?:^|[/\\])([^/\\\x00]{1,120}\.(?:c|cc|cpp|cxx))$")
@@ -680,13 +768,16 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
     out.mkdir(parents=True, exist_ok=True)
     elf = PS3ELF(path)
     toc, descriptors = find_opd(elf)
+    candidates = discover_function_candidates(elf, descriptors)
+    strict_starts = [r.code_va for r in candidates if r.score >= 3]
     fingerprints = build_fingerprints(elf, descriptors)
+    discovered_fingerprints = build_fingerprints_from_starts(elf, strict_starts)
     strings = list(elf.iter_ascii_strings(min_len=4, alloc_only=True))
     source_files = find_source_files(strings)
     identity = find_build_identity(strings)
     rtti = find_rtti_objects(elf, strings)
     vtables = find_vtables(elf, rtti, descriptors)
-    string_refs = find_toc_string_refs(elf, toc, descriptors, strings)
+    string_refs = find_toc_string_refs(elf, toc, strict_starts, strings)
     function_hints = build_function_hints(vtables, string_refs, source_files)
     imports, import_libraries = find_imports(elf)
 
@@ -702,6 +793,8 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
         "section_headers": elf.shnum,
         "function_descriptors": len(descriptors),
         "unique_function_addresses": len(set(d.code_va for d in descriptors)),
+        "discovered_function_addresses": len(strict_starts),
+        "function_candidates": len(candidates),
         "rtti_objects": len(rtti),
         "vtable_slots": len(vtables),
         "vtable_candidates": len(set(int(r["vtable_start"]) for r in vtables)),
@@ -734,6 +827,31 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
                 "sha_prefix": r.sha_prefix,
             }
             for r in fingerprints
+        ),
+    )
+    _write_csv(
+        out / "function_candidates.csv",
+        ["code_va", "score", "evidence"],
+        (
+            {"code_va": _fmt_hex(r.code_va), "score": r.score, "evidence": " | ".join(r.evidence)}
+            for r in candidates
+        ),
+    )
+    candidate_by_va = {r.code_va: r for r in candidates}
+    _write_csv(
+        out / "discovered_functions.csv",
+        ["code_va", "score", "evidence", "size", "insns", "sha_full", "sha_prefix"],
+        (
+            {
+                "code_va": _fmt_hex(r.code_va),
+                "score": candidate_by_va[r.code_va].score,
+                "evidence": " | ".join(candidate_by_va[r.code_va].evidence),
+                "size": r.size,
+                "insns": r.insns,
+                "sha_full": r.sha_full,
+                "sha_prefix": r.sha_prefix,
+            }
+            for r in discovered_fingerprints
         ),
     )
     _write_csv(
@@ -831,8 +949,10 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     b = PS3ELF(target)
     atoc, aopd = find_opd(a)
     btoc, bopd = find_opd(b)
-    afp = build_fingerprints(a, aopd)
-    bfp = build_fingerprints(b, bopd)
+    ac = discover_function_candidates(a, aopd)
+    bc = discover_function_candidates(b, bopd)
+    afp = build_fingerprints_from_starts(a, (r.code_va for r in ac if r.score >= 3))
+    bfp = build_fingerprints_from_starts(b, (r.code_va for r in bc if r.score >= 3))
     af = _fp_index(afp, "sha_full")
     bf = _fp_index(bfp, "sha_full")
     ap = _fp_index(afp, "sha_prefix")
@@ -877,104 +997,3 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     return summary
-
-
-def resolve_analyze_headless(ghidra: Path) -> Path:
-    """Resolve a Ghidra installation directory or analyzeHeadless executable."""
-    ghidra = ghidra.expanduser().resolve()
-    candidates = [ghidra]
-    if ghidra.is_dir():
-        candidates = [
-            ghidra / "support" / "analyzeHeadless",
-            ghidra / "support" / "analyzeHeadless.bat",
-            ghidra / "analyzeHeadless",
-        ]
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate
-    raise FileNotFoundError(f"could not find analyzeHeadless under {ghidra}")
-
-
-def decompile_elf(path: Path, out: Path, ghidra: Path, timeout: int = 90) -> Dict[str, object]:
-    """Index an ELF and run Ghidra headlessly to export local pseudocode."""
-    analyze_headless = resolve_analyze_headless(ghidra)
-    out = out.resolve()
-    index_dir = out / "index"
-    decompiled_dir = out / "decompiled"
-    project_dir = out / "ghidra-project"
-    index_manifest = index_elf(path, index_dir)
-    decompiled_dir.mkdir(parents=True, exist_ok=True)
-    project_dir.mkdir(parents=True, exist_ok=True)
-    script_dir = Path(__file__).resolve().parent / "ghidra"
-    project_name = "gtdecomp_" + str(index_manifest["sha256"])[:12]
-    cmd = [
-        str(analyze_headless),
-        str(project_dir),
-        project_name,
-        "-import",
-        str(path.resolve()),
-        "-overwrite",
-        "-scriptPath",
-        str(script_dir),
-        "-postScript",
-        "apply_gtdecomp_index.py",
-        str(index_dir),
-        "-postScript",
-        "export_decompilation.py",
-        str(index_dir),
-        str(decompiled_dir),
-        str(timeout),
-    ]
-    subprocess.run(cmd, check=True)
-    manifest_path = decompiled_dir / "decompilation_manifest.csv"
-    exported = 0
-    failed = 0
-    if manifest_path.exists():
-        with manifest_path.open("r", newline="", encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                if row.get("status") == "ok":
-                    exported += 1
-                elif row.get("status") == "failed":
-                    failed += 1
-    result = {
-        "schema": 1,
-        "input_sha256": index_manifest["sha256"],
-        "index_dir": str(index_dir),
-        "decompiled_dir": str(decompiled_dir),
-        "ghidra_project_dir": str(project_dir),
-        "exported_functions": exported,
-        "failed_functions": failed,
-    }
-    (out / "decompile-summary.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    return result
-
-
-def main(argv: Optional[Sequence[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Index and compare Gran Turismo PS3 PPU executables")
-    sub = ap.add_subparsers(dest="command", required=True)
-    p_index = sub.add_parser("index", help="build a metadata database for one ELF")
-    p_index.add_argument("elf", type=Path)
-    p_index.add_argument("-o", "--out", type=Path, default=Path("analysis-out"))
-    p_compare = sub.add_parser("compare", help="match functions between two ELF builds")
-    p_compare.add_argument("reference", type=Path)
-    p_compare.add_argument("target", type=Path)
-    p_compare.add_argument("-o", "--out", type=Path, default=Path("compare-out"))
-    p_decompile = sub.add_parser("decompile", help="index an ELF and export Ghidra pseudocode headlessly")
-    p_decompile.add_argument("elf", type=Path)
-    p_decompile.add_argument("--ghidra", type=Path, required=True, help="Ghidra installation or analyzeHeadless path")
-    p_decompile.add_argument("-o", "--out", type=Path, default=Path("decompile-out"))
-    p_decompile.add_argument("--timeout", type=int, default=90, help="per-function Ghidra decompiler timeout in seconds")
-    args = ap.parse_args(argv)
-
-    if args.command == "index":
-        result = index_elf(args.elf, args.out)
-    elif args.command == "compare":
-        result = compare_elfs(args.reference, args.target, args.out)
-    else:
-        result = decompile_elf(args.elf, args.out, args.ghidra, timeout=args.timeout)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

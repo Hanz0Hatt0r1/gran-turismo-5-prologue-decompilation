@@ -62,9 +62,10 @@ def rows(name):
     return csv.DictReader(open(path, "r"))
 
 
-# Materialize function entry points recovered from the PPU OPD. This makes a
-# fresh headless Ghidra import useful even when auto-analysis missed descriptors.
-for r in rows("functions.csv"):
+# Materialize high-confidence function starts. This includes OPD entries, direct
+# branch-and-link targets, and standard PPC64 stack-prologue discoveries.
+function_table = "discovered_functions.csv" if os.path.exists(os.path.join(root, "discovered_functions.csv")) else "functions.csv"
+for r in rows(function_table):
     a = addr(r["code_va"])
     fn = functions.getFunctionAt(a)
     if fn is None:

@@ -17,7 +17,9 @@ The index contains:
 
 - `manifest.json` — build identity, hashes, entry descriptor, TOC and counts;
 - `opd.csv` — recovered PPU function descriptors;
-- `functions.csv` — normalized PowerPC function fingerprints;
+- `functions.csv` — OPD-backed normalized PowerPC function fingerprints;
+- `function_candidates.csv` — function-start evidence from OPD, calls, prologues, and return boundaries;
+- `discovered_functions.csv` — high-confidence discovered functions with normalized fingerprints;
 - `rtti.csv` — Itanium-style C++ RTTI candidates;
 - `vtables.csv` — virtual-table candidates linked to function descriptors;
 - `source_files.csv` — source-file strings retained in the executable;
@@ -42,6 +44,21 @@ loads/stores before hashing. Unique whole-function matches are preferred;
 unique normalized-prefix matches are used as a lower-confidence fallback.
 This is intended to transfer research labels between GT5 retail, GT5 Prologue,
 and updates without assuming that absolute addresses are stable.
+
+### Import an existing Ghidra C export
+
+Older Ghidra projects can be folded into the same database without rerunning
+analysis:
+
+```bash
+python3 tools/gtdecomp.py import-ghidra-c /path/to/EBOOT.ELF.c \
+  --index output/gt5-bcus98114 \
+  -o output/gt5-c-seed
+```
+
+The command splits `FUN_XXXXXXXX` / `thunk_FUN_XXXXXXXX` blocks, assigns the
+normalized function ID when the address is in the discovered-function set, and
+writes `ghidra_c_manifest.csv`. Generated pseudocode remains local output.
 
 ### Decompile a build with Ghidra
 

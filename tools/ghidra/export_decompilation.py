@@ -33,7 +33,8 @@ def read_csv(name):
 
 
 fingerprints = {}
-for row in read_csv("functions.csv"):
+function_table = "discovered_functions.csv" if os.path.exists(os.path.join(index_root, "discovered_functions.csv")) else "functions.csv"
+for row in read_csv(function_table):
     fingerprints[int(row["code_va"], 16)] = row
 
 hints = {}

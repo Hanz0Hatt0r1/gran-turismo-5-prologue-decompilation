@@ -35,6 +35,29 @@ class GTDecompTests(unittest.TestCase):
         self.assertIn("BCUS-98114", ident["title_ids"])
         self.assertIn("Gran Turismo 5", ident["build_strings"])
 
+    def test_import_ghidra_c_attaches_discovered_function_id(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            index = root / "index"
+            index.mkdir()
+            (index / "discovered_functions.csv").write_text(
+                "code_va,score,evidence,size,insns,sha_full,sha_prefix\n"
+                "0x00001000,4,direct-call,8,2,abc123,def456\n"
+            )
+            (index / "function_hints.csv").write_text(
+                "code_va,source_files,vtable_types,evidence_count\n"
+                "0x00001000,Foo.cpp,Foo,2\n"
+            )
+            c_export = root / "export.c"
+            c_export.write_text("int FUN_00001000(void)\n{\n  return 1;\n}\n")
+            out = root / "out"
+            summary = gtdecomp.import_ghidra_c(c_export, index, out)
+            self.assertEqual(summary["total_blocks"], 1)
+            self.assertEqual(summary["matched_index_functions"], 1)
+            manifest = (out / "ghidra_c_manifest.csv").read_text()
+            self.assertIn("abc123", manifest)
+            self.assertIn("Foo.cpp", manifest)
+
     def test_resolve_analyze_headless_from_install_dir(self):
         with tempfile.TemporaryDirectory() as td:
             support = Path(td) / "support"
@@ -60,6 +83,9 @@ class GTDecompTests(unittest.TestCase):
         # Two function descriptors, same TOC.
         struct.pack_into(">II", data, 0x300, 0x1000, 0x3800)
         struct.pack_into(">II", data, 0x308, 0x1010, 0x3800)
+        # bl 0x1020 from 0x1000 and a standalone stdu prologue at 0x1030.
+        struct.pack_into(">I", data, 0x200, 0x48000021)
+        struct.pack_into(">I", data, 0x230, 0xF821FF91)
         # Section headers at 0x400; shstrtab is section 2.
         names = b"\0.text\0.opd\0.shstrtab\0"
         data[0x380:0x380 + len(names)] = names
@@ -78,6 +104,9 @@ class GTDecompTests(unittest.TestCase):
             self.assertEqual(toc, 0x3800)
             self.assertEqual([(x.descriptor_va, x.code_va) for x in opd[:2]],
                              [(0x3000, 0x1000), (0x3008, 0x1010)])
+            candidates = {x.code_va: x for x in gtdecomp.discover_function_candidates(elf, opd)}
+            self.assertIn("direct-call", candidates[0x1020].evidence)
+            self.assertIn("stack-prologue", candidates[0x1030].evidence)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ user-provided decrypted ELF
 ELF / program / section parser
         |
         +--> PPU function descriptors (.opd)
+        +--> direct-call / stack-prologue function discovery
         +--> normalized function fingerprints
         +--> RTTI / typeinfo candidates
         +--> vtable candidates
@@ -35,8 +36,10 @@ independently reconstructed source + tests
 ## Stable identity
 
 Absolute addresses are never treated as stable identifiers across builds.
-Each function receives relocation-tolerant fingerprints derived from normalized
-PowerPC instructions. Cross-build matches are evidence and must still be
+Each high-confidence discovered function receives relocation-tolerant fingerprints derived from normalized
+PowerPC instructions. OPD descriptors, direct `bl` targets, and standard PPC64
+stack-frame prologues are tracked as separate evidence rather than assuming the
+OPD is a complete function list. Cross-build matches are evidence and must still be
 reviewed before a semantic name is considered confirmed.
 
 ## GT5 as the first reference build
