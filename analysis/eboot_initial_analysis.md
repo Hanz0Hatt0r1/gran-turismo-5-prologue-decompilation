@@ -94,6 +94,24 @@ The plaintext SCE-version block contains **123 version records**, all tagged `p2
 
 The SELF control-info digest block stores firmware version value **21700**, conventionally displayed by SCE tooling as **2.17**.
 
+
+## RAP/NPDRM license check
+
+A user-supplied RAP file named `EP9001-NPEA00050_00-0000000000000000.rap` was checked only for identity/compatibility metadata.
+
+- RAP size: **16 bytes**
+- RAP SHA-256: `5845af81fd7b0e20f23896ea9af7102857765a57e96942523c94b6811a9c1b3b`
+- Filename content ID: `EP9001-NPEA00050_00-0000000000000000`
+
+The analyzed `EBOOT.BIN` is **not an NPDRM SELF**:
+
+- application-info SELF type = `4` (`APP`);
+- control-info region is `0x70` bytes at file offset `0x3C0`;
+- control records present are type `1` (flags, size `0x30`) and type `2` (digest, size `0x40`);
+- there is **no type `3` NPDRM control record** and therefore no embedded NPDRM Content ID to match against the RAP.
+
+Consequently, a RAP license is not the decryption input for this particular SELF container. The RAP filename does correspond to the PSN title ID family for Gran Turismo 5 Prologue, but it cannot unlock or validate this APP-type EBOOT by itself.
+
 ## Encryption state
 
 Both non-empty `PT_LOAD` payloads are marked encrypted in the SELF section-info table.
