@@ -61,6 +61,7 @@ Special thanks to:
 - [Nenkai/GTSpecDB](https://github.com/Nenkai/GTSpecDB) — GT4–GT5 SpecDB parsing and database research.
 - [Nenkai/TXS3Converter](https://github.com/Nenkai/TXS3Converter) — GT5/GT6 TXS3 texture research and conversion.
 - [Nenkai/GT-File-Specifications-Documentation](https://github.com/Nenkai/GT-File-Specifications-Documentation) — reverse-engineered Gran Turismo file-format specifications.
+- [sp00nznet/ps3recomp](https://github.com/sp00nznet/ps3recomp) — PS3 PPU ELF analysis, OPD/import extraction, and static recompilation tooling.
 - [Silentwarior112/GTGPB](https://github.com/Silentwarior112/GTGPB) — independent GPB research and tooling; currently treated as reference-only because the repository does not declare a license.
 - [Nenkai/Gran-Turismo-Modding-Guides](https://github.com/Nenkai/Gran-Turismo-Modding-Guides) — valuable PS3-era Gran Turismo research documentation; treated as reference-only where licensing is not declared.
 - [vgmstream/vgmstream](https://github.com/vgmstream/vgmstream) — game-audio format research and playback tooling; used as an external/reference tool subject to its component licenses.
