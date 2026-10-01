@@ -385,17 +385,12 @@ def normalize_ppc_instruction(ins: int) -> int:
     return ins
 
 
-def build_fingerprints(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_size: int = 0x4000) -> List[Fingerprint]:
-    funcs = sorted(set(d.code_va for d in descriptors))
-    rows: List[Fingerprint] = []
+def function_ranges(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_size: int = 0x4000) -> List[Tuple[int, int]]:
+    """Return conservative code ranges from sorted OPD entry points."""
+    funcs = sorted(set(d.code_va for d in descriptors if elf.in_executable_segment(d.code_va)))
+    rows: List[Tuple[int, int]] = []
     for i, va in enumerate(funcs):
-        seg = next(
-            (
-                p for p in elf.program_headers
-                if p.type == PT_LOAD and (p.flags & 1) and p.vaddr <= va < p.vaddr + p.filesz
-            ),
-            None,
-        )
+        seg = next((p for p in elf.program_headers if p.type == PT_LOAD and (p.flags & 1) and p.vaddr <= va < p.vaddr + p.filesz), None)
         if seg is None:
             continue
         seg_end = seg.vaddr + seg.filesz
@@ -403,8 +398,96 @@ def build_fingerprints(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], m
         if not (va < next_va <= seg_end):
             next_va = seg_end
         end = min(next_va, va + max_size, seg_end)
+        end -= (end - va) % 4
+        if end > va:
+            rows.append((va, end))
+    return rows
+
+
+def find_toc_string_refs(
+    elf: PS3ELF, toc: int, descriptors: Sequence[FunctionDescriptor], strings: Sequence[Tuple[int, str]]
+) -> List[Dict[str, object]]:
+    """Recover common 32-bit TOC loads whose slot points at an ASCII string.
+
+    GT5 uses 32-bit effective addresses even in the 64-bit PPU ABI. A common
+    compiler pattern is ``lwz rX, disp(r2)`` where the TOC slot contains the
+    address of a literal. Floating-point loads are included because a handful of
+    constants are emitted next to printable metadata and are useful as evidence.
+    """
+    text_by_va = dict(strings)
+    string_vas = set(text_by_va)
+    out: List[Dict[str, object]] = []
+    for start, end in function_ranges(elf, descriptors):
+        off = elf.va_to_offset(start)
+        if off is None:
+            continue
+        for rel in range(0, end - start, 4):
+            ins = _u32(elf.data, off + rel)
+            op = (ins >> 26) & 0x3F
+            ra = (ins >> 16) & 0x1F
+            if ra != 2 or op not in {32, 48}:  # lwz / lfs
+                continue
+            disp = ins & 0xFFFF
+            if disp & 0x8000:
+                disp -= 0x10000
+            slot_va = toc + disp
+            slot_off = elf.va_to_offset(slot_va)
+            if slot_off is None or slot_off + 4 > len(elf.data):
+                continue
+            target_va = _u32(elf.data, slot_off)
+            if target_va not in string_vas:
+                continue
+            out.append(
+                {
+                    "code_va": start,
+                    "reference_va": start + rel,
+                    "toc_slot_va": slot_va,
+                    "string_va": target_va,
+                    "string": text_by_va[target_va],
+                    "kind": "lwz-toc" if op == 32 else "lfs-toc",
+                }
+            )
+    return out
+
+
+def build_function_hints(
+    vtables: Sequence[Dict[str, object]],
+    string_refs: Sequence[Dict[str, object]],
+    source_files: Sequence[Tuple[int, str]],
+) -> List[Dict[str, object]]:
+    """Aggregate conservative class/source evidence per function."""
+    source_by_va = dict(source_files)
+    sources: Dict[int, set] = {}
+    classes: Dict[int, set] = {}
+    evidence: Dict[int, int] = {}
+    for r in string_refs:
+        sva = int(r["string_va"])
+        if sva not in source_by_va:
+            continue
+        fva = int(r["code_va"])
+        sources.setdefault(fva, set()).add(source_by_va[sva])
+        evidence[fva] = evidence.get(fva, 0) + 1
+    for r in vtables:
+        fva = int(r["code_va"])
+        classes.setdefault(fva, set()).add(str(r["demangled"]))
+        evidence[fva] = evidence.get(fva, 0) + 1
+    rows = []
+    for fva in sorted(set(sources) | set(classes)):
+        rows.append(
+            {
+                "code_va": fva,
+                "source_files": " | ".join(sorted(sources.get(fva, set()))),
+                "vtable_types": " | ".join(sorted(classes.get(fva, set()))),
+                "evidence_count": evidence.get(fva, 0),
+            }
+        )
+    return rows
+
+
+def build_fingerprints(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor], max_size: int = 0x4000) -> List[Fingerprint]:
+    rows: List[Fingerprint] = []
+    for va, end in function_ranges(elf, descriptors, max_size=max_size):
         size = end - va
-        size -= size % 4
         off = elf.va_to_offset(va)
         if off is None or size <= 0:
             continue
@@ -603,6 +686,8 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
     identity = find_build_identity(strings)
     rtti = find_rtti_objects(elf, strings)
     vtables = find_vtables(elf, rtti, descriptors)
+    string_refs = find_toc_string_refs(elf, toc, descriptors, strings)
+    function_hints = build_function_hints(vtables, string_refs, source_files)
     imports, import_libraries = find_imports(elf)
 
     manifest = {
@@ -621,6 +706,8 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
         "vtable_slots": len(vtables),
         "vtable_candidates": len(set(int(r["vtable_start"]) for r in vtables)),
         "source_file_strings": len(source_files),
+        "toc_string_references": len(string_refs),
+        "functions_with_hints": len(function_hints),
         "import_libraries": len(import_libraries),
         "import_functions": len(imports),
         **identity,
@@ -687,6 +774,34 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
         w.writerow(["va", "source_file"])
         for va, name in source_files:
             w.writerow([_fmt_hex(va), name])
+    _write_csv(
+        out / "string_refs.csv",
+        ["code_va", "reference_va", "toc_slot_va", "string_va", "kind", "string"],
+        (
+            {
+                "code_va": _fmt_hex(int(r["code_va"])),
+                "reference_va": _fmt_hex(int(r["reference_va"])),
+                "toc_slot_va": _fmt_hex(int(r["toc_slot_va"])),
+                "string_va": _fmt_hex(int(r["string_va"])),
+                "kind": r["kind"],
+                "string": r["string"],
+            }
+            for r in string_refs
+        ),
+    )
+    _write_csv(
+        out / "function_hints.csv",
+        ["code_va", "source_files", "vtable_types", "evidence_count"],
+        (
+            {
+                "code_va": _fmt_hex(int(r["code_va"])),
+                "source_files": r["source_files"],
+                "vtable_types": r["vtable_types"],
+                "evidence_count": r["evidence_count"],
+            }
+            for r in function_hints
+        ),
+    )
     _write_csv(
         out / "imports.csv",
         ["library", "nid", "stub_code_va", "import_slot_va"],
@@ -764,6 +879,76 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     return summary
 
 
+def resolve_analyze_headless(ghidra: Path) -> Path:
+    """Resolve a Ghidra installation directory or analyzeHeadless executable."""
+    ghidra = ghidra.expanduser().resolve()
+    candidates = [ghidra]
+    if ghidra.is_dir():
+        candidates = [
+            ghidra / "support" / "analyzeHeadless",
+            ghidra / "support" / "analyzeHeadless.bat",
+            ghidra / "analyzeHeadless",
+        ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(f"could not find analyzeHeadless under {ghidra}")
+
+
+def decompile_elf(path: Path, out: Path, ghidra: Path, timeout: int = 90) -> Dict[str, object]:
+    """Index an ELF and run Ghidra headlessly to export local pseudocode."""
+    analyze_headless = resolve_analyze_headless(ghidra)
+    out = out.resolve()
+    index_dir = out / "index"
+    decompiled_dir = out / "decompiled"
+    project_dir = out / "ghidra-project"
+    index_manifest = index_elf(path, index_dir)
+    decompiled_dir.mkdir(parents=True, exist_ok=True)
+    project_dir.mkdir(parents=True, exist_ok=True)
+    script_dir = Path(__file__).resolve().parent / "ghidra"
+    project_name = "gtdecomp_" + str(index_manifest["sha256"])[:12]
+    cmd = [
+        str(analyze_headless),
+        str(project_dir),
+        project_name,
+        "-import",
+        str(path.resolve()),
+        "-overwrite",
+        "-scriptPath",
+        str(script_dir),
+        "-postScript",
+        "apply_gtdecomp_index.py",
+        str(index_dir),
+        "-postScript",
+        "export_decompilation.py",
+        str(index_dir),
+        str(decompiled_dir),
+        str(timeout),
+    ]
+    subprocess.run(cmd, check=True)
+    manifest_path = decompiled_dir / "decompilation_manifest.csv"
+    exported = 0
+    failed = 0
+    if manifest_path.exists():
+        with manifest_path.open("r", newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if row.get("status") == "ok":
+                    exported += 1
+                elif row.get("status") == "failed":
+                    failed += 1
+    result = {
+        "schema": 1,
+        "input_sha256": index_manifest["sha256"],
+        "index_dir": str(index_dir),
+        "decompiled_dir": str(decompiled_dir),
+        "ghidra_project_dir": str(project_dir),
+        "exported_functions": exported,
+        "failed_functions": failed,
+    }
+    (out / "decompile-summary.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Index and compare Gran Turismo PS3 PPU executables")
     sub = ap.add_subparsers(dest="command", required=True)
@@ -774,12 +959,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p_compare.add_argument("reference", type=Path)
     p_compare.add_argument("target", type=Path)
     p_compare.add_argument("-o", "--out", type=Path, default=Path("compare-out"))
+    p_decompile = sub.add_parser("decompile", help="index an ELF and export Ghidra pseudocode headlessly")
+    p_decompile.add_argument("elf", type=Path)
+    p_decompile.add_argument("--ghidra", type=Path, required=True, help="Ghidra installation or analyzeHeadless path")
+    p_decompile.add_argument("-o", "--out", type=Path, default=Path("decompile-out"))
+    p_decompile.add_argument("--timeout", type=int, default=90, help="per-function Ghidra decompiler timeout in seconds")
     args = ap.parse_args(argv)
 
     if args.command == "index":
         result = index_elf(args.elf, args.out)
-    else:
+    elif args.command == "compare":
         result = compare_elfs(args.reference, args.target, args.out)
+    else:
+        result = decompile_elf(args.elf, args.out, args.ghidra, timeout=args.timeout)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 

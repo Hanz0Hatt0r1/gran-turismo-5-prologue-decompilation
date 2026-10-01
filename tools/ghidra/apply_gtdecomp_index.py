@@ -10,7 +10,11 @@ import re
 from ghidra.program.model.listing import CodeUnit
 from ghidra.program.model.symbol import SourceType
 
-root = askDirectory("Select gtdecomp index directory", "Open").getAbsolutePath()
+script_args = list(getScriptArgs())
+if script_args:
+    root = os.path.abspath(script_args[0])
+else:
+    root = askDirectory("Select gtdecomp index directory", "Open").getAbsolutePath()
 listing = currentProgram.getListing()
 symbols = currentProgram.getSymbolTable()
 functions = currentProgram.getFunctionManager()
@@ -57,6 +61,33 @@ def rows(name):
         return []
     return csv.DictReader(open(path, "r"))
 
+
+# Materialize function entry points recovered from the PPU OPD. This makes a
+# fresh headless Ghidra import useful even when auto-analysis missed descriptors.
+for r in rows("functions.csv"):
+    a = addr(r["code_va"])
+    fn = functions.getFunctionAt(a)
+    if fn is None:
+        try:
+            disassemble(a)
+            fn = createFunction(a, None)
+        except Exception:
+            fn = None
+    target = fn.getEntryPoint() if fn else a
+    add_comment(target, "gtdecomp function-id: %s; normalized size=%s" % (r["sha_full"], r["size"]))
+
+# Add aggregated source/vtable evidence before decompilation.
+for r in rows("function_hints.csv"):
+    a = addr(r["code_va"])
+    fn = functions.getFunctionAt(a)
+    target = fn.getEntryPoint() if fn else a
+    evidence = []
+    if r.get("source_files"):
+        evidence.append("source: " + r["source_files"])
+    if r.get("vtable_types"):
+        evidence.append("vtable: " + r["vtable_types"])
+    if evidence:
+        add_comment(target, "gtdecomp evidence: " + "; ".join(evidence))
 
 # Import stubs. NIDs remain exact identities even when a human-readable API
 # name has not yet been resolved by a separate NID database.

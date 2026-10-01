@@ -13,7 +13,9 @@
     "unique_function_addresses": 8485,
     "vtable_candidates": 1642,
     "import_libraries": 42,
-    "import_functions": 716
+    "import_functions": 716,
+    "toc_string_references": 9594,
+    "functions_with_hints": 5191
   },
   "notes": [
     "Derived metadata only; executable is intentionally not stored in Git.",

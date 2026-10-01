@@ -16,12 +16,15 @@ ELF / program / section parser
         +--> normalized function fingerprints
         +--> RTTI / typeinfo candidates
         +--> vtable candidates
-        +--> retained source-file strings
+        +--> retained source-file strings / TOC references
+        +--> function source/vtable evidence
+        +--> PS3 import libraries / NIDs
         |
         v
 per-build metadata index
         |
-        +--> Ghidra annotations
+        +--> Ghidra annotations / function materialization
+        +--> headless pseudocode export (local only)
         +--> subsystem/function catalog
         +--> cross-build matching
         |
@@ -49,3 +52,14 @@ and transfer *research metadata* (not proprietary code) between the builds.
 Only original tooling and derived research metadata belong in Git. Do not
 commit decrypted executables, SELF/PRX files, game data, keys, firmware,
 proprietary SDK material, or extracted copyrighted assets.
+
+## Headless decompilation
+
+`gtdecomp.py decompile` accepts a local Ghidra install and orchestrates a fresh
+analysis project. The Ghidra scripts first materialize OPD entry points and
+apply derived evidence, then export one pseudocode file per indexed function.
+The output manifest keeps the normalized fingerprint beside each Ghidra name so
+that later builds can reuse research labels through the cross-build matcher.
+
+Decompiler output is evidence, not reconstructed source. Reviewed behavior is
+rewritten independently under `src/` and tested separately.

@@ -21,6 +21,8 @@ The index contains:
 - `rtti.csv` — Itanium-style C++ RTTI candidates;
 - `vtables.csv` — virtual-table candidates linked to function descriptors;
 - `source_files.csv` — source-file strings retained in the executable;
+- `string_refs.csv` — recovered PPU TOC loads that point at retained strings;
+- `function_hints.csv` — per-function source/vtable evidence;
 - `imports.csv` — PS3 import libraries, NIDs, import slots, and stub addresses.
 
 The current parser targets PS3 `ELF64`, big-endian, `PowerPC64` executables and
@@ -41,6 +43,23 @@ unique normalized-prefix matches are used as a lower-confidence fallback.
 This is intended to transfer research labels between GT5 retail, GT5 Prologue,
 and updates without assuming that absolute addresses are stable.
 
+### Decompile a build with Ghidra
+
+With a local Ghidra installation, one command performs the metadata index,
+headless analysis, annotations, and local pseudocode export:
+
+```bash
+python3 tools/gtdecomp.py decompile /path/to/EBOOT.ELF \
+  --ghidra /path/to/ghidra_12.1.2_PUBLIC \
+  -o output/gt5-bcus98114-decompile
+```
+
+The decompiler output is written below `output/.../decompiled/functions/` with
+a `decompilation_manifest.csv` that records the stable normalized function ID,
+Ghidra name, source/vtable evidence, status, and output path. The generated
+pseudocode is local reverse-engineering material and is intentionally ignored
+by Git.
+
 ### Tests
 
 ```bash
@@ -54,5 +73,8 @@ Tests use synthetic ELF data only.
 
 Open the same ELF in Ghidra, add `tools/ghidra/` to the Script Manager search
 path, and run `apply_gtdecomp_index.py`. Select the index directory generated
-by `gtdecomp.py`. The script adds import/RTTI/vtable labels and evidence
-comments without overwriting existing function names.
+by `gtdecomp.py`. The script materializes OPD-discovered functions, adds fingerprint/source/vtable
+evidence, and annotates imports/RTTI/vtables. `export_decompilation.py` exports
+the local Ghidra pseudocode and manifest. Both scripts accept command-line
+arguments when invoked through `analyzeHeadless` and fall back to file choosers
+in the GUI.

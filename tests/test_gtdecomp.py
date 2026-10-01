@@ -35,6 +35,14 @@ class GTDecompTests(unittest.TestCase):
         self.assertIn("BCUS-98114", ident["title_ids"])
         self.assertIn("Gran Turismo 5", ident["build_strings"])
 
+    def test_resolve_analyze_headless_from_install_dir(self):
+        with tempfile.TemporaryDirectory() as td:
+            support = Path(td) / "support"
+            support.mkdir()
+            tool = support / "analyzeHeadless"
+            tool.write_text("#!/bin/sh\n")
+            self.assertEqual(gtdecomp.resolve_analyze_headless(Path(td)), tool.resolve())
+
     def test_parse_minimal_ppc64_elf_and_opd(self):
         # Build a tiny synthetic PS3-like ELF with one executable segment and
         # one writable descriptor section. It contains no proprietary data.
