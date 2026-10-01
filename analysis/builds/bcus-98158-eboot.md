@@ -112,15 +112,27 @@ Module `0x000e` is the filesystem sysmodule. This happens immediately before the
 
 ## PFS / GT.VOL validation
 
-The bootstrap reads a 160-byte header-like structure and tests its first 32-bit value against:
+The bootstrap reads a 160-byte PFS2 header and tests its first 32-bit value against:
 
 ```text
 0x5B745162
 ```
 
-GTToolsSharp identifies `5B 74 51 62` as the PFS2 header magic used by GT5/GT5 Prologue and GT6.
+GTToolsSharp's `FileDeviceGTFS2Header` independently documents this exact 0xA0-byte layout:
 
-After the magic check, the code performs additional structure/size comparisons before accepting the candidate volume. The exact field names are still being reconstructed.
+```text
++0x00  u32   Magic              = 0x5B745162
++0x04  u32   ToCNodeIndex
++0x08  u32   CompressedTOCSize
++0x0C  u32   ExpandedTOCSize
++0x10  u64   SerialNumber
++0x18  u64   TotalVolumeSize
++0x20  char  TitleID[0x80]
+```
+
+This lets us name the later comparisons precisely. `boot_main` first requires the candidate PDIPFS `TitleID` to match the disc `GT.VOL` `TitleID`. It then compares the 64-bit `SerialNumber` values and rejects the candidate when the disc serial is greater. Therefore an accepted PDIPFS candidate must have `candidate.SerialNumber >= disc.SerialNumber`.
+
+The first header in the function is read from `/dev_bdvd/PS3_GAME/USRDIR/GT.VOL`; the second comes from the constructed `/PDIPFS/` path.
 
 ## Launch handoff
 
