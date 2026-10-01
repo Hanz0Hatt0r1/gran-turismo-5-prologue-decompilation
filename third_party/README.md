@@ -20,8 +20,11 @@ The script checks out pinned revisions under `third_party/upstream/`. That direc
 | [GTSpecDB](https://github.com/Nenkai/GTSpecDB) | `691e49fa6b85773bd4e8bc47e361c0a1cd6716a0` | GT4-GT5 SpecDB parsing and database structure research |
 | [TXS3Converter](https://github.com/Nenkai/TXS3Converter) | `d007f92b5fc761f2598932dd1aef46d2d19a7103` | GT5/GT6 TXS3 texture format research and conversion |
 | [GT File Specifications](https://github.com/Nenkai/GT-File-Specifications-Documentation) | `05e52347890541758222d173dbb62d2b40581b19` | Reverse-engineered file specifications and binary format documentation |
+| [ps3recomp](https://github.com/sp00nznet/ps3recomp) | `a679051ef304555291de2eb3ec8a3dbf64a761a8` | PPU ELF loading, PS3 8-byte OPD parsing, firmware import extraction, function manifests, and static PPU-to-C++ lifting |
 
-All six projects above advertise the MIT license at the pinned repository state. Preserve their license files and attribution when reusing source.
+All projects in this table advertise the MIT license at the pinned repository state. Preserve their license files and attribution when reusing source.
+
+For a legitimately decrypted `EBOOT.ELF`, ps3recomp is the preferred first-stage analysis pipeline because its loader emits function, image, import, and loader manifests directly from PS3 PPU metadata.
 
 ## Reference-only projects
 
