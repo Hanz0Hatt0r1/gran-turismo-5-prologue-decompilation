@@ -52,7 +52,7 @@ Total: **8 libraries / 74 imported functions**.
 | `0xC9DC3AC5` | `0x5A92C` | `cellFsTruncate` |
 | `0xCB588DBA` | `0x5A94C` | `cellFsFGetBlockSize` |
 | `0xECDCF2AB` | `0x5A96C` | `cellFsWrite` |
-| `0xEFD3FA34` | `0x5A98C` | `cellFsFstat` |
+| `0xEF3EFA34` | `0x5A98C` | `cellFsFstat` |
 | `0xF12EECC8` | `0x5A9AC` | `cellFsRename` |
 | `0xFF42DCC3` | `0x5A9CC` | `cellFsClosedir` |
 
