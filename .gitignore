@@ -31,6 +31,9 @@ extracted/
 decrypted/
 assets_original/
 
+# Locally fetched upstream research projects
+third_party/upstream/
+
 # Archives
 *.zip
 *.7z
