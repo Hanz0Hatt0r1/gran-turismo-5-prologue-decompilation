@@ -1,16 +1,58 @@
 # Tools
 
-Original helper utilities for this project live here.
+## `gtdecomp.py`
 
-Useful candidates:
+`gtdecomp.py` is the build-agnostic PS3 PPU analysis pipeline used by this
+project. It consumes **user-provided decrypted ELF files locally** and writes
+only derived metadata. Game executables, keys, firmware, SDK files, and assets
+must not be committed.
 
-- symbol-map import/export;
-- address and offset conversion;
-- function inventory/report generation;
-- analysis database synchronization;
-- independently documented metadata parsers;
-- consistency and regression checks.
+### Index a build
 
-Each tool should include usage instructions and tests where practical.
+```bash
+python3 tools/gtdecomp.py index /path/to/EBOOT.ELF -o output/gt5-bcus98114
+```
 
-Do not add game assets, keys, decrypted executables, firmware, or proprietary SDK components.
+The index contains:
+
+- `manifest.json` — build identity, hashes, entry descriptor, TOC and counts;
+- `opd.csv` — recovered PPU function descriptors;
+- `functions.csv` — normalized PowerPC function fingerprints;
+- `rtti.csv` — Itanium-style C++ RTTI candidates;
+- `vtables.csv` — virtual-table candidates linked to function descriptors;
+- `source_files.csv` — source-file strings retained in the executable;
+- `imports.csv` — PS3 import libraries, NIDs, import slots, and stub addresses.
+
+The current parser targets PS3 `ELF64`, big-endian, `PowerPC64` executables and
+Sony's compact 8-byte PPU function descriptors.
+
+### Compare two builds
+
+```bash
+python3 tools/gtdecomp.py compare \
+  /path/to/reference/EBOOT.ELF \
+  /path/to/target/EBOOT.ELF \
+  -o output/gt5-vs-gt5p
+```
+
+The matcher normalizes direct branch displacements and common TOC-relative
+loads/stores before hashing. Unique whole-function matches are preferred;
+unique normalized-prefix matches are used as a lower-confidence fallback.
+This is intended to transfer research labels between GT5 retail, GT5 Prologue,
+and updates without assuming that absolute addresses are stable.
+
+### Tests
+
+```bash
+python3 -m unittest tests/test_gtdecomp.py
+```
+
+Tests use synthetic ELF data only.
+
+
+### Apply the index in Ghidra
+
+Open the same ELF in Ghidra, add `tools/ghidra/` to the Script Manager search
+path, and run `apply_gtdecomp_index.py`. Select the index directory generated
+by `gtdecomp.py`. The script adds import/RTTI/vtable labels and evidence
+comments without overwriting existing function names.

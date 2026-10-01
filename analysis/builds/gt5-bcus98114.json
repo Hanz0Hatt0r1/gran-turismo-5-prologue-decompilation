@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "game": "Gran Turismo 5",
+  "title_id": "BCUS-98114",
+  "role": "reference-build",
+  "executable_sha256": "bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc",
+  "format": "ELF64-big-endian-PowerPC64",
+  "entry_descriptor_va": "0x017f8150",
+  "entry_code_va": "0x00010230",
+  "toc_va": "0x01846af0",
+  "baseline_index": {
+    "function_descriptors": 14052,
+    "unique_function_addresses": 8485,
+    "vtable_candidates": 1642,
+    "import_libraries": 42,
+    "import_functions": 716
+  },
+  "notes": [
+    "Derived metadata only; executable is intentionally not stored in Git.",
+    "Use tools/gtdecomp.py to reproduce the local index from a legally obtained executable."
+  ]
+}
