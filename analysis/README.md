@@ -16,3 +16,7 @@ Each note should include target build/region/update, module, addresses or offset
 Confidence levels: **confirmed**, **probable**, **speculative**.
 
 Avoid large copied decompiler output or copyrighted game content.
+
+## Current executable work
+
+- [BCUS-98158 EBOOT](eboot/README.md) — executable fingerprint, ELF/OPD map, imports, and startup decompilation.
