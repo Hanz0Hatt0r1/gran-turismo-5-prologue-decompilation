@@ -5,63 +5,116 @@
 - File: `EBOOT.BIN`
 - Size: **422,808 bytes** (`0x67398`)
 - SHA-256: `f58e36b3cb371e357ae0f3a019fb339c653682bc7ff6423abf3c2c7db50eef2a`
-- Container magic: `SCE\0`
-- Embedded ELF header offset: `0x90`
+- Container: PlayStation 3 SCE/SELF
+- Embedded executable: ELF64, big-endian, `EM_PPC64`
+- SELF type: `APP`
+- Application version field: `0x0001000000000000`
+- Auth ID: `0x1010000001000003`
+- Vendor ID: `0x01000002`
+- Key revision: `0x0001`
 
-The binary supplied for analysis is a PlayStation 3 SCE/SELF executable container. The embedded executable metadata identifies a **64-bit big-endian PowerPC ELF**.
+## Executable layout
 
-## Embedded ELF metadata
+The embedded ELF has 8 program headers and 30 section headers. Its ELF entry value is `0x717D8`. On PS3 PPU executables, the entry value is an OPD address rather than a direct machine-code address; the supplied file's entry falls inside the reconstructed `.opd` range.
 
-| Field | Value |
-| --- | --- |
-| ELF class | ELF64 |
-| Endianness | Big endian |
-| OS/ABI byte | `0x66` |
-| Type | `ET_EXEC` |
-| Machine | `EM_PPC64` (`0x15`) |
-| Entry point | `0x00000000000717D8` |
-| Program headers | 8 |
-| Section headers | 30 |
-| Section-header table offset | `0x66298` |
-| Section-name table index | 29 |
+Primary mappings:
 
-Program-header metadata exposes a principal executable mapping beginning at virtual address `0x10000` with an ELF file size of `0x5A338`, plus a writable mapping around `0x70000`.
+| Mapping | ELF offset | Virtual address | File size | Memory size |
+| --- | ---: | ---: | ---: | ---: |
+| executable `PT_LOAD` | `0x00000` | `0x10000` | `0x5A338` | `0x5A338` |
+| writable `PT_LOAD` | `0x60000` | `0x70000` | `0x58A0` | `0x84A20` |
+| `PT_PS3_PARAMS` | `0x5A2F0` | `0x6A2F0` | `0x20` | `0x20` |
+| `PT_PS3_PRX` | `0x5A310` | `0x6A310` | `0x28` | `0x28` |
 
-## Encryption state
+The writable mapping extends to `0xF4A20`; most of the tail is zero-filled BSS.
 
-The main body of the supplied SELF is still encrypted. Entropy measurements across the central payload are approximately **7.997 bits/byte**, while attempting to interpret the SELF bytes as a directly extracted ELF produces invalid section headers. Therefore PPC64 disassembly/decompilation of the payload must wait for a legitimately decrypted SELF/ELF representation.
+## Reconstructed section map
 
-Do not treat disassembly of the encrypted bytes as game code.
+The original `.shstrtab` contents are encrypted, but this sample preserves section headers in plaintext. Their `sh_name` offsets, types, flags, addresses, and sizes match the standard PS3 PPU section-string layout exactly, allowing the names below to be reconstructed with high confidence.
 
-## Visible import/module evidence
+| Section | VA | Size |
+| --- | ---: | ---: |
+| `.init` | `0x10200` | `0x2C` |
+| `.text` | `0x10230` | `0x4A398` |
+| `.fini` | `0x5A5C8` | `0x24` |
+| `.sceStub.text` | `0x5A5EC` | `0x940` |
+| `.eh_frame` | `0x5AF2C` | `0xAE50` |
+| `.gcc_except_table` | `0x65D80` | `0x1348` |
+| `.rodata.sceResident` | `0x670C8` | `0x7C` |
+| `.rodata.sceFNID` | `0x67144` | `0x128` |
+| `.lib.ent.top` | `0x6726C` | `0x4` |
+| `.lib.ent.btm` | `0x67270` | `0x4` |
+| `.lib.stub.top` | `0x67274` | `0x4` |
+| `.lib.stub` | `0x67278` | `0x160` |
+| `.lib.stub.btm` | `0x673D8` | `0x4` |
+| `.rodata` | `0x67400` | `0x2EF0` |
+| `.sys_proc_param` | `0x6A2F0` | `0x20` |
+| `.sys_proc_prx_param` | `0x6A310` | `0x28` |
+| `.ctors` | `0x70000` | `0x70` |
+| `.dtors` | `0x70070` | `0x70` |
+| `.jcr` | `0x700E0` | `0x4` |
+| `.data.rel.ro` | `0x700E8` | `0xFBC` |
+| `.data.sceFStub` | `0x710A4` | `0x128` |
+| `.toc1` | `0x711D0` | `0x5F4` |
+| `.opd` | `0x717C8` | `0x3948` |
+| `.got` | `0x75110` | `0x420` |
+| `.tbss` | `0x75530` | `0x28` |
+| `.data` | `0x75558` | `0x348` |
+| `.bss` | `0x758C0` | `0x7F160` |
+| `.sceversion` | ELF offset `0x658A0` | `0x8C5` |
+| `.shstrtab` | ELF offset `0x66165` | `0x12D` |
 
-A plaintext import-name region near file offset `0x6621D` exposes references to:
+## Function/import estimates
+
+PS3 PPU OPD descriptors are compact 8-byte `{u32 code, u32 toc}` records. The `.opd` section is `0x3948` bytes, so it contains space for **1,833 descriptor slots**. The exact valid function count requires the decrypted OPD contents because unused or duplicate descriptors must be filtered.
+
+The import geometry is much tighter:
+
+- `.rodata.sceFNID`: `0x128 / 4 = 74` NID slots.
+- `.data.sceFStub`: `0x128 / 4 = 74` imported function-pointer slots.
+- `.sceStub.text`: `0x940 / 74 = 0x20` bytes per import trampoline.
+- `.lib.stub`: `0x160 / 0x2C = 8` import-library records.
+
+Therefore this executable has **74 firmware imports across 8 import libraries**. The plaintext SCE-version records contain exactly eight distinct `*_stub` library families, making these the likely import modules:
 
 - `libsysutil_np_stub`
 - `libnetctl_stub`
 - `libnet_stub`
 - `libfs_stub`
 - `libsysutil_stub`
-- `libgcm_cmd`
 - `libgcm_sys_stub`
 - `libsysmodule_stub`
-- `libstdc++`
-- `libc`
 - `liblv2_stub`
-- `crt1`
 
-These names are useful early subsystem evidence: filesystem access, networking/NP, system utility integration, RSX/GCM graphics, module loading, C/C++ runtime, and LV2 interaction are represented in the executable's import metadata.
+The same version block also references `libgcm_cmd`, `libstdc++`, `libc`, `crt0`, and `crt1`, which are useful toolchain/link provenance but are not necessarily firmware import modules.
 
-## Next decompilation step
+## SDK and firmware evidence
 
-Obtain a decrypted executable image corresponding exactly to the SHA-256 sample above, then:
+The plaintext SCE-version block contains **123 version records**, all tagged `p215001`. This strongly indicates a single PS3 SDK/toolchain generation across the linked objects; for now the repository records the literal tag rather than assigning an undocumented semantic version.
 
-1. verify the decrypted ELF header and segment mappings;
-2. hash and record the decrypted artifact locally (do not commit proprietary binaries);
-3. disassemble from entry point `0x717D8`;
-4. recover OPD/function-descriptor and TOC usage where applicable;
-5. resolve import stubs/NIDs;
-6. establish the first function map and call graph;
-7. begin clean-room reconstruction under `src/`, keeping address/evidence notes under `analysis/`.
+The SELF control-info digest block stores firmware version value **21700**, conventionally displayed by SCE tooling as **2.17**.
 
-This document records only metadata and observations; the proprietary executable itself is not committed.
+## Encryption state
+
+Both non-empty `PT_LOAD` payloads are marked encrypted in the SELF section-info table.
+
+Measured entropy:
+
+- executable payload: approximately **7.99950 bits/byte**
+- writable payload: approximately **7.99230 bits/byte**
+
+The metadata and section tables are sufficient to map the executable, but the code, OPD contents, FNIDs, import structures, strings, and initialized data remain encrypted. Disassembling those encrypted payload bytes would produce false PPC instructions.
+
+## Next executable stage
+
+For the matching decrypted ELF:
+
+1. verify the SHA/provenance pair against this SELF;
+2. resolve the entry OPD `0x717D8` to its code address and initial TOC;
+3. walk `.opd` in 8-byte records and retain descriptors whose code address lands in executable ranges;
+4. parse the eight `.lib.stub` records and all 74 FNIDs;
+5. resolve NIDs to PS3 API names;
+6. generate the first authoritative function table and call graph;
+7. start clean-room reconstruction from CRT/startup and initialization paths.
+
+The proprietary executable itself is not committed.
