@@ -38,6 +38,8 @@ fetch_repo "TXS3Converter"   "https://github.com/Nenkai/TXS3Converter.git"   "d0
 
 fetch_repo "GT-File-Specifications-Documentation"   "https://github.com/Nenkai/GT-File-Specifications-Documentation.git"   "05e52347890541758222d173dbb62d2b40581b19"
 
+fetch_repo "ps3recomp"   "https://github.com/sp00nznet/ps3recomp.git"   "a679051ef304555291de2eb3ec8a3dbf64a761a8"
+
 cat <<EOF
 
 Upstream research tooling is available under:
