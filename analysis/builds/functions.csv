@@ -1,0 +1,26 @@
+address,name,confidence,notes
+0x10230,crt_entry,confirmed,Code target referenced by ELF entry OPD at 0x717D8
+0x10368,crt_runtime_start,probable,Runtime startup path invokes boot_main then process termination
+0x10610,handle_broken_game_data,probable,Calls cellGameDataExitBroken then local cleanup
+0x10640,paths_match_after_normalization,tentative,Normalizes second path and returns true when comparison returns zero
+0x106A0,path_exists,probable,Returns true iff lower-level path query returns zero
+0x106E0,boot_main,high,Top-level bootstrap decision and next-SELF launch flow
+0x11BD0,runtime_bootstrap_init,tentative,First local call made by boot_main
+0x124A0,get_cached_launch_object_a,tentative,Returns cached object; creates it lazily
+0x12510,get_cached_launch_object_b,tentative,Returns cached object; creates it lazily
+0x14570,read_or_build_pfs_header,tentative,Produces 160-byte structure later checked for PFS2 magic
+0x24BA8,path_query,tentative,Called by path_exists
+0x25980,path_compare,tentative,Comparison used after normalization
+0x26E98,normalize_path,tentative,Transforms/normalizes path argument before comparison
+0x27EB0,launch_process_wrapper,tentative,Alternate process-launch path with priority 1001 and flags 64
+0x29070,check_game_data_paths,probable,Game-data async wrapper producing two output buffers and status
+0x323B0,fixed_path_assign,tentative,Assigns/copies path into fixed-capacity path object
+0x32218,fixed_path_append,tentative,Appends filename component to fixed-capacity path object
+0x34960,fixed_path_append_or_join,tentative,Used to add PDIPFS and generated components
+0x355A8,boot_state_poll_a,tentative,Boolean state/progress test
+0x35620,boot_state_poll_b,tentative,Boolean state/progress test
+0x35790,game_data_cleanup,tentative,Called after cellGameDataExitBroken
+0x379A0,game_data_check_callback,high,Direct caller of cellGameDataCheckCreate2
+0x4B448,memcpy,confirmed,Optimized byte-copy routine
+0x4DB78,binary_compare,tentative,Used to compare PFS-related structures
+0x4E0E0,bounded_copy,probable,Copies path strings with explicit capacity
