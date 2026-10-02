@@ -998,3 +998,316 @@ def index_elf(path: Path, out: Path, nid_db: Optional[Path] = None) -> Dict[str,
         ["library", "nid", "name", "stub_code_va", "import_slot_va"],
         (
             {
+                "library": r.library,
+                "nid": _fmt_hex(r.nid),
+                "name": nid_names.get(r.nid, ""),
+                "stub_code_va": _fmt_hex(r.stub_code_va),
+                "import_slot_va": _fmt_hex(r.import_slot_va),
+            }
+            for r in imports
+        ),
+    )
+    return manifest
+
+
+def _fp_index(rows: Sequence[Fingerprint], attr: str) -> Dict[str, List[Fingerprint]]:
+    out: Dict[str, List[Fingerprint]] = {}
+    for row in rows:
+        out.setdefault(getattr(row, attr), []).append(row)
+    return out
+
+
+def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
+    out.mkdir(parents=True, exist_ok=True)
+    a = PS3ELF(reference)
+    b = PS3ELF(target)
+    atoc, aopd = find_opd(a)
+    btoc, bopd = find_opd(b)
+    ac = discover_function_candidates(a, aopd)
+    bc = discover_function_candidates(b, bopd)
+    afp = build_fingerprints_from_starts(a, (r.code_va for r in ac if r.score >= 3))
+    bfp = build_fingerprints_from_starts(b, (r.code_va for r in bc if r.score >= 3))
+    af = _fp_index(afp, "sha_full")
+    bf = _fp_index(bfp, "sha_full")
+    ap = _fp_index(afp, "sha_prefix")
+    bp = _fp_index(bfp, "sha_prefix")
+    matches: List[Tuple[Fingerprint, Fingerprint, str]] = []
+    used_b = set()
+    matched_a = set()
+
+    for h, aa in af.items():
+        bb = bf.get(h, [])
+        if len(aa) == 1 and len(bb) == 1:
+            x, y = aa[0], bb[0]
+            matches.append((x, y, "normalized-full"))
+            used_b.add(y.code_va)
+            matched_a.add(x.code_va)
+    for h, aa0 in ap.items():
+        aa = [r for r in aa0 if r.code_va not in matched_a]
+        bb = [r for r in bp.get(h, []) if r.code_va not in used_b]
+        if len(aa) == 1 and len(bb) == 1 and min(aa[0].insns, bb[0].insns) >= 8:
+            x, y = aa[0], bb[0]
+            matches.append((x, y, "normalized-prefix"))
+            used_b.add(y.code_va)
+            matched_a.add(x.code_va)
+
+    with (out / "function_matches.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["reference_code_va", "target_code_va", "method", "reference_size", "target_size"])
+        for x, y, method in sorted(matches, key=lambda t: t[0].code_va):
+            w.writerow([_fmt_hex(x.code_va), _fmt_hex(y.code_va), method, x.size, y.size])
+
+    summary = {
+        "schema": 1,
+        "reference_sha256": a.sha256,
+        "target_sha256": b.sha256,
+        "reference_toc": _fmt_hex(atoc),
+        "target_toc": _fmt_hex(btoc),
+        "reference_functions": len(afp),
+        "target_functions": len(bfp),
+        "matches": len(matches),
+        "full_matches": sum(method == "normalized-full" for _, _, method in matches),
+        "prefix_matches": sum(method == "normalized-prefix" for _, _, method in matches),
+    }
+    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    return summary
+
+
+_GHIDRA_C_FUNC_RE = re.compile(
+    r"(?m)^[^\n]*\b((?:thunk_)?FUN_([0-9A-Fa-f]{8}))\s*\([^\n]*\)\s*\n?\s*\{"
+)
+
+
+def _balanced_c_block_end(text: str, brace: int) -> int:
+    """Return one-past the matching C brace while ignoring comments/strings."""
+    depth = 0
+    i = brace
+    state = "code"
+    while i < len(text):
+        ch = text[i]
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+        if state == "line-comment":
+            if ch == "\n":
+                state = "code"
+        elif state == "block-comment":
+            if ch == "*" and nxt == "/":
+                state = "code"
+                i += 1
+        elif state == "string":
+            if ch == "\\":
+                i += 1
+            elif ch == '"':
+                state = "code"
+        elif state == "char":
+            if ch == "\\":
+                i += 1
+            elif ch == "'":
+                state = "code"
+        else:
+            if ch == "/" and nxt == "/":
+                state = "line-comment"
+                i += 1
+            elif ch == "/" and nxt == "*":
+                state = "block-comment"
+                i += 1
+            elif ch == '"':
+                state = "string"
+            elif ch == "'":
+                state = "char"
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return i + 1
+        i += 1
+    return len(text)
+
+
+def _csv_by_code_va(path: Path) -> Dict[int, Dict[str, str]]:
+    if not path.exists():
+        return {}
+    with path.open("r", newline="", encoding="utf-8") as f:
+        return {int(r["code_va"], 16): r for r in csv.DictReader(f)}
+
+
+def import_ghidra_c(c_path: Path, index_dir: Path, out: Path) -> Dict[str, object]:
+    """Split a Ghidra C export and attach gtdecomp identities/evidence."""
+    out.mkdir(parents=True, exist_ok=True)
+    functions_dir = out / "functions"
+    functions_dir.mkdir(parents=True, exist_ok=True)
+    text = c_path.read_text(encoding="utf-8", errors="replace")
+    fp_path = index_dir / "discovered_functions.csv"
+    if not fp_path.exists():
+        fp_path = index_dir / "functions.csv"
+    fps = _csv_by_code_va(fp_path)
+    hints = _csv_by_code_va(index_dir / "function_hints.csv")
+    rows: List[Dict[str, object]] = []
+    raw_count = 0
+    thunk_count = 0
+    matched = 0
+    for match in _GHIDRA_C_FUNC_RE.finditer(text):
+        name = match.group(1)
+        code_va = int(match.group(2), 16)
+        brace = text.find("{", match.start(), match.end())
+        if brace < 0:
+            continue
+        end = _balanced_c_block_end(text, brace)
+        block = text[match.start():end].rstrip() + "\n"
+        kind = "thunk" if name.startswith("thunk_") else "function"
+        if kind == "thunk":
+            thunk_count += 1
+        else:
+            raw_count += 1
+        fp = fps.get(code_va, {})
+        hint = hints.get(code_va, {})
+        if fp:
+            matched += 1
+        rel = Path("functions") / (name + ".c")
+        (out / rel).write_text(block, encoding="utf-8")
+        rows.append(
+            {
+                "name": name,
+                "kind": kind,
+                "code_va": _fmt_hex(code_va),
+                "function_id": fp.get("sha_full", ""),
+                "normalized_size": fp.get("size", ""),
+                "source_files": hint.get("source_files", ""),
+                "vtable_types": hint.get("vtable_types", ""),
+                "output_file": rel.as_posix(),
+            }
+        )
+    _write_csv(
+        out / "ghidra_c_manifest.csv",
+        ["name", "kind", "code_va", "function_id", "normalized_size", "source_files", "vtable_types", "output_file"],
+        rows,
+    )
+    summary = {
+        "schema": 1,
+        "input_name": c_path.name,
+        "functions": raw_count,
+        "thunks": thunk_count,
+        "total_blocks": len(rows),
+        "matched_index_functions": matched,
+    }
+    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    return summary
+
+
+def resolve_analyze_headless(ghidra: Path) -> Path:
+    """Resolve a Ghidra installation directory or analyzeHeadless executable."""
+    ghidra = ghidra.expanduser().resolve()
+    candidates = [ghidra]
+    if ghidra.is_dir():
+        candidates = [
+            ghidra / "support" / "analyzeHeadless",
+            ghidra / "support" / "analyzeHeadless.bat",
+            ghidra / "analyzeHeadless",
+        ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(f"could not find analyzeHeadless under {ghidra}")
+
+
+def decompile_elf(path: Path, out: Path, ghidra: Path, timeout: int = 90, nid_db: Optional[Path] = None, scope: str = "hinted", limit: int = 0) -> Dict[str, object]:
+    """Index an ELF and run Ghidra headlessly to export local pseudocode."""
+    if scope not in {"hinted", "all"}:
+        raise ValueError("scope must be hinted or all")
+    if limit < 0:
+        raise ValueError("limit must be >= 0")
+    analyze_headless = resolve_analyze_headless(ghidra)
+    out = out.resolve()
+    index_dir = out / "index"
+    decompiled_dir = out / "decompiled"
+    project_dir = out / "ghidra-project"
+    index_manifest = index_elf(path, index_dir, nid_db=nid_db)
+    decompiled_dir.mkdir(parents=True, exist_ok=True)
+    project_dir.mkdir(parents=True, exist_ok=True)
+    script_dir = Path(__file__).resolve().parent / "ghidra"
+    project_name = "gtdecomp_" + str(index_manifest["sha256"])[:12]
+    cmd = [
+        str(analyze_headless),
+        str(project_dir),
+        project_name,
+        "-import",
+        str(path.resolve()),
+        "-overwrite",
+        "-scriptPath",
+        str(script_dir),
+        "-postScript",
+        "apply_gtdecomp_index.py",
+        str(index_dir),
+        "-postScript",
+        "export_decompilation.py",
+        str(index_dir),
+        str(decompiled_dir),
+        str(timeout),
+        scope,
+        str(limit),
+    ]
+    subprocess.run(cmd, check=True)
+    manifest_path = decompiled_dir / "decompilation_manifest.csv"
+    exported = 0
+    failed = 0
+    if manifest_path.exists():
+        with manifest_path.open("r", newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if row.get("status") == "ok":
+                    exported += 1
+                elif row.get("status") == "failed":
+                    failed += 1
+    result = {
+        "schema": 1,
+        "input_sha256": index_manifest["sha256"],
+        "index_dir": str(index_dir),
+        "decompiled_dir": str(decompiled_dir),
+        "ghidra_project_dir": str(project_dir),
+        "exported_functions": exported,
+        "failed_functions": failed,
+        "scope": scope,
+        "limit": limit,
+    }
+    (out / "decompile-summary.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    ap = argparse.ArgumentParser(description="Index and compare Gran Turismo PS3 PPU executables")
+    sub = ap.add_subparsers(dest="command", required=True)
+    p_index = sub.add_parser("index", help="build a metadata database for one ELF")
+    p_index.add_argument("elf", type=Path)
+    p_index.add_argument("-o", "--out", type=Path, default=Path("analysis-out"))
+    p_index.add_argument("--nid-db", type=Path, help="optional external PS3 NID name database")
+    p_compare = sub.add_parser("compare", help="match functions between two ELF builds")
+    p_compare.add_argument("reference", type=Path)
+    p_compare.add_argument("target", type=Path)
+    p_compare.add_argument("-o", "--out", type=Path, default=Path("compare-out"))
+    p_import_c = sub.add_parser("import-ghidra-c", help="split an existing Ghidra C export and attach index metadata")
+    p_import_c.add_argument("c_export", type=Path)
+    p_import_c.add_argument("--index", type=Path, required=True, help="index directory produced by the index command")
+    p_import_c.add_argument("-o", "--out", type=Path, default=Path("ghidra-c-out"))
+    p_decompile = sub.add_parser("decompile", help="index an ELF and export Ghidra pseudocode headlessly")
+    p_decompile.add_argument("elf", type=Path)
+    p_decompile.add_argument("--ghidra", type=Path, required=True, help="Ghidra installation or analyzeHeadless path")
+    p_decompile.add_argument("-o", "--out", type=Path, default=Path("decompile-out"))
+    p_decompile.add_argument("--timeout", type=int, default=90, help="per-function Ghidra decompiler timeout in seconds")
+    p_decompile.add_argument("--nid-db", type=Path, help="optional external PS3 NID name database")
+    p_decompile.add_argument("--scope", choices=("hinted", "all"), default="hinted", help="functions to export; hinted is the practical first pass")
+    p_decompile.add_argument("--limit", type=int, default=0, help="maximum functions to export (0 = no limit)")
+    args = ap.parse_args(argv)
+
+    if args.command == "index":
+        result = index_elf(args.elf, args.out, nid_db=args.nid_db)
+    elif args.command == "compare":
+        result = compare_elfs(args.reference, args.target, args.out)
+    elif args.command == "import-ghidra-c":
+        result = import_ghidra_c(args.c_export, args.index, args.out)
+    else:
+        result = decompile_elf(args.elf, args.out, args.ghidra, timeout=args.timeout, nid_db=args.nid_db, scope=args.scope, limit=args.limit)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
