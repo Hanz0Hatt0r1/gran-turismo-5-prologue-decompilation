@@ -25,10 +25,27 @@ The index contains:
 - `source_files.csv` — source-file strings retained in the executable;
 - `string_refs.csv` — recovered PPU TOC loads that point at retained strings;
 - `function_hints.csv` — per-function source/vtable evidence;
-- `imports.csv` — PS3 import libraries, NIDs, import slots, and stub addresses.
+- `imports.csv` — PS3 import libraries, NIDs, optional resolved names, import slots, and stub addresses.
 
 The current parser targets PS3 `ELF64`, big-endian, `PowerPC64` executables and
 Sony's compact 8-byte PPU function descriptors.
+
+### Optional PS3 NID names
+
+The exact NID remains the canonical import identity. Human-readable API names
+can be supplied from a local external database without vendoring that database:
+
+```bash
+python3 tools/gtdecomp.py index /path/to/EBOOT.ELF \
+  --nid-db /path/to/nids.txt \
+  -o output/gt5-bcus98114
+```
+
+Accepted database formats are whitespace text (`0x12345678 symbol`), CSV with
+`nid`/`name` columns, and simple JSON mappings/lists. When a name resolves, the
+Ghidra annotator uses it for import labels such as `imp_cellFsOpen`; otherwise
+it falls back to the library + raw NID. Third-party NID databases are not
+stored in this repository.
 
 ### Compare two builds
 
@@ -95,3 +112,14 @@ evidence, and annotates imports/RTTI/vtables. `export_decompilation.py` exports
 the local Ghidra pseudocode and manifest. Both scripts accept command-line
 arguments when invoked through `analyzeHeadless` and fall back to file choosers
 in the GUI.
+
+## Manjaro helper
+
+For a one-command local Ghidra run on Manjaro/Arch:
+
+```bash
+export GHIDRA_HOME="$HOME/ghidra_12.1.2_PUBLIC"
+tools/manjaro/run_gt5_headless.sh /path/to/EBOOT.ELF
+```
+
+See [`manjaro/README.md`](manjaro/README.md) for smoke-test and full-export modes.

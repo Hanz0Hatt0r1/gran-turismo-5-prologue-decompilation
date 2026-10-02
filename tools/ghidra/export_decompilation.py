@@ -19,6 +19,10 @@ else:
     output_root = askDirectory("Select decompilation output directory", "Save").getAbsolutePath()
 
 timeout_seconds = int(script_args[2]) if len(script_args) >= 3 else 90
+scope = script_args[3] if len(script_args) >= 4 else "hinted"
+limit = int(script_args[4]) if len(script_args) >= 5 else 0
+if scope not in ("hinted", "all"):
+    raise ValueError("scope must be hinted or all")
 functions_dir = os.path.join(output_root, "functions")
 if not os.path.isdir(functions_dir):
     os.makedirs(functions_dir)
@@ -59,10 +63,16 @@ fields = [
     "output_file",
     "error",
 ]
+selected = sorted(fingerprints)
+if scope == "hinted":
+    selected = [va for va in selected if va in hints]
+if limit > 0:
+    selected = selected[:limit]
+
 with open(manifest_path, "w") as mf:
     writer = csv.DictWriter(mf, fieldnames=fields)
     writer.writeheader()
-    for code_va in sorted(fingerprints):
+    for code_va in selected:
         if monitor.isCancelled():
             break
         fp = fingerprints[code_va]
@@ -119,4 +129,4 @@ try:
 except Exception:
     pass
 
-print("gtdecomp decompilation export written to %s" % output_root)
+print("gtdecomp decompilation export written to %s (scope=%s, selected=%d)" % (output_root, scope, len(selected)))

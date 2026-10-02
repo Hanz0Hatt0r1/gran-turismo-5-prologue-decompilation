@@ -277,6 +277,76 @@ def find_opd(elf: PS3ELF) -> Tuple[int, List[FunctionDescriptor]]:
 
 
 
+
+
+def load_nid_database(path: Path | str) -> Dict[int, str]:
+    """Load an optional external PS3 NID -> symbol-name database.
+
+    Supported inputs are whitespace text (``0x12345678 symbol``), CSV with
+    ``nid``/``name`` columns, and simple JSON mappings/lists. The project does
+    not vendor third-party symbol databases; callers may provide one locally.
+    """
+    path = Path(path)
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    out: Dict[int, str] = {}
+
+    def add(nid_value, name_value) -> None:
+        if nid_value is None or name_value is None:
+            return
+        try:
+            if isinstance(nid_value, int):
+                nid = nid_value
+            else:
+                text = str(nid_value).strip()
+                nid = int(text, 0) if text.lower().startswith("0x") else int(text, 16)
+        except (TypeError, ValueError):
+            return
+        name = str(name_value).strip()
+        if 0 <= nid <= 0xFFFFFFFF and name:
+            out.setdefault(nid, name)
+
+    if path.suffix.lower() == ".json":
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, str):
+                    add(key, value)
+                elif isinstance(value, dict):
+                    add(value.get("nid", key), value.get("name") or value.get("symbol"))
+        elif isinstance(obj, list):
+            for value in obj:
+                if isinstance(value, dict):
+                    add(value.get("nid"), value.get("name") or value.get("symbol"))
+        return out
+
+    if path.suffix.lower() == ".csv":
+        rows = list(csv.reader(raw.splitlines()))
+        if rows:
+            header = [x.strip().lower() for x in rows[0]]
+            if "nid" in header and ("name" in header or "symbol" in header):
+                ni = header.index("nid")
+                si = header.index("name") if "name" in header else header.index("symbol")
+                for row in rows[1:]:
+                    if max(ni, si) < len(row):
+                        add(row[ni], row[si])
+                return out
+            for row in rows:
+                if len(row) >= 2:
+                    add(row[0], row[1])
+            if out:
+                return out
+
+    line_re = re.compile(r"^\s*(?:0x)?([0-9A-Fa-f]{8})[\s,;:]+(.+?)\s*$")
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or line.startswith("//"):
+            continue
+        m = line_re.match(line)
+        if m:
+            add(m.group(1), m.group(2))
+    return out
+
+
 @dataclass(frozen=True)
 class ImportFunction:
     library: str
@@ -764,7 +834,7 @@ def _write_csv(path: Path, fieldnames: Sequence[str], rows: Iterable[Dict[str, o
             w.writerow(row)
 
 
-def index_elf(path: Path, out: Path) -> Dict[str, object]:
+def index_elf(path: Path, out: Path, nid_db: Optional[Path] = None) -> Dict[str, object]:
     out.mkdir(parents=True, exist_ok=True)
     elf = PS3ELF(path)
     toc, descriptors = find_opd(elf)
@@ -780,6 +850,8 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
     string_refs = find_toc_string_refs(elf, toc, strict_starts, strings)
     function_hints = build_function_hints(vtables, string_refs, source_files)
     imports, import_libraries = find_imports(elf)
+    nid_names = load_nid_database(nid_db) if nid_db is not None else {}
+    resolved_import_names = sum(1 for r in imports if r.nid in nid_names)
 
     manifest = {
         "schema": 1,
@@ -803,6 +875,7 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
         "functions_with_hints": len(function_hints),
         "import_libraries": len(import_libraries),
         "import_functions": len(imports),
+        "resolved_import_names": resolved_import_names,
         **identity,
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -922,78 +995,6 @@ def index_elf(path: Path, out: Path) -> Dict[str, object]:
     )
     _write_csv(
         out / "imports.csv",
-        ["library", "nid", "stub_code_va", "import_slot_va"],
+        ["library", "nid", "name", "stub_code_va", "import_slot_va"],
         (
             {
-                "library": r.library,
-                "nid": _fmt_hex(r.nid),
-                "stub_code_va": _fmt_hex(r.stub_code_va),
-                "import_slot_va": _fmt_hex(r.import_slot_va),
-            }
-            for r in imports
-        ),
-    )
-    return manifest
-
-
-def _fp_index(rows: Sequence[Fingerprint], attr: str) -> Dict[str, List[Fingerprint]]:
-    out: Dict[str, List[Fingerprint]] = {}
-    for row in rows:
-        out.setdefault(getattr(row, attr), []).append(row)
-    return out
-
-
-def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
-    out.mkdir(parents=True, exist_ok=True)
-    a = PS3ELF(reference)
-    b = PS3ELF(target)
-    atoc, aopd = find_opd(a)
-    btoc, bopd = find_opd(b)
-    ac = discover_function_candidates(a, aopd)
-    bc = discover_function_candidates(b, bopd)
-    afp = build_fingerprints_from_starts(a, (r.code_va for r in ac if r.score >= 3))
-    bfp = build_fingerprints_from_starts(b, (r.code_va for r in bc if r.score >= 3))
-    af = _fp_index(afp, "sha_full")
-    bf = _fp_index(bfp, "sha_full")
-    ap = _fp_index(afp, "sha_prefix")
-    bp = _fp_index(bfp, "sha_prefix")
-    matches: List[Tuple[Fingerprint, Fingerprint, str]] = []
-    used_b = set()
-    matched_a = set()
-
-    for h, aa in af.items():
-        bb = bf.get(h, [])
-        if len(aa) == 1 and len(bb) == 1:
-            x, y = aa[0], bb[0]
-            matches.append((x, y, "normalized-full"))
-            used_b.add(y.code_va)
-            matched_a.add(x.code_va)
-    for h, aa0 in ap.items():
-        aa = [r for r in aa0 if r.code_va not in matched_a]
-        bb = [r for r in bp.get(h, []) if r.code_va not in used_b]
-        if len(aa) == 1 and len(bb) == 1 and min(aa[0].insns, bb[0].insns) >= 8:
-            x, y = aa[0], bb[0]
-            matches.append((x, y, "normalized-prefix"))
-            used_b.add(y.code_va)
-            matched_a.add(x.code_va)
-
-    with (out / "function_matches.csv").open("w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["reference_code_va", "target_code_va", "method", "reference_size", "target_size"])
-        for x, y, method in sorted(matches, key=lambda t: t[0].code_va):
-            w.writerow([_fmt_hex(x.code_va), _fmt_hex(y.code_va), method, x.size, y.size])
-
-    summary = {
-        "schema": 1,
-        "reference_sha256": a.sha256,
-        "target_sha256": b.sha256,
-        "reference_toc": _fmt_hex(atoc),
-        "target_toc": _fmt_hex(btoc),
-        "reference_functions": len(afp),
-        "target_functions": len(bfp),
-        "matches": len(matches),
-        "full_matches": sum(method == "normalized-full" for _, _, method in matches),
-        "prefix_matches": sum(method == "normalized-prefix" for _, _, method in matches),
-    }
-    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    return summary

@@ -19,7 +19,7 @@ ELF / program / section parser
         +--> vtable candidates
         +--> retained source-file strings / TOC references
         +--> function source/vtable evidence
-        +--> PS3 import libraries / NIDs
+        +--> PS3 import libraries / NIDs / optional external symbol names
         |
         v
 per-build metadata index
@@ -66,3 +66,25 @@ that later builds can reuse research labels through the cross-build matcher.
 
 Decompiler output is evidence, not reconstructed source. Reviewed behavior is
 rewritten independently under `src/` and tested separately.
+
+## Import symbol names
+
+Import NIDs are extracted directly from each executable and remain the stable
+identity recorded by the project. `gtdecomp.py index` and `decompile` accept an
+optional `--nid-db` path for local NID-to-symbol resolution. Supported inputs
+are simple whitespace text, CSV, and JSON. The resolved name is convenience
+evidence only; the raw module name and NID are always retained. External symbol
+databases are deliberately not vendored, so their licensing and provenance
+remain separate from this repository.
+
+## Manjaro / Arch execution host
+
+Ghidra itself is expected to run on the researcher's machine. The repository
+contains a wrapper at `tools/manjaro/run_gt5_headless.sh` that detects
+`analyzeHeadless`, runs the static indexer, applies annotations, and exports
+pseudocode. The default `hinted` scope intentionally decompiles only functions
+with source/vtable evidence; use `GTDECOMP_SCOPE=all` only after the first pass
+has been reviewed.
+
+A small `report-for-chat.tar.zst` is produced when `zstd` is installed. It
+contains manifests and logs but not the ELF or the full pseudocode corpus.
