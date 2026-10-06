@@ -140,7 +140,6 @@ method: manual
 confidence: probable
 review_status: accepted
 """, encoding="utf-8")
-        )
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
         self.assertFalse(result["valid"])
         messages = [error["message"] for error in result["errors"]]
