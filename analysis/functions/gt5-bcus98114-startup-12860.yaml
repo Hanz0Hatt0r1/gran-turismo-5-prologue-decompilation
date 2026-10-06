@@ -26,12 +26,23 @@ evidence:
   - type: control_flow
     detail: "The function contains status checks, global/module-list state tests, and repeated helper dispatch before returning through the first linear blr."
 callees:
+  - 0x00d39348
   - 0x00d39358
+  - 0x00d39368
+  - 0x00d39378
+  - 0x00d395e8
+  - 0x00d39718
+  - 0x00d39728
+  - 0x00d39738
   - 0x00d39798
   - 0x00d397a8
   - 0x00d397b8
   - 0x00d397c8
-  - 0x00d39788
+  - 0x00d397d8
+  - 0x00d397e8
+  - 0x00d397f8
+  - 0x00d39808
+  - 0x00d39818
 subsystems:
   - startup
   - application-loading
