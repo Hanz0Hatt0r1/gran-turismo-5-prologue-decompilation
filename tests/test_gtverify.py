@@ -198,6 +198,59 @@ fingerprints:
             "--source-xref-function-map", "analysis/evidence/map.json",
         ])
         self.assertEqual(args.source_xref_function_map, Path("analysis/evidence/map.json"))
+    @staticmethod
+    def make_index(root: Path, name: str, sha: str):
+        index = root / name
+        index.mkdir()
+        (index / "manifest.json").write_text(json.dumps({
+            "schema": 1,
+            "sha256": sha,
+            "format": "ELF64-big-endian-PowerPC64",
+            "entry_descriptor_va": "0x3000",
+            "entry_code_va": "0x1000",
+            "toc_va": "0x3800",
+            "discovered_function_addresses": 1,
+        }), encoding="utf-8")
+        (index / "discovered_functions.csv").write_text(
+            "code_va,score,evidence,size,insns,sha_full,sha_prefix\n"
+            "0x00001000,4,opd,8,2," + "a" * 40 + "," + "b" * 40 + "\n",
+            encoding="utf-8",
+        )
+        return index
+
+    def test_verify_compare_indexes_accepts_consistent_outputs(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            ref = self.make_index(root, "ref", "a" * 64)
+            tgt = self.make_index(root, "tgt", "b" * 64)
+            matches = root / "function_matches.csv"
+            matches.write_text(
+                "reference_code_va,target_code_va,method,evidence_score,evidence_confidence,review_status\n"
+                "0x00001000,0x00001000,normalized-full,80,probable,candidate\n",
+                encoding="utf-8",
+            )
+            summary = root / "summary.json"
+            summary.write_text(json.dumps({
+                "reference_sha256": "a" * 64,
+                "target_sha256": "b" * 64,
+                "matches": 1,
+            }), encoding="utf-8")
+            result = gtverify.verify_compare_indexes(ref, tgt, matches, summary)
+            self.assertTrue(result["valid"])
+
+    def test_verify_compare_indexes_rejects_bad_match_row(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            ref = self.make_index(root, "ref", "a" * 64)
+            tgt = self.make_index(root, "tgt", "b" * 64)
+            matches = root / "function_matches.csv"
+            matches.write_text(
+                "reference_code_va,target_code_va,method,evidence_score,evidence_confidence,review_status\n"
+                "0x00009999,0x00001000,nonsense,101,unknown,mystery\n",
+                encoding="utf-8",
+            )
+            result = gtverify.verify_compare_indexes(ref, tgt, matches)
+            self.assertFalse(result["valid"])
     def test_verify_rejects_wrong_fingerprint(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
