@@ -76,9 +76,18 @@ import_context:
 subsystems:
   - startup
   - crt-runtime
+reconstructed_operations:
+  - id: stride2_compact_a
+    range: "0x00010394-0x000103bc"
+    behavior: "base[i] = base[2*i+1] for i in the observed iteration count"
+    confidence: confirmed
+  - id: stride2_compact_b
+    range: "0x000103c0-0x00010400"
+    behavior: "same stride-2 in-place compaction pattern over a second vector"
+    confidence: confirmed
 notes:
   - "The semantic role remains probable: the function is clearly a runtime/startup coordinator, but not enough evidence exists to call it the game main."
-  - "The loops copy 32-bit values through TOC-derived pointers; their exact container semantics remain unresolved."
+  - "The loops perform a deterministic in-place stride-2 compaction: for each iteration, destination[i] receives the previous source word at source[2*i+1]."
   - "The TOC-backed values at offsets -0x7ffc..-0x7fe0 include persistent startup state and callback/runtime data; opaque payloads are not copied into repository metadata."
   - "0x00010970 is a reviewed application-loader candidate, strengthening the interpretation of 0x00010338 as the bridge from CRT setup into application startup."
   - "No semantic names are assigned to the unresolved 0x00d392xx helper layer."
