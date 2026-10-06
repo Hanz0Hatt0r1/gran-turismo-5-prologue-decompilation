@@ -132,21 +132,31 @@ def build_report(elf: PS3ELF) -> Dict[str, object]:
     for row in files:
         cat = str(row["category"])
         counts[cat] = counts.get(cat, 0) + 1
+    toc_va, _ = find_opd(elf)
+    toc_xrefs = extract_toc_source_xrefs(elf, toc_va, files)
     return {
         "schema": 1,
         "tool": "source_inventory.py",
         "module": elf.path.name,
         "input_sha256": elf.sha256,
         "format": "ELF64-big-endian-PowerPC64",
+        "toc_va": f"0x{toc_va:08x}",
         "method": {
             "source_string_pattern": SOURCE_RE.pattern,
             "scope": "printable ASCII strings in allocated ELF data",
             "classification": "conservative filename-keyword grouping for research triage",
             "semantic_status": "evidence-only; category does not assign function ownership",
+            "toc_xref_pattern": "PPU lwz/ld using r2, resolving a TOC slot to a retained source-string VA",
         },
         "source_file_count": len(files),
         "counts": dict(sorted(counts.items())),
+        "toc_xref_count": sum(int(row["xref_count"]) for row in toc_xrefs),
+        "toc_referenced_source_file_count": len(toc_xrefs),
+        "toc_referenced_category_counts": dict(sorted(
+            Counter(str(row["category"]) for row in toc_xrefs).items()
+        )),
         "files": files,
+        "toc_xrefs": toc_xrefs,
     }
 
 def main() -> int:
