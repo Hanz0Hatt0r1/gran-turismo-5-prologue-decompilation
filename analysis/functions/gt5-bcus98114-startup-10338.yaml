@@ -1,0 +1,89 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010338
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00010338
+name:
+  current: startup_main_10338
+  candidates:
+    - crt_runtime_bootstrap
+    - ppu_startup_runtime
+confidence: probable
+status: reviewed
+fingerprints:
+  normalized_full: 8f1f8ed2b9b7b7f8a6a2d8b74b8cc7a5dc9e2f7c8c6f86d5b2d9e2a79b4c1f31
+evidence:
+  - type: stack_prologue
+    detail: "Begins with stdu r1,-0xa0(r1) at 0x00010338, saves r26-r31 and LR, and keeps the incoming argument registers in nonvolatile registers."
+  - type: entry_chain
+    detail: "The confirmed entry routine at 0x00010230 directly branches to 0x00010338 at callsite 0x0001024c."
+  - type: import_nid
+    detail: "Direct calls resolve to sys_initialize_tls (0x744680a2), sys_time_get_system_time (0x8461e528), sys_prx_register_library (0x42b23552), _sys_process_atexitspawn (0x2c847572), and _sys_process_at_Exitspawn (0x96328741)."
+  - type: control_flow
+    detail: "Two copy/normalization loops run at 0x00010394-0x000103bc and 0x000103c0-0x00010400 before time/runtime registration."
+  - type: runtime_init
+    detail: "The routine calls the ELF initialization entry at 0x00010200, then checks TOC-backed state and conditionally registers runtime/process-exit callbacks."
+  - type: application_transition
+    detail: "After runtime callback setup, 0x000104b8 directly calls startup_application_loader_10970, whose reviewed evidence is anchored by scripts/gt5/Application."
+  - type: termination
+    detail: "The first linear terminating blr is at 0x000104f0; the reviewed range is 0x00010338-0x000104f4."
+calls:
+  - 0x0111bd24
+  - 0x00d39298
+  - 0x00d392a8
+  - 0x00d392b8
+  - 0x00d392c8
+  - 0x0111bd64
+  - 0x00010200
+  - 0x0111bc84
+  - 0x0111bc04
+  - 0x0111bda4
+  - 0x00010970
+  - 0x00d392d8
+import_context:
+  - library: sysPrxForUser
+    nid: 0x744680a2
+    name: sys_initialize_tls
+    stub_va: 0x0111bd24
+    callsite_va: 0x0001038c
+    name_confidence: confirmed
+  - library: sysPrxForUser
+    nid: 0x8461e528
+    name: sys_time_get_system_time
+    stub_va: 0x0111bd64
+    callsite_va: 0x00010444
+    name_confidence: confirmed
+  - library: sysPrxForUser
+    nid: 0x42b23552
+    name: sys_prx_register_library
+    stub_va: 0x0111bc84
+    callsite_va: 0x0001048c
+    name_confidence: confirmed
+  - library: sysPrxForUser
+    nid: 0x2c847572
+    name: _sys_process_atexitspawn
+    stub_va: 0x0111bc04
+    callsite_va: 0x00010498
+    name_confidence: confirmed
+  - library: sysPrxForUser
+    nid: 0x96328741
+    name: _sys_process_at_Exitspawn
+    stub_va: 0x0111bda4
+    callsite_va: 0x000104a4
+    name_confidence: confirmed
+subsystems:
+  - startup
+  - crt-runtime
+notes:
+  - "The semantic role remains probable: the function is clearly a runtime/startup coordinator, but not enough evidence exists to call it the game main."
+  - "The loops copy 32-bit values through TOC-derived pointers; their exact container semantics remain unresolved."
+  - "The TOC-backed values at offsets -0x7ffc..-0x7fe0 include persistent startup state and callback/runtime data; opaque payloads are not copied into repository metadata."
+  - "0x00010970 is a reviewed application-loader candidate, strengthening the interpretation of 0x00010338 as the bridge from CRT setup into application startup."
+  - "No semantic names are assigned to the unresolved 0x00d392xx helper layer."
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: llvm-objdump
+    target: powerpc64-unknown-linux-gnu
+    range: "0x00010338-0x000104f4"
