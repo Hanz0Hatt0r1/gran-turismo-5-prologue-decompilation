@@ -116,7 +116,6 @@ method: manual
 confidence: probable
 review_status: pending
 """, encoding="utf-8")
-        )
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
         self.assertTrue(result["valid"])
 
@@ -139,7 +138,6 @@ method: nonsense
 confidence: probable
 review_status: mystery
 """, encoding="utf-8")
-        )
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
         self.assertFalse(result["valid"])
         messages = [error["message"] for error in result["errors"]]
