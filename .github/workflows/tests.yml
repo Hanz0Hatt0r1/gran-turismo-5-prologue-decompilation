@@ -22,3 +22,20 @@ jobs:
         run: python tools/gtcatalog.py validate analysis
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and run reconstructed C tests
+        run: |
+          set -eu
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          cc -std=c11 -Wall -Wextra -Werror -pedantic -Isrc/startup \
+            src/startup/gt5_vector_normalize.c tests/test_gt5_vector_normalize.c \
+            -o "$tmp/gt5_vector_normalize"
+          "$tmp/gt5_vector_normalize"
+          cc -std=c11 -Wall -Wextra -Werror -pedantic -Isrc/startup \
+            src/startup/gt5_dispatch_walker.c tests/test_gt5_dispatch_walker.c \
+            -o "$tmp/gt5_dispatch_walker"
+          "$tmp/gt5_dispatch_walker"
