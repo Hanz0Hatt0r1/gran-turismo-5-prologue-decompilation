@@ -40,6 +40,8 @@ The executable-intelligence layer is the current engineering priority.
 
 ## Phase 3 — Core subsystem map
 
+- [x] Seed GT5 BCUS-98114 subsystem triage from retained source-file evidence.
+
 Map:
 - startup / main loop;
 - memory and job systems;

@@ -23,6 +23,14 @@ The GT5 entry descriptor and entry code are confirmed. The semantic identity of 
 
 The Prologue bootstrap remains a separate target-build investigation. Its reviewed path includes game-data checks, filesystem/sysmodule initialization, and early EMAIN/EPATCH/PDIPFS handling, but the complete startup graph and main loop remain unresolved.
 
+## Source-file evidence seed
+
+**GT5 BCUS-98114: probable / evidence-only**
+
+The retained source-file names provide a useful subsystem triage layer before any function is semantically named. The current inventory contains 362 unique source-file strings. Keyword grouping yields UI (25), resource/I/O (16), networking (13), race (9), rendering (8), course (7), vehicle (6), audio (6), jobs/threads (5), game (4), and input/replay/save-profile (3 each). These counts are not function counts and do not establish ownership; they only identify themes for later xref and call-graph review.
+
+The strongest next step is to connect these source-name strings to TOC/string references and then to reviewed function groups. That turns a filename theme into addressable evidence without importing proprietary source code.
+
 ## Rendering
 
 **Status: unknown**

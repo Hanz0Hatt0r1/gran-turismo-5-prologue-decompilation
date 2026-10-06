@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "build": "gt5-bcus98114",
+  "module": "EBOOT.BIN",
+  "input_sha256": "bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc",
+  "format": "ELF64-big-endian-PowerPC64",
+  "source_file_count": 362,
+  "interpretation": {
+    "status": "evidence-seed",
+    "confidence": "probable",
+    "note": "Retained source-file names indicate subsystem themes but do not establish function ownership, call-graph membership, or semantic names."
+  },
+  "counts": {
+    "audio": 6,
+    "course": 7,
+    "game": 4,
+    "input": 3,
+    "jobs_threads": 5,
+    "networking": 13,
+    "race": 9,
+    "rendering": 8,
+    "replay": 3,
+    "resource_io": 16,
+    "save_profile": 3,
+    "ui": 25,
+    "unclassified": 254,
+    "vehicle": 6
+  },
+  "examples": {
+    "audio": ["MEngineSound.cpp", "MMusic.cpp", "MRaceSound.cpp", "MSound.cpp", "MSoundContext.cpp", "MSoundEffect.cpp"],
+    "course": ["MCourse.cpp", "MCourseBuilder.cpp", "MCourseEditorFace.cpp", "MCourseGenerateParam.cpp", "MCourseGenerator.cpp", "MCourseMapFace.cpp", "MCoursePathway.cpp"],
+    "game": ["MGameDataUtil.cpp", "MGameObjectManager.cpp", "MGameParameter.cpp", "MGamePort.cpp"],
+    "input": ["MController.cpp", "MInputNumberFace.cpp", "MInputTextFace.cpp"],
+    "jobs_threads": ["../../../../job/src/common/jobapi/commandlistchecker.cpp", "../../../../job/src/ppu/jobapi/jobarraycontainer.cpp", "../../../../job/src/ppu/jobapi/joblist.cpp", "MThread.cpp", "h_thread.cpp"],
+    "networking": ["MLobby.cpp", "MMatching2.cpp", "MNetworkPlatform.cpp", "MNetworkUserStorageDummy.cpp", "MOnlineBSpec.cpp", "MOnlineSession.cpp", "MOnlineUtility.cpp", "MPDINetwork.cpp"],
+    "race": ["MEventRace2.cpp", "MRace.cpp", "MRaceBuildParameter.cpp", "MRaceDisplayFace.cpp", "MRaceFadeActor.cpp", "MRaceOperator.cpp", "MRaceParameter.cpp", "MRaceSpec.cpp"],
+    "rendering": ["MEffectCamera.cpp", "MPaintingBooth.cpp", "MRenderContext.cpp", "MRenderContextPS3.cpp", "MRenderControl.cpp", "MRenderControlFace.cpp", "MSceneFace.cpp", "MShaderFace.cpp"],
+    "replay": ["MGPSReplay.cpp", "MReplay2.cpp", "MReplayInfo.cpp"],
+    "resource_io": ["MProgressiveFileHandler.cpp", "MStream.cpp", "MStreamPlayer.cpp", "adhoc_io_file.cpp", "d:/prj/sgx/newsgsys/source/sgx/sgxfilestr.c", "h_byte_reader.cpp", "h_byte_writer.cpp", "h_file_reader.cpp"],
+    "save_profile": ["MSaveDataUtil.cpp", "MStorageDataUtil.cpp", "MUserProfile2.cpp"],
+    "ui": ["MBSpecMeterFace.cpp", "MBlurFace.cpp", "MColorChipFace.cpp", "MColorFace.cpp", "MDataLoggerFace.cpp", "MFaceColor.cpp", "MFaceColorInterpolator.cpp", "MFaceDetector.cpp"],
+    "vehicle": ["MCarCollection.cpp", "MCarDriverParameter.cpp", "MCarObject.cpp", "MCarParameter.cpp", "MCarParameterSetting.cpp", "MCarThin.cpp"],
+    "unclassified": ["/disk/programmer/dls/source/pace-src-20100927/http/lib/httpApi.cpp", "/disk/programmer/dls/source/pace-src-20100927/http/lib/httpClient.cpp", "/disk/programmer/dls/source/pace-src-20100927/http/lib/httpCookie.cpp", "/disk/programmer/dls/source/pace-src-20100927/http/lib/httpTransaction.cpp", "/disk/programmer/dls/source/pace-src-20100927/http/lib/httpUtil.cpp", "/disk/programmer/dls/source/pace-src-20100927/http/lib/rtSsl.cpp", "/disk/programmer/dls/source/pace-src-20100927/util/lib/resolver.cpp", "MAVChat.cpp"]
+  }
+}
