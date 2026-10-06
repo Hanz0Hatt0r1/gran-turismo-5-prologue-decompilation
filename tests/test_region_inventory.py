@@ -10,7 +10,7 @@ class RegionInventoryTests(unittest.TestCase):
         text = (ROOT / "analysis" / "builds" / "region-inventory.yaml").read_text(encoding="utf-8")
         self.assertIn("title_id: BCUS-98114", text)
         self.assertIn("title_id: BCUS-98158", text)
-        self.assertIn("status: reviewed-executable", text)
+        self.assertIn("US: reviewed-executable", text)
         self.assertIn("BCES-00569", text)
         self.assertIn("BCJS-30050", text)
         self.assertIn("BCAS-20027", text)
