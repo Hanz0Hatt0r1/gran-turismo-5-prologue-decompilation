@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from source_inventory import SOURCE_RE, classify_source_name
+from source_inventory import SOURCE_RE, classify_source_name, toc_load_slot
 
 
 class SourceInventoryTests(unittest.TestCase):
@@ -17,6 +17,19 @@ class SourceInventoryTests(unittest.TestCase):
         self.assertIsNone(SOURCE_RE.search("MRenderContext.cpp.bak"))
         self.assertIsNone(SOURCE_RE.search("not_a_source_file.txt"))
 
+    def test_toc_load_slot_resolves_signed_displacement(self):
+        # lwz r3, -0x20(r2).
+        ins = (32 << 26) | (3 << 21) | (2 << 16) | 0xFFE0
+        self.assertEqual(toc_load_slot(ins, 0x10000), (0xFFE0, 4))
+
+    def test_toc_load_slot_resolves_ld_width(self):
+        # ld r4, 0x40(r2).
+        ins = (58 << 26) | (4 << 21) | (2 << 16) | 0x0040
+        self.assertEqual(toc_load_slot(ins, 0x10000), (0x10040, 8))
+
+    def test_toc_load_slot_rejects_non_toc_base(self):
+        ins = (32 << 26) | (3 << 21) | (1 << 16) | 0x0010
+        self.assertIsNone(toc_load_slot(ins, 0x10000))
     def test_keyword_classification_is_conservative(self):
         self.assertEqual(classify_source_name("MRenderContextPS3.cpp"), "rendering")
         self.assertEqual(classify_source_name("MOnlineSession.cpp"), "networking")
