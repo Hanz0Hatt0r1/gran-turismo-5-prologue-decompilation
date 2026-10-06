@@ -8,6 +8,7 @@ name:
   current: game_bootstrap_106e0
   candidates:
     - game_startup
+    - boot_main
 confidence: probable
 status: analyzed
 evidence:
@@ -17,6 +18,12 @@ evidence:
     detail: "The routine enters game-data/filesystem startup paths and is associated with GT5 Prologue build strings and filesystem resource paths."
   - type: import
     detail: "The existing Prologue analysis observes cellSysmoduleInitialize and cellSysmoduleLoadModule(CELL_SYSMODULE_FS) in this routine."
+  - type: filesystem
+    detail: "The body validates a PFS2-style candidate using magic 0x5B745162, TitleID equality against the disc header, and candidate SerialNumber >= disc SerialNumber."
+  - type: path
+    detail: "The bootstrap constructs EMAIN.SELF, EPATCH.SELF, UPDATING, PDIPFS and /dev_bdvd/PS3_GAME/USRDIR/GT.VOL paths while transitioning between install/game-data states."
+  - type: import
+    detail: "The final handoff path initializes CELL_SYSMODULE_FS and invokes sys_game_process_exitspawn2 with the launch objects and priority/stack-like constants 1001 and 64."
   - type: runtime
     detail: "A large application-state frame and service initialization distinguish 0x000106e0 from the preceding CRT layer."
 subsystems:
@@ -26,4 +33,6 @@ subsystems:
   - game-data
 notes:
   - "0x000106e0 is a likely game-level bootstrap boundary in the current Prologue analysis."
+  - "Legacy function metadata identifies this role as boot_main; the current record keeps that as a candidate rather than a confirmed original identifier."
   - "Detailed callee promotion remains unresolved and should be added only from independently reviewed direct-call extraction."
+  - "The PFS2/game-data facts are promoted from the repository’s prior clean-room bootstrap reconstruction and remain behavior-level evidence rather than recovered source."
