@@ -1,0 +1,754 @@
+{
+  "schema": 1,
+  "build": "gt5-bcus98114",
+  "module": "EBOOT.BIN",
+  "input_sha256": "bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc",
+  "format": "ELF64-big-endian-PowerPC64",
+  "toc_va": "0x01846af0",
+  "source_file_count": 362,
+  "toc_referenced_source_file_count": 44,
+  "toc_xref_count": 340,
+  "method": {
+    "pattern": "PPU lwz/ld using r2, resolving a TOC slot to a retained source-string VA",
+    "confidence": "probable",
+    "semantic_status": "evidence-only; reference sites do not establish complete function ownership or semantic subsystem membership"
+  },
+  "xrefs": [
+    {
+      "source_va": "0x1537a30",
+      "name": "MRaceSound.cpp",
+      "category": "audio",
+      "toc_slot_va": "0x18421a4",
+      "instruction_vas": [
+        "0x95e7c",
+        "0x5f0f00",
+        "0xa4b5c0"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x1544e40",
+      "name": "MCourseBuilder.cpp",
+      "category": "course",
+      "toc_slot_va": "0x184638c",
+      "instruction_vas": [
+        "0x160668",
+        "0x6c94cc",
+        "0xb2611c"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x152d850",
+      "name": "MCourseEditorFace.cpp",
+      "category": "course",
+      "toc_slot_va": "0x1840030",
+      "instruction_vas": [
+        "0x4443c",
+        "0x939d78"
+      ],
+      "xref_count": 2
+    },
+    {
+      "source_va": "0x152ea90",
+      "name": "MCourseGenerateParam.cpp",
+      "category": "course",
+      "toc_slot_va": "0x1840754",
+      "instruction_vas": [
+        "0x51e74",
+        "0x599440",
+        "0x103c260",
+        "0x103c3dc",
+        "0x103c73c"
+      ],
+      "xref_count": 5
+    },
+    {
+      "source_va": "0x1544d68",
+      "name": "MCourseGenerator.cpp",
+      "category": "course",
+      "toc_slot_va": "0x1846320",
+      "instruction_vas": [
+        "0x15fa4c",
+        "0x6c8c78",
+        "0x108ce2c",
+        "0x108dee8",
+        "0x108df38"
+      ],
+      "xref_count": 5
+    },
+    {
+      "source_va": "0x152d338",
+      "name": "MCourseMapFace.cpp",
+      "category": "course",
+      "toc_slot_va": "0x183fde4",
+      "instruction_vas": [
+        "0x4026c",
+        "0x3544b4",
+        "0x92a18c"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x152ee88",
+      "name": "MCoursePathway.cpp",
+      "category": "course",
+      "toc_slot_va": "0x18408c4",
+      "instruction_vas": [
+        "0x53b3c",
+        "0x96c284"
+      ],
+      "xref_count": 2
+    },
+    {
+      "source_va": "0x153aad0",
+      "name": "MGameParameter.cpp",
+      "category": "game",
+      "toc_slot_va": "0x1843600",
+      "instruction_vas": [
+        "0xd8c14",
+        "0xda7ac",
+        "0xdb114",
+        "0xdb9f0",
+        "0xdc1b8",
+        "0xdd610",
+        "0xdd9c0",
+        "0xde138",
+        "0xf642c",
+        "0xf81c0",
+        "0xa960b4",
+        "0xf82f24"
+      ],
+      "xref_count": 12
+    },
+    {
+      "source_va": "0x1537d80",
+      "name": "MController.cpp",
+      "category": "input",
+      "toc_slot_va": "0x18425d8",
+      "instruction_vas": [
+        "0x96d94",
+        "0x5fb5f8",
+        "0xe8ec70"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x153e408",
+      "name": "MLobby.cpp",
+      "category": "networking",
+      "toc_slot_va": "0x1844da8",
+      "instruction_vas": [
+        "0x11afec",
+        "0x68a834",
+        "0xadf080",
+        "0xadf1b8",
+        "0xadf468",
+        "0xae1070",
+        "0xf92cec",
+        "0xf92d48"
+      ],
+      "xref_count": 8
+    },
+    {
+      "source_va": "0x153ce90",
+      "name": "MOnlineSession.cpp",
+      "category": "networking",
+      "toc_slot_va": "0x18445d4",
+      "instruction_vas": [
+        "0x10f928",
+        "0x66faa0"
+      ],
+      "xref_count": 2
+    },
+    {
+      "source_va": "0x153d820",
+      "name": "MOnlineUtility.cpp",
+      "category": "networking",
+      "toc_slot_va": "0x18448dc",
+      "instruction_vas": [
+        "0x117300",
+        "0x681360",
+        "0x681480",
+        "0x68159c",
+        "0x681700",
+        "0x6818a0",
+        "0x681a2c",
+        "0x681b48",
+        "0x681c80",
+        "0x681dbc",
+        "0x681ef4",
+        "0x682030",
+        "0x682168",
+        "0x6822a0",
+        "0x6823dc",
+        "0x6824fc",
+        "0x68261c",
+        "0x68273c",
+        "0x68285c",
+        "0x68297c",
+        "0x682a9c",
+        "0x682bb8",
+        "0xacbdd0",
+        "0xea7930",
+        "0xea7950"
+      ],
+      "xref_count": 25
+    },
+    {
+      "source_va": "0x1539698",
+      "name": "MRaceBuildParameter.cpp",
+      "category": "race",
+      "toc_slot_va": "0x1842f40",
+      "instruction_vas": [
+        "0xb3934",
+        "0x3dcd94",
+        "0xa86ac8",
+        "0xf7cb58"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x152e438",
+      "name": "MRaceDisplayFace.cpp",
+      "category": "race",
+      "toc_slot_va": "0x1840544",
+      "instruction_vas": [
+        "0x4de48",
+        "0x598c20",
+        "0x959710",
+        "0xf5bf44"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x1532f00",
+      "name": "MRaceFadeActor.cpp",
+      "category": "race",
+      "toc_slot_va": "0x1841e8c",
+      "instruction_vas": [
+        "0x92020",
+        "0x922b4",
+        "0x384f08",
+        "0x384f1c",
+        "0x384f8c",
+        "0x384fa0",
+        "0x5e7f5c",
+        "0x5e81e0",
+        "0x5ea70c",
+        "0x5ea9d8",
+        "0x5eaca4",
+        "0x5eaf38",
+        "0xa356b4",
+        "0xe89320",
+        "0xe895a4"
+      ],
+      "xref_count": 15
+    },
+    {
+      "source_va": "0x152fd40",
+      "name": "MRaceOperator.cpp",
+      "category": "race",
+      "toc_slot_va": "0x1840d7c",
+      "instruction_vas": [
+        "0x651e0",
+        "0x6bb28",
+        "0x6bca4",
+        "0x6be20",
+        "0x6c0b0",
+        "0x6c34c",
+        "0x6c5d8",
+        "0x5b28ac",
+        "0x977884"
+      ],
+      "xref_count": 9
+    },
+    {
+      "source_va": "0x153cbc0",
+      "name": "MRaceParameter.cpp",
+      "category": "race",
+      "toc_slot_va": "0x18444cc",
+      "instruction_vas": [
+        "0xf9b5c",
+        "0x1000a8",
+        "0x100298",
+        "0xac0450",
+        "0xf8ffe8",
+        "0xf90200",
+        "0xf90250"
+      ],
+      "xref_count": 7
+    },
+    {
+      "source_va": "0x1538090",
+      "name": "MRaceSpec.cpp",
+      "category": "race",
+      "toc_slot_va": "0x184270c",
+      "instruction_vas": [
+        "0x9a9cc",
+        "0xa7546c",
+        "0xa754f0",
+        "0xa7554c",
+        "0xa755a8",
+        "0xa75604",
+        "0xe903f8",
+        "0xe908d0",
+        "0xe91154"
+      ],
+      "xref_count": 9
+    },
+    {
+      "source_va": "0x152d1c8",
+      "name": "MPaintingBooth.cpp",
+      "category": "rendering",
+      "toc_slot_va": "0x183fcd8",
+      "instruction_vas": [
+        "0x3dd38"
+      ],
+      "xref_count": 1
+    },
+    {
+      "source_va": "0x152c710",
+      "name": "MRenderControl.cpp",
+      "category": "rendering",
+      "toc_slot_va": "0x183f8bc",
+      "instruction_vas": [
+        "0x31cf8",
+        "0x91ac58"
+      ],
+      "xref_count": 2
+    },
+    {
+      "source_va": "0x152c7c8",
+      "name": "MRenderControlFace.cpp",
+      "category": "rendering",
+      "toc_slot_va": "0x183f900",
+      "instruction_vas": [
+        "0x32510",
+        "0x1023408",
+        "0x1023a20"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x152cfc8",
+      "name": "MSceneFace.cpp",
+      "category": "rendering",
+      "toc_slot_va": "0x183fbe4",
+      "instruction_vas": [
+        "0x37768",
+        "0x37970",
+        "0x39f30",
+        "0x3b0ec",
+        "0x3b60c",
+        "0x3b7ac",
+        "0x3b94c",
+        "0x3baf4",
+        "0x3bd28",
+        "0x3bf5c",
+        "0x3c190",
+        "0x3c3c0",
+        "0x9243d0"
+      ],
+      "xref_count": 13
+    },
+    {
+      "source_va": "0x1544998",
+      "name": "MGPSReplay.cpp",
+      "category": "replay",
+      "toc_slot_va": "0x18461b0",
+      "instruction_vas": [
+        "0x15b9e8",
+        "0x15e81c",
+        "0x15ea10",
+        "0x15ec04",
+        "0xb1d428",
+        "0xec9800",
+        "0xeca088",
+        "0xecdf54",
+        "0xfa1558"
+      ],
+      "xref_count": 9
+    },
+    {
+      "source_va": "0x1539130",
+      "name": "MReplayInfo.cpp",
+      "category": "replay",
+      "toc_slot_va": "0x1842d84",
+      "instruction_vas": [
+        "0xad204",
+        "0x611fd4",
+        "0x611fe4",
+        "0x61300c",
+        "0x6130a0",
+        "0x613aa8",
+        "0x613acc",
+        "0x613b1c",
+        "0x613f70",
+        "0x616864",
+        "0x617998",
+        "0x618008",
+        "0x61809c",
+        "0x618114",
+        "0x618310",
+        "0x6185c4",
+        "0x6186a0",
+        "0x618a1c",
+        "0x618b54",
+        "0x618c20",
+        "0x618c88",
+        "0x618d4c",
+        "0x618fd0",
+        "0x619090",
+        "0x619118",
+        "0x61942c",
+        "0x619d54",
+        "0x619ddc",
+        "0x619e64",
+        "0x619eec",
+        "0x619f74",
+        "0x61a0b0",
+        "0x61a5d0",
+        "0x61aa28",
+        "0x61b574",
+        "0x61b644",
+        "0x61b880",
+        "0x61bab0",
+        "0x61bca0",
+        "0x61bf94",
+        "0x61c0f8",
+        "0x61c5a8",
+        "0x61f884",
+        "0x6213a4",
+        "0x6216d0",
+        "0x622420",
+        "0x623440",
+        "0x6238a8",
+        "0x6268d8",
+        "0x627990",
+        "0x6301d8",
+        "0x630508",
+        "0x631b68",
+        "0xa8560c"
+      ],
+      "xref_count": 54
+    },
+    {
+      "source_va": "0x152d528",
+      "name": "MBSpecMeterFace.cpp",
+      "category": "ui",
+      "toc_slot_va": "0x183fed0",
+      "instruction_vas": [
+        "0x4186c",
+        "0x92ede4",
+        "0x93086c"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x152b480",
+      "name": "MColorChipFace.cpp",
+      "category": "ui",
+      "toc_slot_va": "0x183f0c0",
+      "instruction_vas": [
+        "0x17fe4",
+        "0x182ac",
+        "0x18788",
+        "0x8faadc"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x152c160",
+      "name": "MDataLoggerFace.cpp",
+      "category": "ui",
+      "toc_slot_va": "0x183f6ac",
+      "instruction_vas": [
+        "0x2ce1c",
+        "0x2d2c8",
+        "0x2d4ac",
+        "0x2de1c",
+        "0x2e000",
+        "0x2e1e4",
+        "0x2e3c8",
+        "0x2e5ac",
+        "0x2e790",
+        "0x2e974",
+        "0x2eb58",
+        "0x2ed3c",
+        "0x2ef20",
+        "0x2f114",
+        "0x2f2f8",
+        "0x2f4dc",
+        "0x55a04c",
+        "0x55a0a4",
+        "0x55a0e8",
+        "0x55a0f4",
+        "0x90e108",
+        "0x90e85c",
+        "0x90e890",
+        "0x90e958",
+        "0x910894",
+        "0x910c04",
+        "0x910f44"
+      ],
+      "xref_count": 27
+    },
+    {
+      "source_va": "0x152c590",
+      "name": "MGTView.cpp",
+      "category": "ui",
+      "toc_slot_va": "0x183f800",
+      "instruction_vas": [
+        "0x30614"
+      ],
+      "xref_count": 1
+    },
+    {
+      "source_va": "0x152c950",
+      "name": "MSpectatorDisplayFace.cpp",
+      "category": "ui",
+      "toc_slot_va": "0x183f998",
+      "instruction_vas": [
+        "0x33798"
+      ],
+      "xref_count": 1
+    },
+    {
+      "source_va": "0x153db50",
+      "name": "MClanDummy.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x1844a30",
+      "instruction_vas": [
+        "0x118db0",
+        "0x461cc4",
+        "0x67dd3c",
+        "0xace9b0"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x15447e8",
+      "name": "MDataLogger.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x18460fc",
+      "instruction_vas": [
+        "0x15a078",
+        "0x6c19dc",
+        "0xb1ad10",
+        "0xec8c24",
+        "0xec8c4c",
+        "0xec8c68",
+        "0xec8d88",
+        "0xecd14c",
+        "0xf9f008",
+        "0xf9f294",
+        "0xf9f530",
+        "0xfa0eac"
+      ],
+      "xref_count": 12
+    },
+    {
+      "source_va": "0x152b608",
+      "name": "MDynamicActor.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x183f1a8",
+      "instruction_vas": [
+        "0x19a04",
+        "0x8fdcd4"
+      ],
+      "xref_count": 2
+    },
+    {
+      "source_va": "0x15446a0",
+      "name": "MEntitlement.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x1846080",
+      "instruction_vas": [
+        "0x157c90",
+        "0x6bec1c",
+        "0x6bece4",
+        "0x6bedcc",
+        "0x6bee94",
+        "0x6bf5dc",
+        "0xb1967c",
+        "0xec7f5c",
+        "0xec84c4",
+        "0xec84ec",
+        "0xec8508",
+        "0xecac28",
+        "0xf9d5d8",
+        "0xf9d620",
+        "0xf9d668",
+        "0xf9d6b0",
+        "0xf9d6f0",
+        "0xf9d730",
+        "0xf9e98c",
+        "0xf9eb7c"
+      ],
+      "xref_count": 20
+    },
+    {
+      "source_va": "0x152be10",
+      "name": "MLiveTimingUtil.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x183f4e0",
+      "instruction_vas": [
+        "0x236f0"
+      ],
+      "xref_count": 1
+    },
+    {
+      "source_va": "0x1530928",
+      "name": "MOrganizer.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x184118c",
+      "instruction_vas": [
+        "0x6ff44",
+        "0x84620",
+        "0x87054",
+        "0x90ef4",
+        "0x91574",
+        "0x9177c",
+        "0x9a2f30"
+      ],
+      "xref_count": 7
+    },
+    {
+      "source_va": "0x1539340",
+      "name": "MQualityControlParameter.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x1842e08",
+      "instruction_vas": [
+        "0xb02b4",
+        "0x61419c",
+        "0xa85750",
+        "0xe94d60"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x1539958",
+      "name": "MRoomConfig.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x184303c",
+      "instruction_vas": [
+        "0xb5150",
+        "0xbd020",
+        "0x625f7c",
+        "0xa8b794",
+        "0xa8b844"
+      ],
+      "xref_count": 5
+    },
+    {
+      "source_va": "0x152af40",
+      "name": "XmlUtil.cpp",
+      "category": "unclassified",
+      "toc_slot_va": "0x183ef00",
+      "instruction_vas": [
+        "0x149f8",
+        "0x5412d0",
+        "0x8f6260",
+        "0x8f62b4",
+        "0x8f6358",
+        "0x8f6458",
+        "0x8f667c",
+        "0x8f6c2c",
+        "0x8f6c70",
+        "0x8f7058",
+        "0x8f78e4",
+        "0x8f7d9c",
+        "0x8f7ddc",
+        "0x8f7e18",
+        "0x8f7e4c",
+        "0x8f7e80",
+        "0x8f7f1c",
+        "0x8f7fac",
+        "0x8fa5cc",
+        "0x8faa30",
+        "0x8fc854"
+      ],
+      "xref_count": 21
+    },
+    {
+      "source_va": "0x152f0c0",
+      "name": "MCarCollection.cpp",
+      "category": "vehicle",
+      "toc_slot_va": "0x1840964",
+      "instruction_vas": [
+        "0x570b8",
+        "0x5a511c",
+        "0x96d4b0"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x153ee78",
+      "name": "MCarDriverParameter.cpp",
+      "category": "vehicle",
+      "toc_slot_va": "0x18451c0",
+      "instruction_vas": [
+        "0x12fb00",
+        "0x693844",
+        "0xeb70a0",
+        "0xebdc5c",
+        "0x107e560"
+      ],
+      "xref_count": 5
+    },
+    {
+      "source_va": "0x1540d88",
+      "name": "MCarObject.cpp",
+      "category": "vehicle",
+      "toc_slot_va": "0x1845984",
+      "instruction_vas": [
+        "0x14924c",
+        "0x6ac5a8",
+        "0xb07a9c"
+      ],
+      "xref_count": 3
+    },
+    {
+      "source_va": "0x1540c20",
+      "name": "MCarParameter.cpp",
+      "category": "vehicle",
+      "toc_slot_va": "0x1845904",
+      "instruction_vas": [
+        "0x13f118",
+        "0x6abec8",
+        "0x6abfb4",
+        "0xb0797c"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x153f488",
+      "name": "MCarParameterSetting.cpp",
+      "category": "vehicle",
+      "toc_slot_va": "0x1845470",
+      "instruction_vas": [
+        "0x134248",
+        "0x134388",
+        "0x69a7d4",
+        "0xafeb28"
+      ],
+      "xref_count": 4
+    },
+    {
+      "source_va": "0x153e708",
+      "name": "MCarThin.cpp",
+      "category": "vehicle",
+      "toc_slot_va": "0x1844eb0",
+      "instruction_vas": [
+        "0x12b3ec",
+        "0x68a5cc",
+        "0xaede48",
+        "0xeb5c04",
+        "0x107c600",
+        "0x107c650"
+      ],
+      "xref_count": 6
+    }
+  ]
+}
