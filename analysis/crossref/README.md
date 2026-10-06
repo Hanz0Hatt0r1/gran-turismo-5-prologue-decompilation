@@ -39,4 +39,4 @@ A high ranking is not an acceptance decision. `confirmed` remains reserved for i
 
 ## Schema validation
 
-Cross-build records are schema-validated in CI. Both reference and target build/module/address identities, the comparison method, confidence, and explicit review status are required. Validation is structural and does not accept matches automatically.
+Cross-build records are schema-validated in CI. Both reference and target build/module/address identities, the comparison method, confidence, and explicit review status are required. Validation is structural and does not accept matches automatically. Accepted cross-build records additionally require confirmed confidence and an explicit identity scope.

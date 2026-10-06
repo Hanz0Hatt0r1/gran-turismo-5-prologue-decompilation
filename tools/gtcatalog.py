@@ -302,6 +302,17 @@ def validate_records(records: Sequence[CatalogRecord]) -> Dict[str, Any]:
                     "path": record.path,
                     "message": f"unsupported review_status: {review_status}",
                 })
+            if review_status == "accepted":
+                if _as_text(record.fields.get("confidence")) != "confirmed":
+                    errors.append({
+                        "path": record.path,
+                        "message": "accepted crossref requires confidence: confirmed",
+                    })
+                if not _as_text(record.fields.get("relationship.identity_scope")):
+                    errors.append({
+                        "path": record.path,
+                        "message": "accepted crossref requires relationship.identity_scope",
+                    })
         if record.kind == "function":
             address = record.address
             if address is None:
