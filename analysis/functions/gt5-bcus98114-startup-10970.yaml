@@ -21,6 +21,8 @@ evidence:
     detail: "0x000104b8 is the only direct-call site to 0x00010970 found in the executable scan."
   - type: string
     detail: "A TOC-relative load at 0x000109ac resolves to the string scripts/gt5/Application."
+  - type: toc_identity
+    detail: "The adjacent TOC metadata window contains the application/build strings 1.00, PDIVersion, ProductVersion, 350.001, RequireSystemVersion, BCUS-98114, DiscProductNumber, GameProductNumber, DataProductNumber, and compact product-number labels."
   - type: direct_call
     detail: "The body calls 0x00013274, 0x00012860, 0x00013208, and the 0x00d393xx helper layer while propagating a startup/result status."
   - type: runtime
@@ -40,3 +42,4 @@ subsystems:
   - application-loading
 notes:
   - "The string reference is strong evidence for application/script loading, but the exact API and object type remain unresolved."
+  - "The nearby TOC metadata cluster strengthens the interpretation as a build-aware application loader, while individual field semantics remain unproven."
