@@ -1118,6 +1118,33 @@ def _fp_index(rows: Sequence[Fingerprint], attr: str) -> Dict[str, List[Fingerpr
     return out
 
 
+def import_context_by_function(
+    edges: Sequence[CallEdge], imports: Sequence[ImportFunction]
+) -> Dict[int, set[Tuple[str, int]]]:
+    """Map direct-call sites to stable (library, NID) import identities."""
+    by_stub = {r.stub_code_va: (r.library, r.nid) for r in imports}
+    out: Dict[int, set[Tuple[str, int]]] = {}
+    for edge in edges:
+        identity = by_stub.get(edge.target_va)
+        if identity is not None:
+            out.setdefault(edge.caller_va, set()).add(identity)
+    return out
+
+
+def import_context_match_ratio(
+    reference_code_va: int,
+    target_code_va: int,
+    reference_context: Dict[int, set[Tuple[str, int]]],
+    target_context: Dict[int, set[Tuple[str, int]]],
+) -> Optional[float]:
+    """Compare stable imported library/NID calls for an existing match."""
+    ref = reference_context.get(reference_code_va, set())
+    tgt = target_context.get(target_code_va, set())
+    if not ref and not tgt:
+        return None
+    union = ref | tgt
+    return len(ref & tgt) / len(union) if union else None
+
 def callgraph_match_ratio(
     reference_code_va: int,
     target_code_va: int,
@@ -1163,6 +1190,10 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     bf = _fp_index(bfp, "sha_full")
     aedges = extract_call_edges(a, [r.code_va for r in afp])
     bedges = extract_call_edges(b, [r.code_va for r in bfp])
+    aimports, _ = find_imports(a)
+    bimports, _ = find_imports(b)
+    aimport_context = import_context_by_function(aedges, aimports)
+    bimport_context = import_context_by_function(bedges, bimports)
     ap = _fp_index(afp, "sha_prefix")
     bp = _fp_index(bfp, "sha_prefix")
     matches: List[Tuple[Fingerprint, Fingerprint, str]] = []
@@ -1189,15 +1220,17 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     enriched_matches = []
     for x, y, method in matches:
         ratio = callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target)
-        enriched_matches.append((x, y, method, ratio))
+        import_ratio = import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context)
+        enriched_matches.append((x, y, method, ratio, import_ratio))
 
     with (out / "function_matches.csv").open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow([
             "reference_code_va", "target_code_va", "method",
             "reference_size", "target_size", "callgraph_ratio", "callgraph_evidence",
+            "import_ratio", "import_evidence",
         ])
-        for x, y, method, ratio in sorted(enriched_matches, key=lambda t: t[0].code_va):
+        for x, y, method, ratio, import_ratio in sorted(enriched_matches, key=lambda t: t[0].code_va):
             evidence = (
                 "neutral" if ratio is None else
                 "strong" if ratio >= 0.75 else
@@ -1207,6 +1240,8 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
             w.writerow([
                 _fmt_hex(x.code_va), _fmt_hex(y.code_va), method, x.size, y.size,
                 "" if ratio is None else f"{ratio:.3f}", evidence,
+                "" if import_ratio is None else f"{import_ratio:.3f}",
+                "neutral" if import_ratio is None else "supporting" if import_ratio >= 0.5 else "weak",
             ])
 
     summary = {
@@ -1227,6 +1262,15 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
         ),
         "callgraph_neutral": sum(
             callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target) is None
+            for x, y, _ in matches
+        ),
+        "import_context_supported": sum(
+            import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context) is not None
+            and import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context) >= 0.5
+            for x, y, _ in matches
+        ),
+        "import_context_neutral": sum(
+            import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context) is None
             for x, y, _ in matches
         ),
     }
