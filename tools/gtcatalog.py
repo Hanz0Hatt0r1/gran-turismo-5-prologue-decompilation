@@ -61,7 +61,10 @@ class CatalogRecord:
 
     @property
     def build(self) -> Optional[str]:
-        return _as_text(self.fields.get("build"))
+        value = _as_text(self.fields.get("build"))
+        if value is None and self.kind == "build":
+            value = _as_text(self.fields.get("title_id"))
+        return value
 
     @property
     def module(self) -> Optional[str]:
