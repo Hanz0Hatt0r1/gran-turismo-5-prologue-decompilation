@@ -87,7 +87,7 @@ def post_blr_targets(
     source_index = sources if sources is not None else [row[0] for row in branches]
     i = bisect.bisect_left(source_index, start)
     j = bisect.bisect_left(source_index, blr)
-    return [row for row in branches[i:j] if blr < row[1] < upper]
+    return [row for row in branches[i:j] if not row[3] and blr < row[1] < upper]
 
 
 def audit(elf: PS3ELF) -> Dict[str, object]:
@@ -105,6 +105,7 @@ def audit(elf: PS3ELF) -> Dict[str, object]:
     nested_calls = 0
     nested_prologues = 0
     opd_overlaps = 0
+    post_blr_linked_calls = 0
     continuation_suspects: List[Dict[str, object]] = []
 
     for start in opd_starts:
@@ -114,6 +115,14 @@ def audit(elf: PS3ELF) -> Dict[str, object]:
 
         if blr is not None:
             post = post_blr_targets(branches, start, blr, upper, branch_sources)
+            post_blr_linked_calls += sum(
+                1
+                for src, target, op, linked in branches[
+                    bisect.bisect_left(branch_sources, start):
+                    bisect.bisect_left(branch_sources, blr)
+                ]
+                if linked and blr < target < upper
+            )
             for src, target, op, linked in post:
                 continuation_suspects.append(
                     {
@@ -165,6 +174,7 @@ def audit(elf: PS3ELF) -> Dict[str, object]:
         "post_blr_continuation_edges": len(continuation_suspects),
         "post_blr_conditional_edges": conditional_edges,
         "post_blr_unconditional_edges": unconditional_edges,
+        "post_blr_linked_calls_excluded": post_blr_linked_calls,
         "nested_direct_call_targets_before_blr": nested_calls,
         "nested_stack_prologues_before_blr": nested_prologues,
         "opd_overlaps_before_first_blr": opd_overlaps,
