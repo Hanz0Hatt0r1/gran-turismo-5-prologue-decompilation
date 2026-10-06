@@ -1,18 +1,41 @@
 # Analysis
 
-Store reproducible reverse-engineering notes here.
+Store reproducible reverse-engineering notes here. The analysis tree is the project's reviewed research layer; generated local indexes remain outside the repository unless explicitly promoted after review.
 
-Suggested organization:
+## Organization
 
 - `builds/` — known versions, regions, updates, and identifying metadata.
-- `modules/` — per-module notes.
-- `functions/` — function-level analysis and naming.
+- `modules/` — per-module notes and responsibilities.
+- `functions/` — reviewed function-level findings and naming.
 - `subsystems/` — rendering, physics, UI, audio, race logic, and other systems.
 - `formats/` — independently documented formats.
-- `symbols/` — symbol/function maps without proprietary binary data.
+- `symbols/` — reviewed symbol/function maps without proprietary binary data.
+- `evidence/` — provenance and reasoning for important conclusions.
 
-Each note should include target build/region/update, module, addresses or offsets, observation method, evidence, confidence level, related functions, and follow-up questions.
+The semantic data contract is documented in [Analysis data schema](schema.md).
 
-Confidence levels: **confirmed**, **probable**, **speculative**.
+## Function research lifecycle
 
-Avoid large copied decompiler output or copyrighted game content.
+`discovered -> indexed -> evidence reviewed -> named/classified -> reconstructed -> tested`
+
+The M1 executable-intelligence pipeline produces machine-generated candidates, fingerprints, imports, strings, RTTI/vtable candidates, and cross-build matches. These are evidence inputs, not automatically accepted semantic truth.
+
+## Required context
+
+Every reviewed note should identify:
+- exact build/title ID and update when known;
+- module;
+- address or offset;
+- observation/reproduction method;
+- evidence;
+- confidence;
+- related functions/structures;
+- follow-up questions.
+
+Confidence levels are **confirmed**, **probable**, and **speculative**.
+
+## Provenance
+
+Promoted research artifacts should preserve the source executable SHA-256, tool/version, generation command, and review status.
+
+Avoid large copied decompiler output, proprietary executable bytes, or copyrighted game content.
