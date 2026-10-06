@@ -31,7 +31,7 @@ class VerifyTests(unittest.TestCase):
             data, 120,
             1, 6, 0x300, 0x3000, 0x3000, 0x40, 0x40, 8,
         )
-        struct.pack_into(">QQ", data, 0x300, 0x100000001000, 0x200000003800)
+        struct.pack_into(">II", data, 0x300, 0x1000, 0x3800)
         struct.pack_into(">I", data, 0x200, 0x48000051)
         struct.pack_into(">I", data, 0x204, 0x4E800020)
         path = root / "tiny.elf"
@@ -114,15 +114,15 @@ fingerprints:
                 '"executable_sha256":"' + elf.sha256 + '",'
                 '"format":"ELF64-big-endian-PowerPC64",'
                 '"entry_descriptor_va":"0x00003000",'
-                '"entry_code_va":"0x100000001000",'
-                '"toc_va":"0x200000003800"}',
+                '"entry_code_va":"0x00001000",'
+                '"toc_va":"0x00003800"}',
                 encoding="utf-8",
             )
             record = gtcatalog.load_record(record_path, root)
             result = gtverify.verify_build_record(elf, record)
             self.assertTrue(result["valid"])
 
-    def test_verify_build_record_reads_full_u64_opd(self):
+    def test_verify_build_record_reads_ps3_32bit_opd_fields(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             elf_path = self.make_elf(root)
