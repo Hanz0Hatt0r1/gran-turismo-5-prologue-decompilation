@@ -64,6 +64,42 @@ fingerprints:
             self.assertTrue(result["valid"])
             self.assertEqual(result["range"]["size"], 8)
 
+    def test_verify_function_record_checks_normalized_prefix(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            elf_path = self.make_elf(root)
+            record_path = root / "function.yaml"
+            record_path.write_text(
+                """schema: 1
+id: synthetic.0x1000
+build: SYNTH
+module: EBOOT.ELF
+address:
+  va: 0x00001000
+confidence: confirmed
+status: reviewed
+provenance:
+  disassembly:
+    range: "0x00001000-0x00001008"
+fingerprints:
+  normalized_full: 155622b99a30b638551336f6bc68330c23e16eb3
+  normalized_prefix: 155622b99a30b638551336f6bc68330c23e16eb3
+""",
+                encoding="utf-8",
+            )
+            record = gtcatalog.load_record(record_path, root)
+            result = gtverify.verify_function_record(
+                gtverify.gtdecomp.PS3ELF(elf_path), record
+            )
+            self.assertTrue(result["valid"])
+            self.assertEqual(result["checks"][-1]["check"], "normalized_prefix")
+
+    def test_parser_accepts_function_directory(self):
+        args = gtverify._parser().parse_args([
+            "verify", "--elf", "tiny.elf", "--function-dir", "functions"
+        ])
+        self.assertEqual(args.function_dir, [Path("functions")])
+
     def test_verify_build_record(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
