@@ -75,7 +75,17 @@ def verify_source_xref_function_map(elf: gtdecomp.PS3ELF, map_path: Path) -> Dic
         checks.append({"check": field, "expected": expected, "actual": actual, "ok": expected == actual})
 
     stored = snapshot.get("functions", [])
-    actual = report.get("opd_function_source_map", [])
+    actual_full = report.get("opd_function_source_map", [])
+    actual = [
+        {
+            "function_start_va": row.get("function_start_va"),
+            "function_end_va": row.get("function_end_va"),
+            "xref_count": row.get("xref_count"),
+            "source_names": row.get("source_names", []),
+            "source_categories": row.get("source_categories", []),
+        }
+        for row in actual_full
+    ]
     checks.append({"check": "function_map", "expected_count": len(stored), "actual_count": len(actual), "ok": stored == actual})
     return {
         "path": str(map_path),
