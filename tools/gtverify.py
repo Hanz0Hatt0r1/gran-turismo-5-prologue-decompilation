@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import gtcatalog
 import gtdecomp
+import source_inventory
 
 
 RANGE_RE = re.compile(r"^\s*(0x[0-9a-fA-F]+)\s*-\s*(0x[0-9a-fA-F]+)\s*$")
@@ -52,6 +53,36 @@ def _fingerprint_for_range(elf: gtdecomp.PS3ELF, start: int, end: int) -> Dict[s
         "sha_prefix": gtdecomp.hashlib.sha1(raw[: min(len(raw), 256)]).hexdigest(),
     }
 
+
+def verify_source_xref_function_map(elf: gtdecomp.PS3ELF, map_path: Path) -> Dict[str, Any]:
+    """Verify a derived source-xref function map against the same ELF."""
+    snapshot = json.loads(map_path.read_text(encoding="utf-8"))
+    report = source_inventory.build_report(elf)
+    checks: List[Dict[str, Any]] = []
+
+    checks.append({"check": "sha256", "expected": snapshot.get("input_sha256"), "actual": elf.sha256, "ok": snapshot.get("input_sha256") == elf.sha256})
+    for field in ("source_file_count", "toc_xref_instruction_count", "opd_contained_xref_count", "uncontained_xref_count", "opd_function_range_count"):
+        expected = snapshot.get(field)
+        actual = report.get(field) if field != "opd_contained_xref_count" else report.get("opd_range_mapping", {}).get("contained_xref_instruction_count")
+        if field == "toc_xref_instruction_count":
+            actual = report.get("opd_range_mapping", {}).get("xref_instruction_count")
+        elif field == "uncontained_xref_count":
+            actual = report.get("opd_range_mapping", {}).get("uncontained_xref_instruction_count")
+        elif field == "opd_function_range_count":
+            actual = report.get("opd_range_mapping", {}).get("function_range_count")
+        elif field == "source_file_count":
+            actual = report.get("source_file_count")
+        checks.append({"check": field, "expected": expected, "actual": actual, "ok": expected == actual})
+
+    stored = snapshot.get("functions", [])
+    actual = report.get("opd_function_source_map", [])
+    checks.append({"check": "function_map", "expected_count": len(stored), "actual_count": len(actual), "ok": stored == actual})
+    return {
+        "path": str(map_path),
+        "kind": "source-xref-function-map",
+        "valid": all(item["ok"] for item in checks),
+        "checks": checks,
+    }
 
 def verify_build_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord) -> Dict[str, Any]:
     checks: List[Dict[str, Any]] = []
@@ -111,7 +142,7 @@ def verify_function_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord
     }
 
 
-def verify(elf_path: Path, build_record: Optional[Path], function_records: Sequence[Path]) -> Dict[str, Any]:
+def verify(elf_path: Path, build_record: Optional[Path], function_records: Sequence[Path], source_xref_map: Optional[Path] = None) -> Dict[str, Any]:
     elf = gtdecomp.PS3ELF(elf_path)
     results: List[Dict[str, Any]] = []
 
@@ -122,6 +153,9 @@ def verify(elf_path: Path, build_record: Optional[Path], function_records: Seque
     for path in function_records:
         record = gtcatalog.load_record(path, path.parent)
         results.append(verify_function_record(elf, record))
+
+    if source_xref_map:
+        results.append(verify_source_xref_function_map(elf, source_xref_map))
 
     return {
         "valid": bool(results) and all(item["valid"] for item in results),
@@ -137,13 +171,14 @@ def _parser() -> argparse.ArgumentParser:
     cmd.add_argument("--elf", required=True, type=Path)
     cmd.add_argument("--build-record", type=Path)
     cmd.add_argument("--function-record", action="append", default=[], type=Path)
+    cmd.add_argument("--source-xref-function-map", type=Path)
     return parser
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        result = verify(args.elf, args.build_record, args.function_record)
+        result = verify(args.elf, args.build_record, args.function_record, args.source_xref_function_map)
     except (OSError, ValueError, KeyError) as exc:
         print(json.dumps({"valid": False, "error": str(exc)}, indent=2, sort_keys=True))
         return 2
