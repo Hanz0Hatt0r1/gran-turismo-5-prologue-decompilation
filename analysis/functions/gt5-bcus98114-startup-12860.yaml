@@ -1,0 +1,48 @@
+schema: 1
+id: gt5.bcus98114.eboot.00012860
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00012860
+name:
+  current: startup_module_helper_12860
+  candidates:
+    - module_loader_helper
+    - hadhoc_module_helper
+confidence: probable
+status: reviewed
+fingerprints:
+  normalized_full: fbe9e97c3fd2f2c45af70759d22b3c6a7fd00921
+  normalized_prefix_256: b3cc96f5083f7bbe424c0e31e3e1aca417e5df37
+evidence:
+  - type: stack_prologue
+    detail: "Begins with stdu r1,-0x120(r1) and preserves a large nonvolatile-register set."
+  - type: blr
+    detail: "The first linear return occurs at 0x00012d40, giving a conservative range 0x00012860-0x00012d44."
+  - type: direct_call
+    detail: "The executable scan finds a single direct caller at 0x000109b0 inside startup_application_loader_10970."
+  - type: string
+    detail: "TOC-relative loads inside the function resolve to the retained strings HADHOC and HModule."
+  - type: control_flow
+    detail: "The function contains status checks, global/module-list state tests, and repeated helper dispatch before returning through the first linear blr."
+callees:
+  - 0x00d39358
+  - 0x00d39798
+  - 0x00d397a8
+  - 0x00d397b8
+  - 0x00d397c8
+  - 0x00d39788
+subsystems:
+  - startup
+  - application-loading
+  - module-management
+notes:
+  - "The combination of a unique application-loader caller and HModule/HADHOC anchors supports a module-management role."
+  - "The exact object type, module state machine, and semantics of the 0x00d397xx helper family remain unresolved."
+  - "No semantic name is promoted beyond the address-derived role without additional source/cross-build evidence."
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: llvm-objdump
+    target: powerpc64-unknown-linux-gnu
+    range: "0x00012860-0x00012d44"
