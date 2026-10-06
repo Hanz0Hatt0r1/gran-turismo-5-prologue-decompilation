@@ -1,0 +1,31 @@
+schema: 1
+id: gt5p.bcus98158.eboot.00010368
+build: BCUS-98158
+module: EBOOT.BIN
+address:
+  va: 0x00010368
+name:
+  current: crt_runtime_bootstrap_10368
+  candidates:
+    - crt_startup
+confidence: probable
+status: analyzed
+evidence:
+  - type: entry_chain
+    detail: "0x00010230 directly calls 0x00010368 after establishing the PPU TOC."
+  - type: stack_prologue
+    detail: "The existing Prologue startup analysis identifies 0x00010368 as a substantial PPC64 runtime frame preserving startup state."
+  - type: import
+    detail: "The routine calls sys_initialize_tls and sys_time_get_system_time through the build-specific import stubs."
+  - type: direct_call
+    detail: "The routine calls the ELF initialization routine at 0x00010200 and then continues to the next application-level startup routine."
+  - type: runtime
+    detail: "Its observed responsibilities include TLS setup, startup vector normalization, CRT-state writes, static initialization, process-time setup, and exit-spawn registration."
+callees:
+  - 0x00010200
+  - 0x000106e0
+subsystems:
+  - startup
+  - crt-runtime
+notes:
+  - "The address-derived name remains authoritative until deterministic fingerprint comparison and broader cross-reference review establish a stronger semantic identity."
