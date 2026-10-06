@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from source_inventory import SOURCE_RE, classify_source_name, toc_load_slot
+from source_inventory import SOURCE_RE, classify_source_name, summarize_opd_containment, toc_load_slot
 
 
 class SourceInventoryTests(unittest.TestCase):
@@ -16,6 +16,21 @@ class SourceInventoryTests(unittest.TestCase):
     def test_source_pattern_rejects_non_source_strings(self):
         self.assertIsNone(SOURCE_RE.search("MRenderContext.cpp.bak"))
         self.assertIsNone(SOURCE_RE.search("not_a_source_file.txt"))
+
+    def test_opd_containment_counts_instruction_sites_and_functions(self):
+        ranges = [(0x1000, 0x1020), (0x2000, 0x2040)]
+        rows = [
+            {"instruction_vas": ["0x1008", "0x2000", "0x3000"]},
+        ]
+        self.assertEqual(
+            summarize_opd_containment(rows, ranges),
+            {
+                "xref_instruction_count": 3,
+                "contained_xref_instruction_count": 2,
+                "uncontained_xref_instruction_count": 1,
+                "unique_functions_touched": 2,
+            },
+        )
 
     def test_toc_load_slot_resolves_signed_displacement(self):
         # lwz r3, -0x20(r2).
