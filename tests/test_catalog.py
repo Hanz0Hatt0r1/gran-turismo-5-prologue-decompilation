@@ -97,6 +97,57 @@ observations:
         self.assertIn("analysis/functions/entry.yaml", paths)
         self.assertIn("analysis/evidence/startup.yaml", paths)
 
+    def test_validation_accepts_confirmed_scoped_crossref(self):
+        root = self._fixture()
+        crossrefs = root / "analysis" / "crossref"
+        crossrefs.mkdir(parents=True)
+        (crossrefs / "accepted.yaml").write_text(
+            """schema: 1
+id: gt5-vs-gt5p-entry
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010230
+target:
+  build: BCUS-98158
+  module: EBOOT.BIN
+  va: 0x00010230
+method: manual
+confidence: confirmed
+review_status: accepted
+relationship:
+  identity_scope: "ELFv1 PPU entry routine / ABI startup role"
+""", encoding="utf-8")
+        )
+        result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
+        self.assertTrue(result["valid"])
+
+    def test_validation_rejects_accepted_crossref_without_scope_or_confirmation(self):
+        root = self._fixture()
+        crossrefs = root / "analysis" / "crossref"
+        crossrefs.mkdir(parents=True)
+        (crossrefs / "bad-accepted.yaml").write_text(
+            """schema: 1
+id: invalid-accepted
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010230
+target:
+  build: BCUS-98158
+  module: EBOOT.BIN
+  va: 0x00010230
+method: manual
+confidence: probable
+review_status: accepted
+""", encoding="utf-8")
+        )
+        result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
+        self.assertFalse(result["valid"])
+        messages = [error["message"] for error in result["errors"]]
+        self.assertIn("accepted crossref requires confidence: confirmed", messages)
+        self.assertIn("accepted crossref requires relationship.identity_scope", messages)
+
     def test_validation_accepts_crossref_record(self):
         root = self._fixture()
         crossrefs = root / "analysis" / "crossref"
