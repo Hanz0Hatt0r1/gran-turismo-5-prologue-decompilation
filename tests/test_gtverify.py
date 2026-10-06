@@ -105,6 +105,8 @@ fingerprints:
                     "xref_count": 1,
                     "source_names": ["Synthetic.cpp"],
                     "source_categories": ["unclassified"],
+                    "confidence": "probable",
+                    "evidence": "TOC source-string xref contained in OPD-derived function range",
                 }],
             }
             snapshot.write_text(json.dumps({
