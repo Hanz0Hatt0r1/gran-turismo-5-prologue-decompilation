@@ -25,6 +25,10 @@ class BoundaryAuditTests(unittest.TestCase):
         branches = [(0x1004, 0x1020, 18, False)]
         self.assertEqual(post_blr_targets(branches, 0x1000, 0x1008, 0x1020), [])
 
+    def test_post_blr_excludes_linked_call_targets(self):
+        branches = [(0x1004, 0x1010, 18, True)]
+        self.assertEqual(post_blr_targets(branches, 0x1000, 0x1008, 0x1020), [])
+
 
 if __name__ == "__main__":
     unittest.main()
