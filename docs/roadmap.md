@@ -44,6 +44,7 @@ The executable-intelligence layer is the current engineering priority.
 - [x] Connect retained GT5 source-file strings to executable TOC-load xrefs.
 - [x] Classify source xrefs by OPD function containment.
 - [x] Map OPD-contained source xrefs to concrete function ranges.
+- [x] Record OPD-contained source xrefs as a derived function snapshot.
 
 Map:
 - startup / main loop;
