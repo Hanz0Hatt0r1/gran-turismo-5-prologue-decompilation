@@ -42,15 +42,14 @@ static void test_two_node_traversal(void)
     static const struct memory_word words[] = {
         {0x1000, 0x1100},
         {0x1004, 0x1200},
-        {0x1100, 0x2000},
+        {0x1100, 0x0000},
+        {0x1104, 0x2000},
         {0x1200, 0x1208},
         {0x1208, 0x3000},
         {0x3004, 0x4000},
-        {0x2000, 0x2100},
-        {0x2104, 0x2200},
-        {0x2208, 0x5000},
-        {0x220c, 0x6000},
-        {0x2100, 0x0000},
+        {0x2008, 0x2100},
+        {0x2108, 0x5000},
+        {0x210c, 0x6000},
     };
     struct test_context ctx = {words, sizeof(words) / sizeof(words[0]), {0}, {0}, 0};
 
