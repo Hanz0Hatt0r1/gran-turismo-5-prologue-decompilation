@@ -27,7 +27,6 @@ The executable-intelligence layer is the current engineering priority.
 - [x] Promote the first reviewed GT5 BCUS-98114 build/function/entry evidence.
 - [x] Audit function-boundary heuristics against confirmed GT5 entry/OPD data.
 - [x] Add canonical BCUS-98158 GT5 Prologue build profile.
-- [ ] Add canonical BCUS-98158 GT5 Prologue build profile.
 - [ ] Resolve the GT5P bootstrap into reviewed function notes.
 
 ## Phase 2 — Cross-build common-code map
