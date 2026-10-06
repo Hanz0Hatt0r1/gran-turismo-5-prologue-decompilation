@@ -1,1 +1,80 @@
-# Roadmap\n\n## Phase 0 — Foundation\n\n- [x] Repository scaffold\n- [x] Research methodology\n- [x] Contribution rules\n- [x] Initial symbol/function data contract\n- [x] Build-agnostic PS3 PPU ELF indexer\n- [x] Initial GT5 BCUS-98114 reference-build profile\n- [ ] Complete build/region inventory for GT5 and GT5 Prologue\n- [ ] Finalize semantic naming conventions\n\n## Phase 1 — Executable Intelligence\n\nThe executable-intelligence layer is the current engineering priority.\n\n- [x] Parse PS3 ELF64/PPC64 program and section metadata.\n- [x] Recover OPD descriptors and PPU entry points.\n- [x] Discover additional function starts from direct calls and PPC64 stack prologues.\n- [x] Generate normalized function fingerprints.\n- [x] Recover RTTI/vtable and TOC/string evidence.\n- [x] Extract PS3 import libraries, NIDs, and stub metadata.\n- [x] Import existing Ghidra C exports and attach discovered-function identities.\n- [x] Provide headless Ghidra orchestration.\n- [x] Add synthetic regression coverage for the core indexer.\n- [x] Promote the first reviewed GT5 BCUS-98114 build/function/entry evidence.\n- [x] Add dependency-free reviewed symbol/address validation and search utility.\n- [ ] Audit function-boundary heuristics against confirmed GT5 entry/OPD data.\n- [ ] Add canonical BCUS-98158 GT5 Prologue build profile.\n- [ ] Resolve the GT5P bootstrap into reviewed function notes.\n\n## Phase 2 — Cross-build common-code map\n\n- [ ] Compare GT5 retail against GT5 updates.\n- [ ] Compare GT5 retail against GT5 Prologue.\n- [ ] Classify matches as normalized-full, normalized-prefix, or manually verified.\n- [ ] Transfer only research metadata (names, subsystem membership, evidence), never code.\n- [ ] Identify shared subsystem families and build-specific forks.\n- [ ] Add explicit review status to every promoted cross-build match.\n\n## Phase 3 — Core subsystem map\n\nMap:\n- startup / main loop;\n- memory and job systems;\n- input;\n- UI;\n- rendering;\n- audio;\n- vehicle simulation / physics;\n- race/session logic;\n- save/profile data;\n- networking;\n- resource loading.\n\n## Phase 4 — Function reconstruction\n\nFor each subsystem:\n1. identify function groups;\n2. document call graphs and data structures;\n3. assign evidence-backed names;\n4. reconstruct behavior under src/;\n5. add tests where behavior can be isolated;\n6. cross-check behavior against related builds where useful.\n\n## Phase 5 — Formats and supporting tooling\n\n- Document relevant metadata/file formats from independent analysis.\n- Improve RTTI/vtable and import/export recovery.\n- Add call-graph and string-xref extraction.\n- Automate symbol/address mapping and research reports.\n- Add confidence-scored fuzzy cross-build matching only where deterministic matching is insufficient.\n\n## Phase 6 — Integration\n\n- Connect reconstructed subsystems.\n- Add regression tests.\n- Track unknown functions and behavior gaps.\n- Document compatibility assumptions per game/build.\n
+# Roadmap
+
+## Phase 0 — Foundation
+
+- [x] Repository scaffold
+- [x] Research methodology
+- [x] Contribution rules
+- [x] Initial symbol/function data contract
+- [x] Build-agnostic PS3 PPU ELF indexer
+- [x] Initial GT5 BCUS-98114 reference-build profile
+- [ ] Complete build/region inventory for GT5 and GT5 Prologue
+- [ ] Finalize semantic naming conventions
+
+## Phase 1 — Executable Intelligence
+
+The executable-intelligence layer is the current engineering priority.
+
+- [x] Parse PS3 ELF64/PPC64 program and section metadata.
+- [x] Recover OPD descriptors and PPU entry points.
+- [x] Discover additional function starts from direct calls and PPC64 stack prologues.
+- [x] Generate normalized function fingerprints.
+- [x] Recover RTTI/vtable and TOC/string evidence.
+- [x] Extract PS3 import libraries, NIDs, and stub metadata.
+- [x] Import existing Ghidra C exports and attach discovered-function identities.
+- [x] Provide headless Ghidra orchestration.
+- [x] Add synthetic regression coverage for the core indexer.
+- [x] Promote the first reviewed GT5 BCUS-98114 build/function/entry evidence.
+- [x] Add dependency-free reviewed symbol/address validation and search utility.
+- [ ] Audit function-boundary heuristics against confirmed GT5 entry/OPD data.
+- [ ] Add canonical BCUS-98158 GT5 Prologue build profile.
+- [ ] Resolve the GT5P bootstrap into reviewed function notes.
+
+## Phase 2 — Cross-build common-code map
+
+- [ ] Compare GT5 retail against GT5 updates.
+- [ ] Compare GT5 retail against GT5 Prologue.
+- [ ] Classify matches as normalized-full, normalized-prefix, or manually verified.
+- [ ] Transfer only research metadata (names, subsystem membership, evidence), never code.
+- [ ] Identify shared subsystem families and build-specific forks.
+- [ ] Add explicit review status to every promoted cross-build match.
+
+## Phase 3 — Core subsystem map
+
+Map:
+- startup / main loop;
+- memory and job systems;
+- input;
+- UI;
+- rendering;
+- audio;
+- vehicle simulation / physics;
+- race/session logic;
+- save/profile data;
+- networking;
+- resource loading.
+
+## Phase 4 — Function reconstruction
+
+For each subsystem:
+1. identify function groups;
+2. document call graphs and data structures;
+3. assign evidence-backed names;
+4. reconstruct behavior under src/;
+5. add tests where behavior can be isolated;
+6. cross-check behavior against related builds where useful.
+
+## Phase 5 — Formats and supporting tooling
+
+- Document relevant metadata/file formats from independent analysis.
+- Improve RTTI/vtable and import/export recovery.
+- Add call-graph and string-xref extraction.
+- Automate symbol/address mapping and research reports.
+- Add confidence-scored fuzzy cross-build matching only where deterministic matching is insufficient.
+
+## Phase 6 — Integration
+
+- Connect reconstructed subsystems.
+- Add regression tests.
+- Track unknown functions and behavior gaps.
+- Document compatibility assumptions per game/build.
