@@ -47,6 +47,7 @@ without assuming stable absolute addresses.
 - [Roadmap](docs/roadmap.md)
 - [Architecture map](docs/architecture.md)
 - [Contributing](CONTRIBUTING.md)
+- [Parallel development prompts](docs/parallel-development-prompts.md)
 
 ## Current reference build
 
