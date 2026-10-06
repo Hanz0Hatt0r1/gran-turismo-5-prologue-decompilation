@@ -65,3 +65,16 @@ cd gran-turismo-5-prologue-decompilation
 5. Include evidence and confidence.
 6. Add/update tests when changing tooling.
 7. Open a pull request linking the issue.
+
+## Research catalog
+
+Validate the repository's reviewed metadata without loading any executable:
+
+```bash
+python3 tools/gtcatalog.py validate analysis
+python3 tools/gtcatalog.py search analysis --address 0x10230
+python3 tools/gtcatalog.py search analysis --name eboot_entry
+python3 tools/gtcatalog.py summary analysis
+```
+
+The catalog utility is dependency-free and only understands the project's simple YAML mapping subset plus JSON. It detects malformed identity fields and duplicate function addresses within a build/module; it never stores or reads game binaries.
