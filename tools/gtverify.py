@@ -98,9 +98,11 @@ def verify_function_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord
     checks.append({"check": "range_start", "expected": start, "actual": range_start, "ok": start == range_start})
     stored_full = _field(record, "fingerprints.normalized_full")
     checks.append({"check": "normalized_full", "expected": stored_full, "actual": fp["sha_full"], "ok": stored_full == fp["sha_full"]})
-    stored_prefix = _field(record, "fingerprints.normalized_prefix_256")
+    stored_prefix = _field(record, "fingerprints.normalized_prefix")
+    if stored_prefix is None:
+        stored_prefix = _field(record, "fingerprints.normalized_prefix_256")
     if stored_prefix is not None:
-        checks.append({"check": "normalized_prefix_256", "expected": stored_prefix, "actual": fp["sha_prefix"], "ok": stored_prefix == fp["sha_prefix"]})
+        checks.append({"check": "normalized_prefix", "expected": stored_prefix, "actual": fp["sha_prefix"], "ok": stored_prefix == fp["sha_prefix"]})
 
     return {
         "path": record.path,
@@ -137,13 +139,22 @@ def _parser() -> argparse.ArgumentParser:
     cmd.add_argument("--elf", required=True, type=Path)
     cmd.add_argument("--build-record", type=Path)
     cmd.add_argument("--function-record", action="append", default=[], type=Path)
+    cmd.add_argument("--function-dir", action="append", default=[], type=Path)
     return parser
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parser().parse_args(argv)
+    function_records = list(args.function_record)
+    for directory in args.function_dir:
+        function_records.extend(
+            sorted(
+                path for path in directory.rglob("*")
+                if path.is_file() and path.suffix.lower() in {".yaml", ".yml", ".json"}
+            )
+        )
     try:
-        result = verify(args.elf, args.build_record, args.function_record)
+        result = verify(args.elf, args.build_record, function_records)
     except (OSError, ValueError, KeyError) as exc:
         print(json.dumps({"valid": False, "error": str(exc)}, indent=2, sort_keys=True))
         return 2
