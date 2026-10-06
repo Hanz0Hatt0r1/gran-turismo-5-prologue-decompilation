@@ -42,6 +42,7 @@ The executable-intelligence layer is the current engineering priority.
 
 - [x] Seed GT5 BCUS-98114 subsystem triage from retained source-file evidence.
 - [x] Connect retained GT5 source-file strings to executable TOC-load xrefs.
+- [x] Classify source xrefs by OPD function containment.
 
 Map:
 - startup / main loop;
