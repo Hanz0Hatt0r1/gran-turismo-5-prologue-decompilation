@@ -1,10 +1,13 @@
+import json
 import struct
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import gtcatalog
 import gtverify
+import source_inventory
 
 
 class VerifyTests(unittest.TestCase):
@@ -83,6 +86,73 @@ fingerprints:
             result = gtverify.verify_build_record(elf, record)
             self.assertTrue(result["valid"])
 
+    def test_verify_source_xref_function_map(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            elf_path = self.make_elf(root)
+            snapshot = root / "source-map.json"
+            report = {
+                "source_file_count": 1,
+                "opd_range_mapping": {
+                    "xref_instruction_count": 1,
+                    "contained_xref_instruction_count": 1,
+                    "uncontained_xref_instruction_count": 0,
+                    "function_range_count": 1,
+                },
+                "opd_function_source_map": [{
+                    "function_start_va": "0x00001000",
+                    "function_end_va": "0x00001008",
+                    "xref_count": 1,
+                    "source_names": ["Synthetic.cpp"],
+                    "source_categories": ["unclassified"],
+                }],
+            }
+            snapshot.write_text(json.dumps({
+                "schema": 1,
+                "input_sha256": gtverify.gtdecomp.PS3ELF(elf_path).sha256,
+                "source_file_count": 1,
+                "toc_xref_instruction_count": 1,
+                "opd_contained_xref_count": 1,
+                "uncontained_xref_count": 0,
+                "opd_function_range_count": 1,
+                "functions": report["opd_function_source_map"],
+            }), encoding="utf-8")
+            with mock.patch.object(source_inventory, "build_report", return_value=report):
+                result = gtverify.verify_source_xref_function_map(
+                    gtverify.gtdecomp.PS3ELF(elf_path), snapshot
+                )
+            self.assertTrue(result["valid"])
+
+    def test_verify_rejects_source_xref_function_map_mismatch(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            elf_path = self.make_elf(root)
+            snapshot = root / "source-map.json"
+            snapshot.write_text(json.dumps({
+                "schema": 1,
+                "input_sha256": gtverify.gtdecomp.PS3ELF(elf_path).sha256,
+                "source_file_count": 99,
+                "toc_xref_instruction_count": 0,
+                "opd_contained_xref_count": 0,
+                "uncontained_xref_count": 0,
+                "opd_function_range_count": 1,
+                "functions": [],
+            }), encoding="utf-8")
+            report = {
+                "source_file_count": 1,
+                "opd_range_mapping": {
+                    "xref_instruction_count": 1,
+                    "contained_xref_instruction_count": 1,
+                    "uncontained_xref_instruction_count": 0,
+                    "function_range_count": 1,
+                },
+                "opd_function_source_map": [],
+            }
+            with unittest.mock.patch.object(source_inventory, "build_report", return_value=report):
+                result = gtverify.verify_source_xref_function_map(
+                    gtverify.gtdecomp.PS3ELF(elf_path), snapshot
+                )
+            self.assertFalse(result["valid"])
     def test_verify_rejects_wrong_fingerprint(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
