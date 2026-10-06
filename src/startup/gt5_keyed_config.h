@@ -13,6 +13,7 @@ typedef struct {
 
 typedef int (*gt5_keyed_apply_fn)(
     const gt5_keyed_item *item,
+    void *destination,
     void *context);
 
 typedef void (*gt5_keyed_cleanup_fn)(
