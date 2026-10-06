@@ -8,7 +8,8 @@
 - [x] Initial symbol/function data contract
 - [x] Build-agnostic PS3 PPU ELF indexer
 - [x] Initial GT5 BCUS-98114 reference-build profile
-- [ ] Complete build/region inventory for GT5 and GT5 Prologue
+- [x] Establish an initial build/region inventory for GT5 and GT5 Prologue.
+- [ ] Complete remaining region/revision inventory as additional verified builds become available.
 - [x] Finalize semantic naming conventions
 
 ## Phase 1 — Executable Intelligence
