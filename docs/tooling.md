@@ -70,7 +70,9 @@ The output manifest keeps the normalized fingerprint beside each Ghidra name so
 that later builds can reuse research labels through the cross-build matcher.
 
 Decompiler output is evidence, not reconstructed source. Reviewed behavior is
-rewritten independently under `src/` and tested separately.
+rewritten independently under `src/` and tested separately. The CI pipeline
+compiles and runs the current clean-room C startup helpers with strict warning
+flags so reconstructed behavior cannot silently regress.
 
 ## Import symbol names
 
