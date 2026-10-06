@@ -1118,6 +1118,37 @@ def _fp_index(rows: Sequence[Fingerprint], attr: str) -> Dict[str, List[Fingerpr
     return out
 
 
+def callgraph_match_ratio(
+    reference_code_va: int,
+    target_code_va: int,
+    reference_edges: Sequence[CallEdge],
+    target_edges: Sequence[CallEdge],
+    reference_to_target: Dict[int, int],
+) -> Optional[float]:
+    """Compare recognized callee identities for an already matched function.
+
+    Only callees that participate in a unique fingerprint match are compared.
+    An empty recognized edge set is neutral (None), not a mismatch. This
+    keeps indirect calls and unresolved targets outside the confidence signal.
+    """
+    ref = {
+        reference_to_target[e.target_va]
+        for e in reference_edges
+        if e.caller_va == reference_code_va and e.target_va in reference_to_target
+    }
+    target_values = set(reference_to_target.values())
+    tgt = {
+        e.target_va
+        for e in target_edges
+        if e.caller_va == target_code_va and e.target_va in target_values
+    }
+    if not ref and not tgt:
+        return None
+    union = ref | tgt
+    if not union:
+        return None
+    return len(ref & tgt) / len(union)
+
 def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     out.mkdir(parents=True, exist_ok=True)
     a = PS3ELF(reference)
@@ -1130,6 +1161,8 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     bfp = build_fingerprints_from_starts(b, (r.code_va for r in bc if r.score >= 3))
     af = _fp_index(afp, "sha_full")
     bf = _fp_index(bfp, "sha_full")
+    aedges = extract_call_edges(a, [r.code_va for r in afp])
+    bedges = extract_call_edges(b, [r.code_va for r in bfp])
     ap = _fp_index(afp, "sha_prefix")
     bp = _fp_index(bfp, "sha_prefix")
     matches: List[Tuple[Fingerprint, Fingerprint, str]] = []
@@ -1152,11 +1185,29 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
             used_b.add(y.code_va)
             matched_a.add(x.code_va)
 
+    reference_to_target = {x.code_va: y.code_va for x, y, _ in matches}
+    enriched_matches = []
+    for x, y, method in matches:
+        ratio = callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target)
+        enriched_matches.append((x, y, method, ratio))
+
     with (out / "function_matches.csv").open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["reference_code_va", "target_code_va", "method", "reference_size", "target_size"])
-        for x, y, method in sorted(matches, key=lambda t: t[0].code_va):
-            w.writerow([_fmt_hex(x.code_va), _fmt_hex(y.code_va), method, x.size, y.size])
+        w.writerow([
+            "reference_code_va", "target_code_va", "method",
+            "reference_size", "target_size", "callgraph_ratio", "callgraph_evidence",
+        ])
+        for x, y, method, ratio in sorted(enriched_matches, key=lambda t: t[0].code_va):
+            evidence = (
+                "neutral" if ratio is None else
+                "strong" if ratio >= 0.75 else
+                "supporting" if ratio >= 0.5 else
+                "weak"
+            )
+            w.writerow([
+                _fmt_hex(x.code_va), _fmt_hex(y.code_va), method, x.size, y.size,
+                "" if ratio is None else f"{ratio:.3f}", evidence,
+            ])
 
     summary = {
         "schema": 1,
@@ -1169,6 +1220,15 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
         "matches": len(matches),
         "full_matches": sum(method == "normalized-full" for _, _, method in matches),
         "prefix_matches": sum(method == "normalized-prefix" for _, _, method in matches),
+        "callgraph_supported": sum(
+            callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target) is not None
+            and callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target) >= 0.5
+            for x, y, _ in matches
+        ),
+        "callgraph_neutral": sum(
+            callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target) is None
+            for x, y, _ in matches
+        ),
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     return summary
