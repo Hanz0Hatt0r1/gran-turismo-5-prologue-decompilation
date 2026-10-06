@@ -45,6 +45,23 @@ Example:
 
 Never store the executable itself.
 
+## Import identity record
+
+Platform import names are tracked separately from game-function semantics. A verified NID
+mapping may be attached to a function's import_context when the executable import table
+and an independent platform NID source agree.
+
+Example:
+
+    library: sysPrxForUser
+    nid: 0x744680a2
+    name: sys_initialize_tls
+    confidence: confirmed
+    source: "PS3 Developer wiki Nids.txt"
+
+An import symbol name identifies the platform API entry point; it must not be promoted to
+the semantic name of the game function that calls it.
+
 ## Function record
 
 Function-level records are keyed by build/module/address and carry a stable fingerprint where available.
