@@ -1,7 +1,7 @@
 import struct
 import unittest
 
-from tools.gtdecomp import PS3ELF, ProgramHeader, extract_call_edges, _ppc_branch_target
+from tools.gtdecomp import FunctionDescriptor, PS3ELF, ProgramHeader, discover_function_candidates, extract_call_edges, _ppc_branch_target
 
 
 class FakeELF:
@@ -28,6 +28,12 @@ class FakeELF:
     def in_executable_segment(self, va):
         return self.start <= va < self.end
 
+    def read_u32_va(self, va):
+        off = self.va_to_offset(va)
+        if off is None:
+            return None
+        return struct.unpack_from(">I", self.data, off)[0]
+
 
 def put_insn(elf, va, ins):
     off = elf.va_to_offset(va)
@@ -45,6 +51,24 @@ class CallGraphTests(unittest.TestCase):
     def test_branch_target_for_relative_bl(self):
         ins = encode_bl(0x1000, 0x1040)
         self.assertEqual(_ppc_branch_target(ins, 0x1000), 0x1040)
+
+    def test_nested_stack_prologue_is_not_a_new_function(self):
+        elf = FakeELF()
+        # 0x1000 is a strong direct-call target; 0x1004 looks like a PPC64
+        # stack prologue but is still inside that function.
+        put_insn(elf, 0x1000, encode_bl(0x1000, 0x1040))
+        put_insn(elf, 0x1004, 0xF821FF81)  # stdu r1, -128(r1)
+        put_insn(elf, 0x1008, 0x4E800020)  # blr terminates the tiny function
+        put_insn(elf, 0x1040, 0xF821FF81)  # real target starts with prologue
+
+        candidates = discover_function_candidates(
+            elf,
+            [FunctionDescriptor(0x2000, 0x1000, 0)],
+        )
+        by_va = {row.code_va: row for row in candidates}
+        self.assertNotIn(0x1004, by_va)
+        self.assertIn(0x1040, by_va)
+        self.assertIn("direct-call", by_va[0x1040].evidence)
 
     def test_extracts_direct_call_with_callsite_and_caller(self):
         elf = FakeELF()
