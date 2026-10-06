@@ -29,6 +29,10 @@ functions:
       - blr
     calls:
       - 0x0111be04
+    import_context:
+      - library: sysPrxForUser
+        nid: 0xa2c7ba64
+        stub_va: 0x0111be04
   - va: 0x0001027c
     name: startup_helper_1027c
     confidence: probable
@@ -60,6 +64,10 @@ functions:
     calls:
       - 0x0001027c
       - 0x0111bf24
+    import_context:
+      - library: sysPrxForUser
+        nid: 0xe6f2c1e7
+        stub_va: 0x0111bf24
   - va: 0x00010338
     name: startup_main_10338
     confidence: probable
@@ -71,6 +79,10 @@ functions:
       - "Saves r26-r31 and establishes a large stack frame; exact semantics remain unresolved."
     calls:
       - 0x0111bd24
+    import_context:
+      - library: sysPrxForUser
+        nid: 0x744680a2
+        stub_va: 0x0111bd24
 
 edges:
   - caller: 0x00010230
@@ -144,3 +156,9 @@ control_flow_notes:
   - "0x00010368 is inside the 0x00010338 prologue/body and is not promoted as a function start."
   - "The 0x00d392xx targets are retained as raw code addresses until import/semantic evidence identifies their role."
   - "No semantic startup name is promoted beyond eboot_entry without independent evidence."
+
+import_evidence:
+  source: executable_import_table
+  notes:
+    - "The referenced 0x0111bdxx addresses resolve to the PS3 PPU import stubs listed under sysPrxForUser."
+    - "NID values are recorded as stable import identities; semantic symbol names are not promoted without an independent NID-name source."
