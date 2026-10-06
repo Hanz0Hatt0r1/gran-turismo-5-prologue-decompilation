@@ -752,5 +752,13 @@
     }
   ],
   "confidence": "probable",
-  "status": "analyzed"
+  "status": "analyzed",
+  "opd_range_mapping": {
+    "xref_instruction_count": 340,
+    "contained_xref_instruction_count": 99,
+    "uncontained_xref_instruction_count": 241,
+    "unique_functions_touched": 99,
+    "function_range_count": 8485,
+    "range_method": "OPD-derived starts with first linear blr end marker"
+  }
 }

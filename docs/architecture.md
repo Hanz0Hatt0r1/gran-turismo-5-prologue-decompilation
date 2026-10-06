@@ -29,7 +29,7 @@ The Prologue bootstrap remains a separate target-build investigation. Its review
 
 The retained source-file names provide a useful subsystem triage layer before any function is semantically named. The current inventory contains 362 unique source-file strings. Keyword grouping yields UI (25), resource/I/O (16), networking (13), race (9), rendering (8), course (7), vehicle (6), audio (6), jobs/threads (5), game (4), and input/replay/save-profile (3 each). These counts are not function counts and do not establish ownership; they only identify themes for later xref and call-graph review.
 
-The next addressable layer is now in place: scanning the GT5 TOC for PPU `lwz`/`ld` loads that resolve to retained source strings finds 340 executable xrefs covering 44 of the 362 source-file strings. These xrefs identify concrete code-reference sites but still do not establish complete function ownership or semantic subsystem membership. The next step is to map the xref sites onto reviewed function ranges and call-graph clusters.
+The next addressable layer is now in place: 340 executable TOC xrefs cover 44 of the 362 retained source-file strings. Of those xref instruction sites, 99 fall inside ranges derived from confirmed OPD function starts; 241 remain outside OPD-backed ranges and are therefore left for static/local-function review.  scanning the GT5 TOC for PPU `lwz`/`ld` loads that resolve to retained source strings finds 340 executable xrefs covering 44 of the 362 source-file strings. These xrefs identify concrete code-reference sites but still do not establish complete function ownership or semantic subsystem membership. The next step is to map the xref sites onto reviewed function ranges and call-graph clusters.
 
 ## Rendering
 
