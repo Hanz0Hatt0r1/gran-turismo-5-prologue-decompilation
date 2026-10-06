@@ -543,8 +543,6 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
                 target = _ppc_branch_target(ins, va)
                 if target is not None:
                     add(target, "direct-call")
-            if _is_stack_prologue(ins):
-                add(va, "stack-prologue")
             if ins == 0x4E800020:  # blr
                 nxt = va + 4
                 for _ in range(8):
@@ -557,6 +555,39 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
                         continue
                     add(nxt, "after-blr")
                     break
+
+    # Strong boundaries are established by OPD/entry/direct-call evidence.
+    # A stack prologue inside the interval between two strong starts is not a
+    # new function unless the previous strong function has already returned.
+    strong_starts = sorted(
+        va for va, kinds in evidence.items()
+        if kinds.intersection({"opd", "entry", "direct-call"})
+    )
+
+    def prologue_is_nested(va: int) -> bool:
+        import bisect
+
+        i = bisect.bisect_left(strong_starts, va) - 1
+        if i < 0:
+            return False
+        previous = strong_starts[i]
+        for probe in range(previous, va, 4):
+            off = elf.va_to_offset(probe)
+            if off is None or off + 4 > len(elf.data):
+                break
+            if _u32(elf.data, off) == 0x4E800020:
+                return False
+        return True
+
+    for ph in elf.program_headers:
+        if ph.type != PT_LOAD or not (ph.flags & 1) or ph.filesz < 4:
+            continue
+        end_off = min(len(elf.data), ph.offset + ph.filesz)
+        for off in range(ph.offset, end_off - 3, 4):
+            va = ph.vaddr + (off - ph.offset)
+            ins = _u32(elf.data, off)
+            if _is_stack_prologue(ins) and not prologue_is_nested(va):
+                add(va, "stack-prologue")
 
     weights = {"entry": 5, "opd": 4, "direct-call": 4, "stack-prologue": 3, "after-blr": 2}
     rows = []
