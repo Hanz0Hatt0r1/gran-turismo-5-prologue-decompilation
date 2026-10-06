@@ -10,8 +10,14 @@ name:
     - application_script_loader
 confidence: probable
 status: reviewed
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: project-compatible PPC instruction normalization
+    range: "0x00010970-0x00010a90"
+  fingerprint_verified: true
 fingerprints:
-  normalized_full: 8eac4437c09c578ef7d6a6c12abc553df728f01d39b0e89e18fef343f6dd48d8
+  normalized_full: 53089e8578b8f971112fd5bfdc157077259faf11
 evidence:
   - type: stack_prologue
     detail: "0x00010970 begins with stdu r1,-0xa0(r1), saves r31/r29, and establishes a dedicated frame."
