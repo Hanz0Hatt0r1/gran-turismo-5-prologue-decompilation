@@ -248,9 +248,9 @@ class PS3ELF:
 def find_opd(elf: PS3ELF) -> Tuple[int, List[FunctionDescriptor]]:
     """Recover Sony PPU 8-byte function descriptors from the entry section.
 
-    PS3 executables commonly store descriptors as two big-endian u32 values:
-    code address and TOC address. The ELF entry points at a descriptor rather
-    than directly at the first instruction.
+    PS3 executables in the 32-bit ABI use compact 8-byte OPD records with two
+    big-endian u32 values: code address and TOC address. The ELF entry points at
+    a descriptor rather than directly at the first instruction.
     """
     entry_off = elf.va_to_offset(elf.entry)
     if entry_off is None or entry_off + 8 > len(elf.data):
