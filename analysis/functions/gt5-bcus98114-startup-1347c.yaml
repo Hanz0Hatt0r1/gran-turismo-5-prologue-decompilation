@@ -1,0 +1,53 @@
+schema: 1
+id: gt5.bcus98114.eboot.0001347c
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x0001347c
+name:
+  current: startup_module_dispatch_1347c
+  candidates:
+    - module_group_initializer_1347c
+confidence: probable
+status: reviewed
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: project-compatible PPC instruction normalization
+    range: "0x0001347c-0x000139d4"
+    first_linear_blr: "0x000139d0"
+  fingerprint_verified: true
+fingerprints:
+  normalized_full: 10dacbccc352e5d7f28755cac2479650f437a6f0
+  normalized_prefix: ad67b123115e355d062bb69ab8b2d4539ddc2b4d
+evidence:
+  - type: stack_prologue
+    detail: "Begins with stdu r1,-0x140(r1), saves r29-r31 plus LR, and restores the frame at 0x000139d4."
+  - type: blr
+    detail: "The first linear blr is at 0x000139d0, giving a conservative function range 0x0001347c-0x000139d4 (0x558 bytes, 342 instructions)."
+  - type: direct_call
+    detail: "The only direct caller found in the executable scan is callsite 0x000132e8 inside startup_helper_13274."
+  - type: toc_string
+    detail: "The body resolves the fixed module-name string HADHOC from TOC slot 0x0183edf0 and repeatedly pairs it with secondary module-name strings."
+  - type: toc_string
+    detail: "Secondary TOC-resolved module names are pdistd, pdiext, menu, gtengine, gtmenu, and pdiapp at slots 0x0183edf4, 0x0183edfc, 0x0183ee04, 0x0183ee0c, 0x0183ee14, and 0x0183ee1c respectively."
+  - type: control_flow
+    detail: "Six repeated subpaths follow the same shape: optional HADHOC gate, load a per-module local record, call 0x00d4f8d8 with the record/name pair, then call 0x00d399b8 with the caller state and a secondary TOC-resolved pointer."
+  - type: control_flow
+    detail: "Each subpath has a mirrored cleanup/error path that updates a small stack-local byte/length record and uses veneer 0x00d39728; the exact object and API semantics remain unresolved."
+  - type: neighboring_function
+    detail: "0x0001347c is the direct callee at 0x000132e8; it ends before independently reviewed startup_helper_13274 at 0x00013..."
+callees:
+  - 0x00d39838
+  - 0x00d397b8
+  - 0x00d4f8d8
+  - 0x00d399b8
+  - 0x00d39728
+  - 0x01111bb8
+subsystems:
+  - startup
+  - application-loading
+  - module-management
+notes:
+  - "The repeated module-name/config-pointer pattern is strong evidence for a module-group initialization/dispatch role."
+  - "The evidence supports the module-management interpretation but does not prove that each secondary name is an HModule class or that 0xd399b8 is a specific platform API."
