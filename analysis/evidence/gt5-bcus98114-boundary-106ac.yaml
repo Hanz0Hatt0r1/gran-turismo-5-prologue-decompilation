@@ -1,0 +1,26 @@
+schema: 1
+id: gt5.bcus98114.eboot.boundary.106ac.001
+build: BCUS-98114
+module: EBOOT.BIN
+subject:
+  - 0x000106ac
+  - 0x000106e0
+confidence: confirmed
+status: reviewed
+observations:
+  - "A real PPC64 stack prologue starts at 0x000106ac."
+  - "The same function reaches its terminating blr at 0x000107b8."
+  - "0x000106e0 lies 0x34 bytes after the prologue and before the terminating return, so it is an internal control-flow block."
+  - "The repository's earlier note treating 0x000106e0 as a possible independent function start is superseded by this boundary audit."
+evidence:
+  - type: stack_prologue
+    detail: "stdu r1,-0x90(r1) at 0x000106ac."
+  - type: neighboring_function
+    detail: "0x000106e0 is enclosed by the reviewed 0x000106ac-0x000107bc range."
+  - type: blr
+    detail: "0x000107b8 is the first linear blr terminating the range."
+  - type: cross_build
+    detail: "Keeping 0x000106e0 as a block rather than a function start prevents false cross-build matches against a likely internal label."
+unresolved:
+  - "Semantic identity of 0x000106ac."
+  - "Exact names for its 0x00d4f3xx/0x00d4f7xx callees."
