@@ -1,0 +1,56 @@
+schema: 1
+id: gt5.bcus98114.eboot.00013274
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00013274
+name:
+  current: startup_helper_13274
+  candidates:
+    - startup_dispatch_helper
+confidence: probable
+status: reviewed
+fingerprints:
+  normalized_full: 90a083fbc1084027a3a2f746288cad7c3df66894
+evidence:
+  - type: stack_prologue
+    detail: "Begins with stdu r1,-0x90(r1), preserves r28/r29, and restores the frame at 0x00013328."
+  - type: blr
+    detail: "The first linear blr is at 0x0001332c, giving a conservative range 0x00013274-0x00013330."
+  - type: direct_call
+    detail: "The only direct caller found in the executable scan is 0x000109a4 inside startup_application_loader_10970."
+  - type: call_sequence
+    detail: "The body takes two input arguments, preserves them in r29/r28, and dispatches through 0x13440, 0x13c2c, 0x133a8, 0x13378, 0x13b04, 0x139f0, 0x133f0, 0x12dd4, 0x1347c, 0x13354, and the 0xd393xx helper layer."
+  - type: control_flow
+    detail: "The body includes an explicit branch to 0x12dd4 for a status-driven subpath before the final cleanup sequence."
+  - type: source_xref
+    detail: "No retained source-file string is reached by a direct r2-based TOC load inside the function range."
+callees:
+  - 0x00013440
+  - 0x00013c2c
+  - 0x000133a8
+  - 0x00013378
+  - 0x00013b04
+  - 0x00d398b8
+  - 0x000139f0
+  - 0x00d398c8
+  - 0x000133f0
+  - 0x00012dd4
+  - 0x0001347c
+  - 0x00d398d8
+  - 0x00013354
+  - 0x00d39348
+  - 0x00d39368
+subsystems:
+  - startup
+  - application-loading
+notes:
+  - "The unique caller and two-argument dispatch pattern support a helper role immediately after the application-path handoff."
+  - "Exact status/error semantics and the meaning of the 0xd398xx helper family remain unresolved."
+  - "No semantic name is promoted beyond the address-derived startup role."
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: llvm-objdump
+    target: powerpc64-unknown-linux-gnu
+    range: "0x00013274-0x00013330"
