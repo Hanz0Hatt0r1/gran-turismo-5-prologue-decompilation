@@ -53,25 +53,6 @@ status: analyzed
                 encoding="utf-8",
             )
 
-        crossrefs = root / "analysis" / "crossref"
-        crossrefs.mkdir(parents=True)
-        (crossrefs / "crt.yaml").write_text(
-            """schema: 1
-id: gt5-vs-gt5p-crt
-reference:
-  build: BCUS-98114
-  module: EBOOT.BIN
-  va: 0x00010338
-target:
-  build: BCUS-98158
-  module: EBOOT.BIN
-  va: 0x00010368
-method: manual
-confidence: probable
-review_status: pending
-""",
-            encoding="utf-8",
-        )
         (evidence / "startup.yaml").write_text(
             """schema: 1
 build: BCUS-98114
