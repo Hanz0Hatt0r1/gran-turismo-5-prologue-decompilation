@@ -41,6 +41,7 @@ The executable-intelligence layer is the current engineering priority.
 ## Phase 3 — Core subsystem map
 
 - [x] Seed GT5 BCUS-98114 subsystem triage from retained source-file evidence.
+- [x] Connect retained GT5 source-file strings to executable TOC-load xrefs.
 
 Map:
 - startup / main loop;
