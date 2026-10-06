@@ -17,7 +17,9 @@ next_targets:
   - "Audit adjacent 0x13xxx helpers called by 0x13274 for additional retained module/source evidence."
 dependencies:
   - "None for the current GT5 ELF-backed task."
-open_prs: []
+open_prs:
+  - number: 99
+    title: "Map GT5 0x12dd4 module-management helper"
 notes:
   - "Do not commit the user-provided EBOOT.ELF; only derived metadata is recorded."
   - "Exact HModule/API semantics remain unresolved and must not be promoted from the HADHOC string alone."
