@@ -361,6 +361,14 @@ class FunctionCandidate:
     evidence: Tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class CallEdge:
+    caller_va: int
+    callsite_va: int
+    target_va: int
+    kind: str
+
+
 def find_proc_prx_param(elf: PS3ELF) -> Optional[Dict[str, int]]:
     """Read the process PRX parameter block from PT_LOOS+2 (0x60000002)."""
     for p in elf.program_headers:
@@ -558,7 +566,7 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
     return sorted(rows, key=lambda r: r.code_va)
 
 
-def build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
+def extract_call_edges(\n    elf: PS3ELF,\n    function_starts: Sequence[int],\n    max_size: int = 0x4000,\n) -> List[CallEdge]:\n    """Extract direct PPU call edges from conservative function ranges.\n\n    Only direct bl/bla-class branches are emitted. This deliberately excludes\n    indirect calls through registers/OPD descriptors, so the result is a\n    high-confidence partial call graph rather than a guessed complete one.\n    """\n    ranges = function_ranges_from_starts(elf, function_starts, max_size=max_size)\n    rows: List[CallEdge] = []\n    for start, end in ranges:\n        off = elf.va_to_offset(start)\n        if off is None:\n            continue\n        for rel in range(0, end - start, 4):\n            va = start + rel\n            ins = _u32(elf.data, off + rel)\n            if ((ins >> 26) & 0x3F) != 18 or not (ins & 1):\n                continue\n            target = _ppc_branch_target(ins, va)\n            if target is None:\n                continue\n            rows.append(CallEdge(start, va, target, "direct"))\n    return rows\n\n\ndef build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
     rows: List[Fingerprint] = []
     for va, end in function_ranges_from_starts(elf, starts, max_size=max_size):
         size = end - va
@@ -849,6 +857,7 @@ def index_elf(path: Path, out: Path, nid_db: Optional[Path] = None) -> Dict[str,
     vtables = find_vtables(elf, rtti, descriptors)
     string_refs = find_toc_string_refs(elf, toc, strict_starts, strings)
     function_hints = build_function_hints(vtables, string_refs, source_files)
+    call_edges = extract_call_edges(elf, strict_starts)
     imports, import_libraries = find_imports(elf)
     nid_names = load_nid_database(nid_db) if nid_db is not None else {}
     resolved_import_names = sum(1 for r in imports if r.nid in nid_names)
@@ -876,6 +885,8 @@ def index_elf(path: Path, out: Path, nid_db: Optional[Path] = None) -> Dict[str,
         "import_libraries": len(import_libraries),
         "import_functions": len(imports),
         "resolved_import_names": resolved_import_names,
+        "direct_call_edges": len(call_edges),
+        "direct_local_call_edges": sum(elf.in_executable_segment(r.target_va) for r in call_edges),
         **identity,
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -991,6 +1002,20 @@ def index_elf(path: Path, out: Path, nid_db: Optional[Path] = None) -> Dict[str,
                 "evidence_count": r["evidence_count"],
             }
             for r in function_hints
+        ),
+    )
+    _write_csv(
+        out / "calls.csv",
+        ["caller_code_va", "callsite_va", "target_va", "kind", "target_local"],
+        (
+            {
+                "caller_code_va": _fmt_hex(r.caller_va),
+                "callsite_va": _fmt_hex(r.callsite_va),
+                "target_va": _fmt_hex(r.target_va),
+                "kind": r.kind,
+                "target_local": int(elf.in_executable_segment(r.target_va)),
+            }
+            for r in call_edges
         ),
     )
     _write_csv(
