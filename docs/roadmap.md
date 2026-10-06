@@ -33,6 +33,8 @@ The executable-intelligence layer is the current engineering priority.
 
 - [ ] Compare GT5 retail against GT5 updates.
 - [ ] Compare GT5 retail against GT5 Prologue.
+  - [x] Accept structural ELFv1 entry identity as a reviewed role-level match.
+  - [ ] Confirm CRT/common-code matches from normalized fingerprints using local indexes for both builds.
 - [ ] Classify matches as normalized-full, normalized-prefix, or manually verified.
 - [ ] Transfer only research metadata (names, subsystem membership, evidence), never code.
 - [x] Accept the reviewed ELFv1 entry cross-build identity.
@@ -75,7 +77,9 @@ For each subsystem:
 - Document relevant metadata/file formats from independent analysis.
 - Improve RTTI/vtable and import/export recovery.
 - Add call-graph and string-xref extraction.
-- Automate symbol/address mapping and research reports.
+- [x] Add reviewed symbol/address catalog validation and search.
+- [x] Add ELF-backed verification of reviewed build/function metadata.
+- [ ] Automate full cross-build verification from local indexes for both builds.
 - Add confidence-scored fuzzy cross-build matching only where deterministic matching is insufficient.
 
 ## Phase 6 — Integration
