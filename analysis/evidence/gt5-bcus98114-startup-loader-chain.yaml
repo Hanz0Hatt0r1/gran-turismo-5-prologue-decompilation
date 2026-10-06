@@ -1,0 +1,35 @@
+schema: 1
+id: gt5.bcus98114.eboot.startup-loader-chain.001
+build: BCUS-98114
+module: EBOOT.BIN
+confidence: probable
+status: reviewed
+chain:
+  - va: 0x000104b8
+    role: "runtime-to-application handoff"
+  - va: 0x00010970
+    role: "application/script loader"
+  - va: 0x00012860
+    role: "module-management helper"
+  - va: 0x00013208
+    role: "loader-stage runtime helper"
+  - va: 0x00013274
+    role: "startup dispatch helper"
+evidence:
+  - type: direct_call
+    detail: "0x000104b8 directly calls 0x00010970."
+  - type: direct_call
+    detail: "0x00010970 directly calls 0x00012860, 0x00013208, and 0x00013274."
+  - type: string
+    detail: "0x00010970 is anchored by scripts/gt5/Application and adjacent product/version metadata."
+  - type: string
+    detail: "0x00012860 is anchored by HADHOC and HModule."
+  - type: control_flow
+    detail: "0x00010970 contains a NULL-terminated linked dispatch loop over initialized application objects."
+interpretation:
+  - "The early startup path can now be modeled as a distinct application/module-loading cluster rather than unrelated address-local helpers."
+  - "The cluster boundary is evidence-backed, but exact class/API semantics remain unresolved."
+  - "This chain is retail-GT5 specific until cross-build fingerprint comparison is performed."
+unresolved:
+  - "Exact semantic API/class names for 0x00012860, 0x00013208, and 0x00013274."
+  - "Which module/object is represented by the linked-list nodes dispatched by 0x00010970."
