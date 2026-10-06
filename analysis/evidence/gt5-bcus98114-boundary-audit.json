@@ -22,5 +22,7 @@
     "continuation_edge": "unlinked direct b/bc target from pre-BLR code into post-BLR code",
     "linked_call_policy": "excluded from continuation metric and counted separately",
     "semantic_policy": "no automatic split, merge, rename, or confirmation"
-  }
+  },
+  "confidence": "probable",
+  "status": "review-required"
 }
