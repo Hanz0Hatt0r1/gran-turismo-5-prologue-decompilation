@@ -1,0 +1,42 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010970
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00010970
+name:
+  current: startup_application_loader_10970
+  candidates:
+    - application_script_loader
+confidence: probable
+status: reviewed
+fingerprints:
+  normalized_full: 8eac4437c09c578ef7d6a6c12abc553df728f01d39b0e89e18fef343f6dd48d8
+evidence:
+  - type: stack_prologue
+    detail: "0x00010970 begins with stdu r1,-0xa0(r1), saves r31/r29, and establishes a dedicated frame."
+  - type: blr
+    detail: "The first linear blr occurs at 0x00010a8c, giving a conservative range 0x00010970-0x00010a90."
+  - type: direct_call
+    detail: "0x000104b8 is the only direct-call site to 0x00010970 found in the executable scan."
+  - type: string
+    detail: "A TOC-relative load at 0x000109ac resolves to the string scripts/gt5/Application."
+  - type: direct_call
+    detail: "The body calls 0x00013274, 0x00012860, 0x00013208, and the 0x00d393xx helper layer while propagating a startup/result status."
+  - type: runtime
+    detail: "The body also performs an indirect call through a loaded function pointer near 0x00010a34, consistent with dispatch through an initialized object/table."
+callees:
+  - 0x00013274
+  - 0x00012860
+  - 0x00013208
+  - 0x00d39328
+  - 0x00d39338
+  - 0x00d39348
+  - 0x00d39358
+  - 0x00d39368
+  - 0x00d39378
+subsystems:
+  - startup
+  - application-loading
+notes:
+  - "The string reference is strong evidence for application/script loading, but the exact API and object type remain unresolved."

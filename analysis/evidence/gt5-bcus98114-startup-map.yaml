@@ -16,6 +16,7 @@ observations:
   - "0x0001027c is a separate function boundary reached by calls from 0x000102c8 and 0x00010300."
   - "0x000102c8 follows the return of 0x0001027c and begins its own stack frame."
   - "0x000104b8 calls 0x00010970, linking the early bootstrap helper cluster to the 0x10970 cluster."
+  - "0x00010970 references scripts/gt5/Application and calls 0x00013274, 0x00012860, and 0x00013208 before a state-dependent dispatch/cleanup sequence."
   - "The 0x106ac, 0x107dc, and 0x108a0 clusters repeatedly call targets in the 0xD4Fxxx region, indicating a common helper/API layer; semantic names remain unresolved."
 boundary_notes:
   - "0x00010240 is a nested stack-prologue candidate inside the 0x00010230 entry function and must not be promoted."
@@ -44,6 +45,7 @@ direct_edges:
     callsite: 0x000104b8
     target: 0x00010970
 unresolved:
-  - "Semantic identities of 0x00010338, 0x0001027c, 0x0001047c, and 0x00010970."
+  - "Semantic identities of 0x00010338, 0x0001027c, and 0x0001047c."
+  - "Exact API/object semantics of 0x00010970 despite the scripts/gt5/Application anchor."
   - "Exact symbols represented by the 0x00D392xx and 0x00D4Fxxx trampoline/helper targets."
   - "Indirect-call edges and OPD-mediated calls are not represented by this direct-call map."
