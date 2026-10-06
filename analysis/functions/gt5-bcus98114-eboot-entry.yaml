@@ -1,0 +1,27 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010230
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00010230
+name:
+  current: eboot_entry
+  candidates:
+    - runtime_entry
+confidence: confirmed
+status: analyzed
+fingerprints:
+  normalized_full: 0d9887537d3a1371142daf75c8f9adef735897ea
+  normalized_prefix: 0d9887537d3a1371142daf75c8f9adef735897ea
+evidence:
+  - type: entry_chain
+    detail: "ELF e_entry points to OPD descriptor 0x017f8150 whose code address is 0x00010230."
+  - type: opd
+    detail: "ELFv1 descriptor at 0x017f8150 contains code VA 0x00010230 and TOC VA 0x01846af0."
+  - type: neighboring_function
+    detail: "0x00010230 establishes r2 from the TOC before entering the startup call chain."
+callers: []
+callees:
+  - 0x00010338
+subsystems:
+  - startup
