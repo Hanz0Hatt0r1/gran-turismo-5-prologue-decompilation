@@ -1,0 +1,27 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010970.dispatch.001
+build: BCUS-98114
+module: EBOOT.BIN
+function_va: 0x00010970
+confidence: probable
+status: reviewed
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+toc_va: 0x01846af0
+head_pointer:
+  toc_disp: -0x7f4c
+  toc_slot_va: 0x0183eba4
+  initial_value_va: 0x01a401c0
+dispatch_loop:
+  range: "0x00010a34-0x00010a70"
+  observations:
+    - "Load a 32-bit head/node pointer from TOC slot 0x0183eba4."
+    - "Terminate when the loaded node pointer is zero."
+    - "Load the next-node pointer from node offset +0."
+    - "Load an intermediate pointer from node offset +4, then a dispatch record pointer from intermediate offset +8."
+    - "Load code and TOC words from the dispatch record at offsets +0 and +4."
+    - "Transfer control through ctr using bctrl, preserving/restoring the current TOC around the indirect call."
+    - "Advance to the next node and repeat."
+interpretation:
+  - "This is consistent with iteration over initialized runtime/application objects with per-node indirect dispatch."
+  - "The exact node type, list ownership, and method identity remain unresolved."
+  - "The loop gives stronger structural evidence for object/table-driven application startup than a single isolated bctrl would provide."
