@@ -13,9 +13,11 @@ struct test_state {
 
 static int apply_item(
     const gt5_keyed_item *item,
+    void *destination,
     void *context)
 {
     struct test_state *state = (struct test_state *)context;
+    assert(destination != NULL);
     assert(state->applied < 8u);
     state->offsets[state->applied++] = item->destination_offset;
     assert(item->key_name != NULL);
@@ -37,9 +39,12 @@ static void cleanup_item(
 
 static int fail_second_item(
     const gt5_keyed_item *item,
+    void *destination,
     void *context)
 {
     struct test_state *state = (struct test_state *)context;
+    (void)item;
+    assert(destination != NULL);
     ++state->applied;
     return state->applied == 2u ? -7 : 0;
 }
