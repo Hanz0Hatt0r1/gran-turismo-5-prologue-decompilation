@@ -1,0 +1,28 @@
+schema: 1
+game: Gran Turismo 5
+title_id: BCUS-98114
+role: reference-build
+executable_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+format: ELF64-big-endian-PowerPC64
+module: EBOOT.BIN
+entry_descriptor_va: 0x017f8150
+entry_code_va: 0x00010230
+toc_va: 0x01846af0
+observed_title_ids:
+  - BCUS-98114
+  - BCUS98114
+observed_build_strings:
+  - Gran Turismo 5
+  - gt5p
+  - gt5plogo_visible
+provenance:
+  source: local-research-input
+  note: "Local ELF supplied for clean-room reverse engineering; executable bytes are not stored in the repository."
+  verification:
+    - sha256
+    - elf-header
+    - entry-opd
+status: reviewed
+notes:
+  - "This build is the GT5 retail reference build used for cross-build comparison."
+  - "The presence of gt5p-related strings is retained as observed evidence and is not used alone to identify the build."

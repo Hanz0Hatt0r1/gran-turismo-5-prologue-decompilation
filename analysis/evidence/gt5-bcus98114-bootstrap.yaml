@@ -1,0 +1,32 @@
+schema: 1
+id: gt5.bcus98114.eboot.bootstrap.001
+build: BCUS-98114
+module: EBOOT.BIN
+subject:
+  - 0x00010230
+  - 0x00010338
+confidence: probable
+status: reviewed
+observations:
+  - "ELF e_entry is 0x017f8150, an ELFv1 function descriptor."
+  - "The descriptor at 0x017f8150 resolves to code 0x00010230 and TOC 0x01846af0."
+  - "0x00010230 establishes the TOC pointer in r2 and calls 0x00010338."
+  - "0x00010338 has a PPC64 stack frame and saves nonvolatile registers, consistent with a real function boundary."
+  - "0x00010338 calls several local/import trampoline targets and reaches 0x00010454, which calls 0x00010200."
+  - "The address 0x00010368 is inside 0x00010338 and must not be promoted as an independent function solely from candidate heuristics."
+  - "The region around 0x00106d8c contains a substantial function-like body; 0x00106e0fc is not independently accepted as a function start without additional boundary evidence."
+evidence:
+  - type: entry_chain
+    detail: "0x017f8150 -> 0x00010230 -> 0x00010338"
+  - type: opd
+    detail: "ELFv1 entry descriptor resolves to 0x00010230."
+  - type: stack_prologue
+    detail: "0x00010338 begins with stdu/mflr and saves registers r26-r31."
+  - type: direct_call
+    detail: "0x0001024c branches to 0x00010338."
+  - type: neighboring_function
+    detail: "Candidate 0x00010368 is demonstrably inside 0x00010338."
+unresolved:
+  - "Semantic identity of 0x00010338."
+  - "Exact import names behind trampoline targets in the early startup path."
+  - "Complete startup/main-loop call graph."
