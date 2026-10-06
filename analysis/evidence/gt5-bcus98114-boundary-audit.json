@@ -13,6 +13,7 @@
   "post_blr_continuation_edges": 139,
   "post_blr_conditional_edges": 102,
   "post_blr_unconditional_edges": 37,
+  "post_blr_linked_calls_excluded": 1,
   "nested_direct_call_targets_before_blr": 2078,
   "nested_stack_prologues_before_blr": 2060,
   "opd_overlaps_before_first_blr": 0,
