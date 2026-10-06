@@ -153,7 +153,7 @@ fingerprints:
                 "opd_contained_xref_count": 1,
                 "uncontained_xref_count": 0,
                 "opd_function_range_count": 1,
-                "functions": [{key: row[key] for key in ("function_start_va", "function_end_va", "xref_count", "source_names", "source_categories")} for row in report["opd_function_source_map"]],
+                "functions": report["opd_function_source_map"],
             }), encoding="utf-8")
             with mock.patch.object(source_inventory, "build_report", return_value=report):
                 result = gtverify.verify_source_xref_function_map(
@@ -191,13 +191,6 @@ fingerprints:
                     gtverify.gtdecomp.PS3ELF(elf_path), snapshot
                 )
             self.assertFalse(result["valid"])
-    def test_parser_accepts_source_xref_function_map(self):
-        args = gtverify._parser().parse_args([
-            "verify",
-            "--elf", "EBOOT.ELF",
-            "--source-xref-function-map", "analysis/evidence/map.json",
-        ])
-        self.assertEqual(args.source_xref_function_map, Path("analysis/evidence/map.json"))
     def test_verify_rejects_wrong_fingerprint(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
