@@ -1,0 +1,28 @@
+schema: 1
+id: gt5.bcus98114.eboot.application-loader.10970.001
+build: BCUS-98114
+module: EBOOT.BIN
+subject:
+  - 0x000104b8
+  - 0x00010970
+confidence: probable
+status: reviewed
+observations:
+  - "The early startup path at 0x000104b8 directly calls 0x00010970."
+  - "0x00010970 has an independent PPC64 stack frame and terminates at 0x00010a8c."
+  - "The function loads the TOC-backed string scripts/gt5/Application at 0x000109ac."
+  - "The function invokes 0x00013274, 0x00012860 and 0x00013208 before entering a small state-dependent dispatch/cleanup sequence."
+  - "A function pointer is loaded from a TOC-backed object near 0x00010a34 and invoked via CTR, so the complete call graph is not purely direct."
+evidence:
+  - type: string
+    detail: "scripts/gt5/Application is the strongest semantic anchor currently available for 0x00010970."
+  - type: direct_call
+    detail: "The executable contains one direct caller at 0x000104b8."
+  - type: stack_prologue
+    detail: "A canonical stack frame starts at 0x00010970."
+  - type: blr
+    detail: "The first linear return is at 0x00010a8c."
+unresolved:
+  - "Exact implementation/API represented by 0x00013274, 0x00012860 and 0x00013208."
+  - "The object/function-pointer type behind the indirect call near 0x00010a34."
+  - "Whether scripts/gt5/Application is the final application entry resource or an intermediate script/module name."
