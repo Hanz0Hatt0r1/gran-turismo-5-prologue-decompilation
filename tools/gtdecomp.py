@@ -556,9 +556,37 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
                     add(nxt, "after-blr")
                     break
 
-    # Strong boundaries are established by OPD/entry/direct-call evidence.
-    # A stack prologue inside the interval between two strong starts is not a
-    # new function unless the previous strong function has already returned.
+    # OPD/entry starts are unconditional boundaries. Direct call targets are
+    # strong only when they are not merely local labels inside an already-open
+    # function. This matters on stripped PPU binaries where calls to local
+    # labels can look exactly like calls to another function.
+    opd_starts = sorted(
+        va for va, kinds in evidence.items() if kinds.intersection({"opd", "entry"})
+    )
+
+    def is_inside_open_strong_function(va: int) -> bool:
+        import bisect
+
+        i = bisect.bisect_left(opd_starts, va) - 1
+        if i < 0:
+            return False
+        previous = opd_starts[i]
+        for probe in range(previous, va, 4):
+            off = elf.va_to_offset(probe)
+            if off is None or off + 4 > len(elf.data):
+                break
+            ins = _u32(elf.data, off)
+            if ins == 0x4E800020:  # blr closes the linear function body
+                return False
+        return True
+
+    for va, kinds in list(evidence.items()):
+        if "direct-call" in kinds and is_inside_open_strong_function(va):
+            kinds.discard("direct-call")
+            if not kinds:
+                del evidence[va]
+
+    # Recompute the strong starts after pruning nested direct-call labels.
     strong_starts = sorted(
         va for va, kinds in evidence.items()
         if kinds.intersection({"opd", "entry", "direct-call"})
