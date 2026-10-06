@@ -39,3 +39,7 @@ jobs:
             src/startup/gt5_dispatch_walker.c tests/test_gt5_dispatch_walker.c \
             -o "$tmp/gt5_dispatch_walker"
           "$tmp/gt5_dispatch_walker"
+          cc -std=c11 -Wall -Wextra -Werror -pedantic -Isrc/startup \
+            src/startup/gt5_keyed_config.c tests/test_gt5_keyed_config.c \
+            -o "$tmp/gt5_keyed_config"
+          "$tmp/gt5_keyed_config"
