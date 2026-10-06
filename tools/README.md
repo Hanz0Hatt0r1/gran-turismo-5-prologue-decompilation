@@ -62,6 +62,26 @@ unique normalized-prefix matches are used as a lower-confidence fallback.
 This is intended to transfer research labels between GT5 retail, GT5 Prologue,
 and updates without assuming that absolute addresses are stable.
 
+### Reviewed symbol/address catalog
+
+`gtcatalog.py` is the dependency-free validation and query layer for
+repository-readable research metadata. It checks required identity fields,
+validates build hashes/addresses, detects duplicate function addresses within
+a build/module, searches declared or referenced addresses and names, and emits
+compact catalog summaries.
+
+```bash
+python3 tools/gtcatalog.py validate analysis
+python3 tools/gtcatalog.py search analysis --address 0x10230
+python3 tools/gtcatalog.py search analysis --name eboot_entry
+python3 tools/gtcatalog.py summary analysis
+```
+
+The YAML support intentionally covers the project's simple mapping records rather
+than attempting to be a general YAML parser. JSON records are parsed structurally.
+The validator operates only on metadata already present under `analysis/`; it
+never reads or stores executable contents.
+
 ### Import an existing Ghidra C export
 
 Older Ghidra projects can be folded into the same database without rerunning
@@ -97,11 +117,10 @@ by Git.
 ### Tests
 
 ```bash
-python3 -m unittest tests/test_gtdecomp.py
+python3 -m unittest discover -s tests -v
 ```
 
-Tests use synthetic ELF data only.
-
+Tests use synthetic data only and do not require a game executable.
 
 ### Apply the index in Ghidra
 
