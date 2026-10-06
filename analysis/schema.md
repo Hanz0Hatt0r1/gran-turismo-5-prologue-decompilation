@@ -133,6 +133,14 @@ Generated comparison output may also include:
 
 The ranking is intentionally one-way: secondary callgraph, import-context, and RTTI/vtable evidence can strengthen an already established fingerprint match, but cannot create a match or mark it accepted. The tool does not emit `confirmed` automatically; that level remains a human-reviewed status.
 
+## Cross-build catalog validation
+
+Cross-build records under `analysis/crossref/` are schema-validated independently from
+build/function/evidence records. They require both build/module/address sides, a supported
+comparison method, confidence, and an explicit `review_status`.
+
+Allowed review states are `candidate`, `pending`, `accepted`, and `rejected`.
+Validation never promotes a match; it only rejects malformed metadata.
 ## Generated versus reviewed data
 
 Generated output belongs in local output directories unless intentionally promoted to a reviewed research artifact.
