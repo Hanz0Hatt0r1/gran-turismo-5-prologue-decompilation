@@ -153,7 +153,7 @@ fingerprints:
                 "opd_contained_xref_count": 1,
                 "uncontained_xref_count": 0,
                 "opd_function_range_count": 1,
-                "functions": report["opd_function_source_map"],
+                "functions": [{key: row[key] for key in ("function_start_va", "function_end_va", "xref_count", "source_names", "source_categories")} for row in report["opd_function_source_map"]],
             }), encoding="utf-8")
             with mock.patch.object(source_inventory, "build_report", return_value=report):
                 result = gtverify.verify_source_xref_function_map(
