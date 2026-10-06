@@ -64,6 +64,12 @@ apply derived evidence, then export one pseudocode file per indexed function.
 The output manifest keeps the normalized fingerprint beside each Ghidra name so
 that later builds can reuse research labels through the cross-build matcher.
 
+`tools/audit_boundaries.py` performs a non-destructive PPU boundary audit on a
+user-provided ELF. It checks the first linear `blr` against direct **unlinked**
+branches from the pre-BLR region into post-BLR code. Linked branches are calls,
+not continuation evidence, and are counted separately. The audit emits review
+candidates only; it never changes function boundaries or semantic names.
+
 Decompiler output is evidence, not reconstructed source. Reviewed behavior is
 rewritten independently under `src/` and tested separately.
 
