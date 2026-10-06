@@ -642,7 +642,36 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
     return sorted(rows, key=lambda r: r.code_va)
 
 
-def extract_call_edges(\n    elf: PS3ELF,\n    function_starts: Sequence[int],\n    max_size: int = 0x4000,\n) -> List[CallEdge]:\n    """Extract direct PPU call edges from conservative function ranges.\n\n    Only direct bl/bla-class branches are emitted. This deliberately excludes\n    indirect calls through registers/OPD descriptors, so the result is a\n    high-confidence partial call graph rather than a guessed complete one.\n    """\n    ranges = function_ranges_from_starts(elf, function_starts, max_size=max_size)\n    rows: List[CallEdge] = []\n    for start, end in ranges:\n        off = elf.va_to_offset(start)\n        if off is None:\n            continue\n        for rel in range(0, end - start, 4):\n            va = start + rel\n            ins = _u32(elf.data, off + rel)\n            if ((ins >> 26) & 0x3F) != 18 or not (ins & 1):\n                continue\n            target = _ppc_branch_target(ins, va)\n            if target is None:\n                continue\n            rows.append(CallEdge(start, va, target, "direct"))\n    return rows\n\n\ndef build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
+def extract_call_edges(
+    elf: PS3ELF,
+    function_starts: Sequence[int],
+    max_size: int = 0x4000,
+) -> List[CallEdge]:
+    """Extract direct PPU call edges from conservative function ranges.
+
+    Only direct bl/bla-class branches are emitted. This deliberately excludes
+    indirect calls through registers/OPD descriptors, so the result is a
+    high-confidence partial call graph rather than a guessed complete one.
+    """
+    ranges = function_ranges_from_starts(elf, function_starts, max_size=max_size)
+    rows: List[CallEdge] = []
+    for start, end in ranges:
+        off = elf.va_to_offset(start)
+        if off is None:
+            continue
+        for rel in range(0, end - start, 4):
+            va = start + rel
+            ins = _u32(elf.data, off + rel)
+            if ((ins >> 26) & 0x3F) != 18 or not (ins & 1):
+                continue
+            target = _ppc_branch_target(ins, va)
+            if target is None:
+                continue
+            rows.append(CallEdge(start, va, target, "direct"))
+    return rows
+
+
+def build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
     rows: List[Fingerprint] = []
     for va, end in function_ranges_from_starts(elf, starts, max_size=max_size):
         size = end - va
