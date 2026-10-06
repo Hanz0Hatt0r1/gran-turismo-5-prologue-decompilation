@@ -81,11 +81,12 @@ def post_blr_targets(
     start: int,
     blr: int,
     upper: int,
+    sources: Optional[Sequence[int]] = None,
 ) -> List[Tuple[int, int, int, bool]]:
     """Find direct branches from before the first blr into the post-blr region."""
-    sources = [row[0] for row in branches]
-    i = bisect.bisect_left(sources, start)
-    j = bisect.bisect_left(sources, blr)
+    source_index = sources if sources is not None else [row[0] for row in branches]
+    i = bisect.bisect_left(source_index, start)
+    j = bisect.bisect_left(source_index, blr)
     return [row for row in branches[i:j] if blr < row[1] < upper]
 
 
@@ -112,7 +113,7 @@ def audit(elf: PS3ELF) -> Dict[str, object]:
         upper = min(limit if limit is not None else start + 0x4000, start + 0x4000)
 
         if blr is not None:
-            post = post_blr_targets(branches, start, blr, upper)
+            post = post_blr_targets(branches, start, blr, upper, branch_sources)
             for src, target, op, linked in post:
                 continuation_suspects.append(
                     {
