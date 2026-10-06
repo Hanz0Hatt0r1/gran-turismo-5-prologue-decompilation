@@ -1,0 +1,106 @@
+schema: 1
+id: gt5.bcus98114.eboot.startup-1347c.001
+build: BCUS-98114
+module: EBOOT.BIN
+confidence: probable
+status: reviewed
+target:
+  va: 0x0001347c
+  range: "0x0001347c-0x000139d4"
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+evidence:
+  - type: stack_prologue
+    address: 0x0001347c
+    detail: "stdu r1,-0x140(r1) followed by nonvolatile register saves establishes a distinct PPC64 function."
+  - type: blr
+    address: 0x000139d0
+    detail: "First linear blr terminates the reviewed range at 0x000139d4."
+  - type: direct_call
+    address: 0x000132e8
+    detail: "startup_helper_13274 directly calls 0x0001347c."
+  - type: toc_string
+    address: 0x000134bc
+    toc_slot_va: 0x0183edf0
+    string_va: 0x0152ac98
+    string: "HADHOC"
+    detail: "lwz r3,-0x7d00(r2) resolves the retained ASCII module-name string HADHOC."
+  - type: toc_string
+    address: 0x000134cc
+    toc_slot_va: 0x0183edf4
+    string_va: 0x0152aca0
+    string: "pdistd"
+    detail: "The first secondary module-name slot is loaded into r4 for the repeated module setup sequence."
+  - type: toc_string
+    address: 0x000135a4
+    toc_slot_va: 0x0183edfc
+    string_va: 0x0152aca8
+    string: "pdiext"
+    detail: "The second repeated subpath uses pdiext."
+  - type: toc_string
+    address: 0x0001367c
+    toc_slot_va: 0x0183ee04
+    string_va: 0x0152acb0
+    string: "menu"
+    detail: "The third repeated subpath uses menu."
+  - type: toc_string
+    address: 0x00013744
+    toc_slot_va: 0x0183ee0c
+    string_va: 0x0152acb8
+    string: "gtengine"
+    detail: "The fourth repeated subpath uses gtengine."
+  - type: toc_string
+    address: 0x00013820
+    toc_slot_va: 0x0183ee14
+    string_va: 0x0152acc8
+    string: "gtmenu"
+    detail: "The fifth repeated subpath uses gtmenu."
+  - type: toc_string
+    address: 0x000138f8
+    toc_slot_va: 0x0183ee1c
+    string_va: 0x0152acd0
+    string: "pdiapp"
+    detail: "The sixth repeated subpath uses pdiapp."
+  - type: control_flow
+    address: 0x000134c0
+    detail: "The first subpath gates work on a nonzero local/state value before calling the HADHOC helper veneer, then stages pdistd through the common 0xd4f8d8/0xd399b8 pair."
+  - type: control_flow
+    address: 0x00013910
+    detail: "The final repeated subpath retains the same staged structure for pdiapp and ends with a shared cleanup/return sequence."
+  - type: control_flow
+    address: 0x00013994
+    detail: "Each repeated record has a length/byte state on the stack, and the failure/cleanup path increments the length and passes the record through 0xd39728."
+fingerprint:
+  normalized_full: 10dacbccc352e5d7f28755cac2479650f437a6f0
+  normalized_prefix: ad67b123115e355d062bb69ab8b2d4539ddc2b4d
+secondary_toc_pairs:
+  - module: "pdistd"
+    name_slot_va: 0x0183edf4
+    config_pointer_slot_va: 0x0183edf8
+    config_pointer_value: 0x01831310
+  - module: "pdiext"
+    name_slot_va: 0x0183edfc
+    config_pointer_slot_va: 0x0183ee00
+    config_pointer_value: 0x018281a0
+  - module: "menu"
+    name_slot_va: 0x0183ee04
+    config_pointer_slot_va: 0x0183ee08
+    config_pointer_value: 0x0181bd50
+  - module: "gtengine"
+    name_slot_va: 0x0183ee0c
+    config_pointer_slot_va: 0x0183ee10
+    config_pointer_value: 0x017f9d50
+  - module: "gtmenu"
+    name_slot_va: 0x0183ee14
+    config_pointer_slot_va: 0x0183ee18
+    config_pointer_value: 0x017f84b8
+  - module: "pdiapp"
+    name_slot_va: 0x0183ee1c
+    config_pointer_slot_va: 0x0183ee20
+    config_pointer_value: 0x017f8390
+interpretation:
+  - "0x1347c is a module-group initializer/dispatcher candidate directly under the reviewed 0x13274 startup helper."
+  - "The six secondary module names and their paired TOC-resolved configuration pointers provide stronger evidence than a single retained string."
+  - "The configuration-pointer values are recorded only as executable-derived addresses; their pointed-to structures are not semantically named."
+unresolved:
+  - "Exact semantics of 0xd4f8d8, 0xd399b8, and 0xd39728."
+  - "Exact structure/type represented by each configuration pointer."

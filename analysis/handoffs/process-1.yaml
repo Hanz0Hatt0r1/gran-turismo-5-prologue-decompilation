@@ -1,0 +1,28 @@
+schema: 1
+process: 1
+status: active
+last_updated: "2026-10-06"
+branch: "agent/gt5-reference/12dd4-helper"
+current_focus: "GT5 startup/module-management cluster around 0x12dd4 and 0x1347c."
+completed:
+  - "Reviewed 0x12dd4 as a distinct 0x434-byte function ending at the first linear blr 0x13204."
+  - "Verified normalized full/prefix fingerprints from the BCUS-98114 ELF."
+  - "Verified the unique direct caller at 0x132e0 inside 0x13274."
+  - "Recorded the exact TOC-resolved HADHOC string reference at 0x12eac."
+  - "Reviewed 0x1347c as a distinct 0x558-byte function ending at first linear blr 0x139d0."
+  - "Verified 0x1347c normalized full/prefix fingerprints and unique caller 0x132e8 inside 0x13274."
+  - "Recorded six repeated module-name/config-pointer subpaths for pdistd, pdiext, menu, gtengine, gtmenu, and pdiapp."
+evidence:
+  - "0x13274 -> 0x12dd4 is the only direct call to 0x12dd4 in the executable scan."
+  - "TOC 0x01846af0 minus 0x7d04 gives slot 0x0183edec, containing pointer 0x0152ac90 -> HADHOC."
+next_targets:
+  - "Deepen the 0x12dd4 helper family only where a new reproducible semantic fact appears."
+  - "Audit adjacent 0x13xxx helpers called by 0x13274 for additional retained module/source evidence."
+dependencies:
+  - "None for the current GT5 ELF-backed task."
+open_prs:
+  - number: 99
+    title: "Map GT5 0x12dd4 module-management helper"
+notes:
+  - "Do not commit the user-provided EBOOT.ELF; only derived metadata is recorded."
+  - "Exact HModule/API semantics remain unresolved and must not be promoted from the HADHOC string alone."

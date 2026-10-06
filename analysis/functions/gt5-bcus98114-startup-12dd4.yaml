@@ -1,0 +1,64 @@
+schema: 1
+id: gt5.bcus98114.eboot.00012dd4
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00012dd4
+name:
+  current: startup_module_scan_helper_12dd4
+  candidates:
+    - startup_hadoc_module_scan
+confidence: probable
+status: reviewed
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: project-compatible PPC instruction normalization
+    range: "0x00012dd4-0x00013208"
+    first_linear_blr: "0x00013204"
+  fingerprint_verified: true
+fingerprints:
+  normalized_full: fc53d1df3d0b19dcd5905f8cdd9e9058e456f4f1
+  normalized_prefix: 8e8fb779ee168d82d565cdd6ded2efe26cdb2483
+evidence:
+  - type: stack_prologue
+    detail: "Begins with stdu r1,-0xf0(r1), saves r21-r31 plus LR, and establishes a complete PPC64 frame."
+  - type: blr
+    detail: "The first linear blr is at 0x00013204, giving a conservative function range 0x00012dd4-0x00013208 (0x434 bytes, 269 instructions)."
+  - type: direct_call
+    detail: "The only direct caller found in the executable scan is callsite 0x000132e0 inside 0x00013274."
+  - type: toc_string
+    detail: "At 0x00012eac, lwz r3,-0x7d04(r2) resolves through TOC slot 0x0183edec to string VA 0x0152ac90, whose value is HADHOC."
+  - type: control_flow
+    detail: "The body initializes local state, obtains a count/result pair through 0x00d396d8 and 0x00d396e8, then iterates while r22 differs from the loop index r24; the loop advances r26 by 4 bytes."
+  - type: control_flow
+    detail: "The loop handles a null state pointer at r28 and otherwise passes the HADHOC module-name pointer as the first argument to the helper reached through veneer 0x00d397b8."
+  - type: control_flow
+    detail: "The body has explicit -1 result handling through 0x00d397e8 and uses helper calls reached through the 0x00d393xx/0x00d397xx veneer families for allocation, string/byte processing, and cleanup-like paths; exact API semantics remain unresolved."
+  - type: neighboring_function
+    detail: "0x00013274 begins immediately after the first linear blr and is a separate independently reviewed function."
+callees:
+  - 0x00d39838
+  - 0x00d39848
+  - 0x01111bb8
+  - 0x00d396d8
+  - 0x00d396e8
+  - 0x00d39378
+  - 0x00d397b8
+  - 0x00d397d8
+  - 0x00d397e8
+  - 0x00d39718
+  - 0x00d39348
+  - 0x00d39368
+  - 0x00d39728
+  - 0x00d39738
+  - 0x00d395e8
+  - 0x00d39858
+  - 0x00d39868
+subsystems:
+  - startup
+  - application-loading
+  - module-management
+notes:
+  - "The HADHOC reference and unique caller from startup_helper_13274 make this a stronger module-management candidate than an address-only label."
+  - "The record deliberately does not promote an exact HModule/class or platform API name: the retained evidence establishes the module-name argument and control-flow shape, not the full callee semantics."
