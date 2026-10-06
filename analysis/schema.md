@@ -12,6 +12,7 @@ The schema is build-aware: an address is never meaningful without its build and 
 4. Semantic names require explicit evidence and confidence.
 5. Generated indexes may be reproduced locally and must not contain proprietary input.
 6. Cross-build matches transfer research metadata only; they do not establish semantic equivalence by themselves.
+7. Reference and target builds remain separate even when their engines are closely related.
 
 ## Build record
 
@@ -19,16 +20,28 @@ Build records live under `analysis/builds/`.
 
 Required fields: `schema`, `game`, `title_id`, `role`, `executable_sha256`, `format`, `entry_descriptor_va`, `entry_code_va`, and `toc_va` when known.
 
+Recommended derived fields include `observed_title_ids`, `observed_build_strings`, and provenance/verification notes. These record what the executable contains without silently overriding the canonical build identity established from provenance.
+
+Roles currently used:
+
+- `reference-build` — a build used as a richer comparison source.
+- `target-build` — a build being reconstructed as a primary target.
+- `comparison-build` — an additional build used for cross-checking.
+
 Example:
 
-    {
-      "schema": 1,
-      "game": "Gran Turismo 5 Prologue",
-      "title_id": "BCUS-98158",
-      "role": "target-build",
-      "executable_sha256": "<local-input-sha256>",
-      "format": "ELF64-big-endian-PowerPC64"
-    }
+    schema: 1
+    game: Gran Turismo 5
+    title_id: BCUS-98114
+    role: reference-build
+    executable_sha256: <local-input-sha256>
+    format: ELF64-big-endian-PowerPC64
+    module: EBOOT.BIN
+    entry_descriptor_va: 0x017f8150
+    entry_code_va: 0x00010230
+    toc_va: 0x01846af0
+    observed_title_ids:
+      - BCUS-98114
 
 Never store the executable itself.
 
@@ -39,27 +52,25 @@ Function-level records are keyed by build/module/address and carry a stable fing
 Example:
 
     schema: 1
-    id: gt5p.bcus98158.eboot.00106e0
-    build: BCUS-98158
+    id: gt5.bcus98114.eboot.00010230
+    build: BCUS-98114
     module: EBOOT.BIN
     address:
-      va: 0x106E0
+      va: 0x10230
     name:
-      current: sub_106E0
+      current: eboot_entry
       candidates:
-        - game_bootstrap
-    confidence: probable
+        - runtime_entry
+    confidence: confirmed
     status: analyzed
     fingerprints:
       normalized_full: "<sha256>"
-      normalized_prefix: "<sha256>"
     evidence:
-      - type: callgraph
-        detail: "reached from CRT/bootstrap chain"
-      - type: import
-        detail: "uses cellGameDataCheckCreate2"
+      - type: entry_chain
+        detail: "resolved from the ELFv1 entry descriptor"
     callers: []
-    callees: []
+    callees:
+      - 0x10338
     subsystems:
       - startup
 
@@ -93,7 +104,7 @@ Keep both sides of every match:
     confidence: probable
     review_status: pending
 
-Initial methods: `normalized-full`, `normalized-prefix`, `manual`.
+Initial methods: `normalized-full`, `normalized-prefix`, `manual`, `callgraph`, `rtti-vtable`, and `import-context`.
 
 A cross-build match must never silently overwrite a manually verified target name.
 
