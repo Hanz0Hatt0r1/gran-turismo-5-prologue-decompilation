@@ -1,0 +1,18 @@
+schema: 1
+library: sysPrxForUser
+platform: PS3
+status: reviewed
+
+symbols:
+  - nid: 0xa2c7ba64
+    name: sys_prx_exitspawn_with_level
+    confidence: confirmed
+    source: "PS3 Developer wiki Nids.txt"
+  - nid: 0x744680a2
+    name: sys_initialize_tls
+    confidence: confirmed
+    source: "PS3 Developer wiki Nids.txt"
+  - nid: 0xe6f2c1e7
+    name: sys_process_exit
+    confidence: confirmed
+    source: "PS3 Developer wiki Nids.txt"
