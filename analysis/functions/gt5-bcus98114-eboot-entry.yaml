@@ -10,6 +10,13 @@ name:
     - runtime_entry
 confidence: confirmed
 status: analyzed
+provenance:
+  source: local-research-input
+  executable_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  binary_in_git: false
+  disassembly:
+    range: "0x00010230-0x00010240"
+    termination: "first linear blr at 0x0001023c-0x00010240"
 fingerprints:
   normalized_full: 0d9887537d3a1371142daf75c8f9adef735897ea
   normalized_prefix: 0d9887537d3a1371142daf75c8f9adef735897ea
