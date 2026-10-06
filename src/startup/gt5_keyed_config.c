@@ -1,5 +1,7 @@
 #include "gt5_keyed_config.h"
 
+/* Provenance: clean-room model of GT5 BCUS-98114 function 0x000106ac. */
+
 static const uint32_t kFingerprintOffset = 0x00u;
 static const uint32_t kFingerprintSizeOffset = 0x14u;
 static const uint32_t kCertificateOffset = 0x28u;
