@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "game": "Gran Turismo 5 Prologue",
+  "title_id": "BCUS-98158",
+  "role": "target-build",
+  "module": "EBOOT.BIN",
+  "executable_sha256": "f58e36b3cb371e357ae0f3a019fb339c653682bc7ff6423abf3c2c7db50eef2a",
+  "executable_format": "PS3 SELF v2 APP",
+  "embedded_format": "ELF64-big-endian-PowerPC64",
+  "entry_descriptor_va": "0x000717d8",
+  "entry_code_va": "0x00010230",
+  "toc_va": "0x0007d110",
+  "baseline_index": {
+    "function_descriptors": 1833,
+    "unique_function_addresses": 1824,
+    "import_libraries": 8,
+    "import_functions": 74
+  },
+  "observed_identity": [
+    "BCUS-98158",
+    "BCUS98158",
+    "gt5p",
+    "boot.gt5p.us.ps3.product-bd-key.release.build",
+    "NPUA80075_00",
+    "UP9000-NPUA80075_00",
+    "/dev_bdvd/PS3_GAME/USRDIR",
+    "/dev_bdvd/PS3_GAME/USRDIR/GT.VOL"
+  ],
+  "notes": [
+    "Metadata-only build profile; the executable and decrypted payload are not stored in Git.",
+    "The executable_sha256 identifies the supplied EBOOT.BIN SELF container used by the prior BCUS-98158 analysis.",
+    "The embedded ELF entry is an ELFv1 PPU function descriptor; code 0x10230 is the executable entry routine.",
+    "The profile is US-specific and must not be merged with other GT5 Prologue regions or revisions without validation.",
+    "Provenance: normalized from the repository's existing BCUS-98158 executable analysis (PR #10)."
+  ]
+}
