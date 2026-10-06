@@ -96,6 +96,8 @@ python3 tools/gtverify.py verify --elf /path/to/EBOOT.ELF \
   --function-dir analysis/functions
 ```
 
+`gtverify.py verify` also supports `--source-xref-function-map` to validate the derived GT5 source-file TOC xref snapshot against the exact same user-provided ELF; it checks SHA-256, control totals, and the semantic function-map fields without promoting names.
+
 The verifier reads the user-provided executable locally and never copies it into the repository.
 
 ## Import symbol names
