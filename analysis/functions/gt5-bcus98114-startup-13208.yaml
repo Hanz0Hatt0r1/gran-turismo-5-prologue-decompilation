@@ -1,0 +1,48 @@
+schema: 1
+id: gt5.bcus98114.eboot.00013208
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00013208
+name:
+  current: startup_helper_13208
+  candidates:
+    - startup_runtime_helper
+confidence: probable
+status: reviewed
+fingerprints:
+  normalized_full: deef374c3d233de0ba9107daa4cf4f0df2e8c984
+evidence:
+  - type: stack_prologue
+    detail: "Begins with stdu r1,-0x70(r1), saves LR, and restores the frame at 0x00013270."
+  - type: blr
+    detail: "The first linear blr is at 0x00013270, giving a conservative range 0x00013208-0x00013274."
+  - type: direct_call
+    detail: "The only direct caller found in the executable scan is 0x000109b8 inside startup_application_loader_10970."
+  - type: call_sequence
+    detail: "The body performs a fixed initialization/cleanup sequence through 0xd39878, 0x13330, 0x13c90, 0x133cc, 0xd39888, 0xd39898, 0xd398a8, 0x13ad4, 0x13bec, and 0x13414."
+  - type: source_xref
+    detail: "No retained source-file string is reached by a direct r2-based TOC load inside the function range."
+callees:
+  - 0x00d39878
+  - 0x00013330
+  - 0x00013c90
+  - 0x000133cc
+  - 0x00d39888
+  - 0x00d39898
+  - 0x00d398a8
+  - 0x00013ad4
+  - 0x00013bec
+  - 0x00013414
+subsystems:
+  - startup
+  - runtime
+notes:
+  - "The function's caller context makes it a loader-stage runtime helper, but the internal helper APIs and exact side effects remain unresolved."
+  - "No semantic name is promoted beyond the address-derived startup role."
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: llvm-objdump
+    target: powerpc64-unknown-linux-gnu
+    range: "0x00013208-0x00013274"
