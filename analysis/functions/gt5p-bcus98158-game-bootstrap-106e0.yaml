@@ -19,8 +19,6 @@ evidence:
     detail: "The existing Prologue analysis observes cellSysmoduleInitialize and cellSysmoduleLoadModule(CELL_SYSMODULE_FS) in this routine."
   - type: runtime
     detail: "A large application-state frame and service initialization distinguish 0x000106e0 from the preceding CRT layer."
-callees:
-  - 0x00000000
 subsystems:
   - startup
   - game-bootstrap
