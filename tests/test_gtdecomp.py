@@ -66,6 +66,38 @@ class GTDecompTests(unittest.TestCase):
             tool.write_text("#!/bin/sh\n")
             self.assertEqual(gtdecomp.resolve_analyze_headless(Path(td)), tool.resolve())
 
+    def test_parse_64bit_elfv1_opd_fields(self):
+        # ELFv1 OPD stores both descriptor fields as full 64-bit addresses.
+        # Keep the values above 32 bits to catch accidental truncation.
+        data = bytearray(0x500)
+        data[0:16] = b"\\x7fELF\\x02\\x02\\x01\\x66" + b"\\0" * 8
+        entry = 0x0000000200003000
+        code = 0x0000000100001000
+        toc = 0x0000000200003800
+        struct.pack_into(">HHIQQQIHHHHHH", data, 16,
+                         2, 21, 1, entry, 64, 0x400, 0,
+                         64, 56, 2, 64, 3, 2)
+        struct.pack_into(">IIQQQQQQ", data, 64,
+                         1, 5, 0x200, 0x0000000100001000, 0x0000000100001000, 0x100, 0x100, 0x10)
+        struct.pack_into(">IIQQQQQQ", data, 120,
+                         1, 6, 0x300, 0x0000000200003000, 0x0000000200003000, 0x40, 0x40, 8)
+        struct.pack_into(">QQ", data, 0x300, code, toc)
+        names = b"\\0.text\\0.opd\\0.shstrtab\\0"
+        data[0x380:0x380 + len(names)] = names
+        struct.pack_into(">IIQQQQIIQQ", data, 0x440,
+                         7, 1, 0x3, 0x0000000200003000, 0x300, 0x40, 0, 0, 8, 0)
+        struct.pack_into(">IIQQQQIIQQ", data, 0x480,
+                         12, 3, 0, 0, 0x380, len(names), 0, 0, 1, 0)
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "tiny-u64.elf"
+            p.write_bytes(data)
+            elf = gtdecomp.PS3ELF(p)
+            found_toc, opd = gtdecomp.find_opd(elf)
+            self.assertEqual(elf.entry, entry)
+            self.assertEqual(found_toc, toc)
+            self.assertEqual([(x.descriptor_va, x.code_va, x.toc_va) for x in opd[:1]],
+                             [(entry, code, toc)])
+
     def test_parse_minimal_ppc64_elf_and_opd(self):
         # Build a tiny synthetic PS3-like ELF with one executable segment and
         # one writable descriptor section. It contains no proprietary data.
