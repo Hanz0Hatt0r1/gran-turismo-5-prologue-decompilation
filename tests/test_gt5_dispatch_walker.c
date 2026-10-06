@@ -44,12 +44,12 @@ static void test_two_node_traversal(void)
         {0x1004, 0x1200},
         {0x1100, 0x2000},
         {0x1200, 0x1208},
-        {0x120c, 0x3000},
-        {0x1210, 0x4000},
+        {0x1208, 0x3000},
         {0x2000, 0x2100},
         {0x2104, 0x2200},
         {0x2208, 0x5000},
         {0x220c, 0x6000},
+        {0x2100, 0x0000},
     };
     struct test_context ctx = {words, sizeof(words) / sizeof(words[0]), {0}, {0}, 0};
 
