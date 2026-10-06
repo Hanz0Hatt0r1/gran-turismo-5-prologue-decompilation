@@ -38,5 +38,5 @@ interpretation:
   - "The exact presence of HADHOC as an argument is reproducible from the ELF and materially strengthens the module-loading interpretation."
   - "The 0xd397xx and 0xd398xx addresses are ABI/PIC veneers; their target APIs are intentionally left unnamed here."
 unresolved:
-  - "Exact semantic identity of the 0x00d397b8 target and the runtime state structure at 0x00d...",
+  - "Exact semantic identity of the 0x00d397b8 target and the runtime state structure reached through TOC slot 0x0183ede4 remain unresolved.",
   - "Whether the scanned entries correspond one-to-one with HModule objects or another module registry representation."
