@@ -2,6 +2,7 @@ import json
 import struct
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import gtcatalog
@@ -116,7 +117,7 @@ fingerprints:
                 "opd_function_range_count": 1,
                 "functions": report["opd_function_source_map"],
             }), encoding="utf-8")
-            with unittest.mock.patch.object(source_inventory, "build_report", return_value=report):
+            with mock.patch.object(source_inventory, "build_report", return_value=report):
                 result = gtverify.verify_source_xref_function_map(
                     gtverify.gtdecomp.PS3ELF(elf_path), snapshot
                 )
