@@ -1,0 +1,48 @@
+schema: 1
+id: gt5.bcus98114.eboot.000106ac.config.001
+build: BCUS-98114
+module: EBOOT.BIN
+function_va: 0x000106ac
+confidence: probable
+status: reviewed
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+toc_va: 0x01846af0
+runtime_object:
+  toc_disp: -0x7f84
+  toc_slot_va: 0x0183eb5c
+  initial_pointer_va: 0x018ed1d8
+  storage_class: "runtime/BSS-backed pointer target; exact object type unresolved"
+fields:
+  - destination_offset: 0x00
+    key_string: "GT5_FINGERPRINT"
+    helper_va: 0x00d4f704
+    payload_status: opaque
+  - destination_offset: 0x14
+    key_string: "GT5_FINGERPRINT_SIZE"
+    helper_va: 0x00d4f684
+    payload_status: "immediate value 16"
+  - destination_offset: 0x28
+    key_string: "GT5_CLIENT_CERTIFICATE"
+    helper_va: 0x00d4f604
+    payload_status: opaque
+  - destination_offset: 0x3c
+    key_string: "GT5_CLIENT_PRIVATEKEY"
+    helper_va: 0x00d4f604
+    payload_status: opaque
+  - destination_offset: 0x50
+    key_string: "GT5P_TVBASEKEY"
+    helper_va: 0x00d4f604
+    payload_status: opaque
+control_flow:
+  success:
+    entry_block: 0x000106e0
+    cleanup_block: 0x00010768
+    final_status_call: 0x00d4f59c
+  fallback:
+    entry_block: 0x0001075c
+    cleanup_order: [0x50, 0x3c, 0x28, 0x14]
+    final_status_call: 0x00d4f59c
+interpretation:
+  - "The body performs deterministic keyed initialization of five adjacent destination regions and a reverse-order cleanup path."
+  - "This is stronger evidence for a structured configuration/runtime record than for an independent game-level entry point."
+  - "No payload bytes are recorded; key/certificate/private-key storage remains opaque."

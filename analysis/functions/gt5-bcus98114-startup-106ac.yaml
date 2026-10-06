@@ -10,6 +10,19 @@ confidence: probable
 status: reviewed
 fingerprints:
   normalized_full: cbe39f44c67150874c0a4ae99c5446bfd8fa7f3d85323a8acd8089ef54833dab
+reconstructed_operations:
+  - id: argument_gate
+    range: "0x000106b4-0x000106d4"
+    behavior: "Compares r3 against 1 and 0, and compares r4 against -1 before selecting the initialization or fallback path."
+    confidence: confirmed
+  - id: keyed_initialization
+    range: "0x000106e0-0x00010748"
+    behavior: "Uses a runtime object pointer loaded from TOC displacement -0x7f84 and performs five keyed helper calls; the second passes immediate value 16, while the remaining payload pointers are treated as opaque."
+    confidence: confirmed
+  - id: reverse_cleanup
+    range: "0x00010768-0x000107a0"
+    behavior: "On the fallback path, invokes cleanup helpers on the same five destination regions in reverse order and returns the final object-status result."
+    confidence: confirmed
 evidence:
   - type: stack_prologue
     detail: "0x000106ac begins with stdu r1,-0x90(r1), saves LR and r29, and forms a complete PPC64 function frame."
@@ -36,4 +49,5 @@ subsystems:
   - online-service-configuration
 notes:
   - "The semantic role remains unresolved; this record exists to make the boundary decision explicit and reproducible."
+  - "The initialization/cleanup symmetry strongly suggests a structured runtime object or keyed configuration record, but the helper API names and exact field types remain unresolved."
   - "The function body is 0x110 bytes (272 decimal) including the terminating blr."
