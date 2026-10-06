@@ -8,6 +8,7 @@ name:
   current: crt_runtime_bootstrap_10368
   candidates:
     - crt_startup
+    - crt_runtime_start
 confidence: probable
 status: analyzed
 evidence:
@@ -29,3 +30,4 @@ subsystems:
   - crt-runtime
 notes:
   - "The address-derived name remains authoritative until deterministic fingerprint comparison and broader cross-reference review establish a stronger semantic identity."
+  - "A legacy Prologue function table labels 0x00010368 crt_runtime_start; this is retained only as corroborating role evidence because no fingerprint is available from the legacy table."
