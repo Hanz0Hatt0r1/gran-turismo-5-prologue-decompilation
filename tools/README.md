@@ -62,6 +62,24 @@ unique normalized-prefix matches are used as a lower-confidence fallback.
 This is intended to transfer research labels between GT5 retail, GT5 Prologue,
 and updates without assuming that absolute addresses are stable.
 
+### Verify reviewed metadata against a local ELF
+
+`gtverify.py` closes the loop between reviewed metadata and a user-provided ELF.
+It verifies the executable SHA-256 and entry/TOC for a build record, and it
+recomputes normalized function fingerprints for reviewed function records.
+
+```bash
+python3 tools/gtverify.py verify \
+  --elf /path/to/EBOOT.ELF \
+  --build-record analysis/builds/gt5-bcus98114.json \
+  --function-record analysis/functions/gt5-bcus98114-startup-10338.yaml \
+  --function-record analysis/functions/gt5-bcus98114-startup-106ac.yaml \
+  --function-record analysis/functions/gt5-bcus98114-startup-10970.yaml
+```
+
+This tool intentionally requires the original executable locally. It records
+only pass/fail metadata and does not copy executable bytes into the repository.
+
 ### Import an existing Ghidra C export
 
 Older Ghidra projects can be folded into the same database without rerunning
