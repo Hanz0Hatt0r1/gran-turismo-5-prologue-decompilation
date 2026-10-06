@@ -25,7 +25,8 @@ The executable-intelligence layer is the current engineering priority.
 - [x] Provide headless Ghidra orchestration.
 - [x] Add synthetic regression coverage for the core indexer.
 - [x] Promote the first reviewed GT5 BCUS-98114 build/function/entry evidence.
-- [ ] Audit function-boundary heuristics against confirmed GT5 entry/OPD data.
+- [x] Audit function-boundary heuristics against confirmed GT5 entry/OPD data.
+  - The GT5 BCUS-98114 audit records 57 functions with pre-BLR direct branches into post-BLR code; these remain review-required rather than auto-fixed.
 - [ ] Add canonical BCUS-98158 GT5 Prologue build profile.
 - [ ] Resolve the GT5P bootstrap into reviewed function notes.
 
