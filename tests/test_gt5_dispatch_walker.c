@@ -66,7 +66,10 @@ static void test_two_node_traversal(void)
 
 static void test_null_head_is_noop(void)
 {
-    struct test_context ctx = {0};
+    static const struct memory_word words[] = {
+        {0x0f00, 0x00000000},
+    };
+    struct test_context ctx = {words, 1, {0}, {0}, 0};
     gt5_walk_ppu_dispatch_list(0x0f00, read_u32, invoke, &ctx);
     assert(ctx.calls == 0);
 }
