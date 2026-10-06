@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from source_inventory import SOURCE_RE, classify_source_name, summarize_opd_containment, toc_load_slot
+from source_inventory import SOURCE_RE, classify_source_name, map_toc_xrefs_to_opd_functions, summarize_opd_containment, toc_load_slot
 
 
 class SourceInventoryTests(unittest.TestCase):
@@ -16,6 +16,27 @@ class SourceInventoryTests(unittest.TestCase):
     def test_source_pattern_rejects_non_source_strings(self):
         self.assertIsNone(SOURCE_RE.search("MRenderContext.cpp.bak"))
         self.assertIsNone(SOURCE_RE.search("not_a_source_file.txt"))
+
+    def test_source_xrefs_map_to_opd_functions(self):
+        rows = [
+            {
+                "name": "MCarObject.cpp",
+                "category": "vehicle",
+                "instruction_vas": ["0x1010", "0x1014"],
+            },
+            {
+                "name": "MRenderControl.cpp",
+                "category": "rendering",
+                "instruction_vas": ["0x2010"],
+            },
+        ]
+        mapped = map_toc_xrefs_to_opd_functions(
+            rows, [(0x1000, 0x1020), (0x2000, 0x2020)]
+        )
+        self.assertEqual(len(mapped), 2)
+        self.assertEqual(mapped[0]["xref_count"], 2)
+        self.assertEqual(mapped[0]["source_names"], ["MCarObject.cpp"])
+        self.assertEqual(mapped[1]["source_categories"], ["rendering"])
 
     def test_opd_containment_counts_instruction_sites_and_functions(self):
         ranges = [(0x1000, 0x1020), (0x2000, 0x2040)]

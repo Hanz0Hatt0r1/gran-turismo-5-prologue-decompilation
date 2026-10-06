@@ -114,6 +114,41 @@ def extract_toc_source_xrefs(
         key=lambda row: (str(row["category"]), str(row["name"]), int(str(row["source_va"]), 16)),
     )
 
+def map_toc_xrefs_to_opd_functions(
+    toc_xrefs: List[Dict[str, object]],
+    function_ranges: List[Tuple[int, int]],
+) -> List[Dict[str, object]]:
+    """Map contained source-string xrefs onto their OPD-derived function ranges."""
+    starts = [start for start, _ in function_ranges]
+    grouped: Dict[int, Dict[str, object]] = {}
+    for row in toc_xrefs:
+        for value in row["instruction_vas"]:
+            va = int(str(value), 16)
+            i = bisect.bisect_right(starts, va) - 1
+            if i < 0 or not (function_ranges[i][0] <= va < function_ranges[i][1]):
+                continue
+            start, end = function_ranges[i]
+            entry = grouped.setdefault(
+                start,
+                {
+                    "function_start_va": f"0x{start:08x}",
+                    "function_end_va": f"0x{end:08x}",
+                    "xref_count": 0,
+                    "source_names": set(),
+                    "source_categories": set(),
+                    "confidence": "probable",
+                    "evidence": "TOC source-string xref contained in OPD-derived function range",
+                },
+            )
+            entry["xref_count"] += 1
+            entry["source_names"].add(str(row["name"]))
+            entry["source_categories"].add(str(row["category"]))
+    rows = list(grouped.values())
+    for row in rows:
+        row["source_names"] = sorted(row["source_names"])
+        row["source_categories"] = sorted(row["source_categories"])
+    return sorted(rows, key=lambda row: int(str(row["function_start_va"]), 16))
+
 def summarize_opd_containment(
     toc_xrefs: List[Dict[str, object]],
     function_ranges: List[Tuple[int, int]],
@@ -161,6 +196,7 @@ def build_report(elf: PS3ELF) -> Dict[str, object]:
     toc_xrefs = extract_toc_source_xrefs(elf, toc_va, files)
     opd_ranges = function_ranges_from_starts(elf, (d.code_va for d in descriptors))
     opd_containment = summarize_opd_containment(toc_xrefs, opd_ranges)
+    opd_function_map = map_toc_xrefs_to_opd_functions(toc_xrefs, opd_ranges)
     return {
         "schema": 1,
         "tool": "source_inventory.py",
@@ -187,6 +223,8 @@ def build_report(elf: PS3ELF) -> Dict[str, object]:
             "function_range_count": len(opd_ranges),
             "range_method": "OPD-derived starts with first linear blr end marker",
         },
+        "opd_function_source_map_count": len(opd_function_map),
+        "opd_function_source_map": opd_function_map,
         "files": files,
         "toc_xrefs": toc_xrefs,
     }
