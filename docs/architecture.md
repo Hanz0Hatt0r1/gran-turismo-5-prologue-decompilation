@@ -23,6 +23,22 @@ The GT5 entry descriptor and entry code are confirmed. The semantic identity of 
 
 The Prologue bootstrap remains a separate target-build investigation. Its reviewed path includes game-data checks, filesystem/sysmodule initialization, and early EMAIN/EPATCH/PDIPFS handling, but the complete startup graph and main loop remain unresolved.
 
+## GT5 application-loading path
+
+**GT5 BCUS-98114: probable / reviewed structural map**
+
+```text
+startup_main_10338 (0x10338)
+  -> startup_application_loader_10970 (0x10970)
+       -> startup_helper_13274 (0x13274)
+       -> startup_module_helper_12860 (0x12860)
+       -> startup_helper_13208 (0x13208)
+```
+
+`0x10970` is anchored by the retained `scripts/gt5/Application` string and a coherent adjacent build/version metadata cluster. Its next direct callees `0x13274`, `0x12860`, and `0x13208` are now separate reviewed structural function records. The latter two helpers have no retained source-string TOC xrefs in their bodies, so they remain address-derived probable roles rather than semantic names.
+
+This map is a callgraph/evidence structure, not a claim that all three helpers implement one source-level loader object. Exact ownership and API semantics remain unresolved.
+
 ## Source-file evidence seed
 
 **GT5 BCUS-98114: probable / evidence-only**
