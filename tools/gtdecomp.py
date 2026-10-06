@@ -481,7 +481,17 @@ def function_ranges_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: in
         next_va = funcs[i + 1] if i + 1 < len(funcs) else seg_end
         if not (va < next_va <= seg_end):
             next_va = seg_end
-        end = min(next_va, va + max_size, seg_end)
+        scan_end = min(next_va, va + max_size, seg_end)
+        # A return instruction is a stronger local end marker than a later
+        # candidate. Use the first linear blr when it occurs before the
+        # candidate boundary; otherwise retain the conservative old range.
+        end = scan_end
+        off = elf.va_to_offset(va)
+        if off is not None:
+            for rel in range(0, scan_end - va, 4):
+                if _u32(elf.data, off + rel) == 0x4E800020:
+                    end = va + rel + 4
+                    break
         end -= (end - va) % 4
         if end > va:
             rows.append((va, end))
