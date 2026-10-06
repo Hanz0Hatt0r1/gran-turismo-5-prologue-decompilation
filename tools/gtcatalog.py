@@ -49,6 +49,19 @@ REQUIRED = {
         "confidence",
         "status",
     ),
+    "crossref": (
+        "schema",
+        "id",
+        "reference.build",
+        "reference.module",
+        "reference.va",
+        "target.build",
+        "target.module",
+        "target.va",
+        "method",
+        "confidence",
+        "review_status",
+    ),
 }
 
 
@@ -193,6 +206,8 @@ def record_kind(path: Path) -> str:
         return "function"
     if "evidence" in parts:
         return "evidence"
+    if "crossref" in parts:
+        return "crossref"
     return "other"
 
 
@@ -268,6 +283,25 @@ def validate_records(records: Sequence[CatalogRecord]) -> Dict[str, Any]:
                         "message": f"invalid address: {field}",
                     })
 
+        if record.kind == "crossref":
+            for field in ("reference.va", "target.va"):
+                if field in record.fields and normalize_address(record.fields[field]) is None:
+                    errors.append({
+                        "path": record.path,
+                        "message": f"invalid address: {field}",
+                    })
+            method = _as_text(record.fields.get("method"))
+            if method and method not in {"normalized-full", "normalized-prefix", "manual", "callgraph", "rtti-vtable", "import-context"}:
+                errors.append({
+                    "path": record.path,
+                    "message": f"unsupported cross-build method: {method}",
+                })
+            review_status = _as_text(record.fields.get("review_status"))
+            if review_status and review_status not in {"candidate", "pending", "accepted", "rejected"}:
+                errors.append({
+                    "path": record.path,
+                    "message": f"unsupported review_status: {review_status}",
+                })
         if record.kind == "function":
             address = record.address
             if address is None:
