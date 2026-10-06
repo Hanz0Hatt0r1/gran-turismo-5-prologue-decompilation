@@ -1,0 +1,32 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-bcus98158-crt-bootstrap
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010338
+target:
+  build: BCUS-98158
+  module: EBOOT.BIN
+  va: 0x00010368
+method: manual
+confidence: probable
+review_status: pending
+relationship:
+  reference_name: startup_main_10338
+  target_name: crt_runtime_bootstrap_10368
+  identity_scope: "early CRT/runtime bootstrap immediately after the PPU entry stub"
+evidence:
+  - type: callgraph
+    detail: "In both builds, the entry routine at 0x00010230 directly transfers control into the candidate CRT/bootstrap routine."
+  - type: stack_prologue
+    detail: "Both candidate routines establish substantial PPC64 stack frames and preserve nonvolatile state before performing startup work."
+  - type: import
+    detail: "Both routines call sys_initialize_tls through their build-specific PPU import stub layer."
+  - type: direct_call
+    detail: "Both routines reach the build-specific initialization routine at 0x00010200 before continuing startup."
+  - type: cross_build
+    detail: "The relationship is based on independent startup behavior documented for each build; absolute addresses and TOCs are intentionally not treated as stable identities."
+notes:
+  - "This is a research candidate, not an accepted equivalence."
+  - "No source name or code is transferred from retail GT5 to Prologue."
+  - "Promotion requires deterministic normalized fingerprint comparison of user-provided indexes for both builds."
