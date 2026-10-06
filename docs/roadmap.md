@@ -9,7 +9,7 @@
 - [x] Build-agnostic PS3 PPU ELF indexer
 - [x] Initial GT5 BCUS-98114 reference-build profile
 - [ ] Complete build/region inventory for GT5 and GT5 Prologue
-- [ ] Finalize semantic naming conventions
+- [x] Finalize semantic naming conventions
 
 ## Phase 1 — Executable Intelligence
 
