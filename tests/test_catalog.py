@@ -116,7 +116,6 @@ method: manual
 confidence: probable
 review_status: pending
 """, encoding="utf-8")
-        )
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
         self.assertTrue(result["valid"])
 
@@ -145,6 +144,7 @@ review_status: mystery
         self.assertIn("invalid address: reference.va", messages)
         self.assertIn("unsupported cross-build method: nonsense", messages)
         self.assertIn("unsupported review_status: mystery", messages)
+
     def test_summary_reports_kind_build_and_function_counts(self):
         root = self._fixture()
         result = gtcatalog.summarize(list(gtcatalog.iter_records(root)))
