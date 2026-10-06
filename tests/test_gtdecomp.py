@@ -82,9 +82,11 @@ class GTDecompTests(unittest.TestCase):
                          1, 6, 0x300, 0x3000, 0x3000, 0x40, 0x40, 8)
         # Two function descriptors, same TOC.
         struct.pack_into(">II", data, 0x300, 0x1000, 0x3800)
-        struct.pack_into(">II", data, 0x308, 0x1010, 0x3800)
-        # bl 0x1020 from 0x1000 and a standalone stdu prologue at 0x1030.
-        struct.pack_into(">I", data, 0x200, 0x48000021)
+        struct.pack_into(">II", data, 0x308, 0x1080, 0x3800)
+        # bl 0x1050 from 0x1000, followed by blr, plus a standalone stdu
+        # prologue at 0x1030. The blr closes the first function before 0x1030.
+        struct.pack_into(">I", data, 0x200, 0x48000051)
+        struct.pack_into(">I", data, 0x204, 0x4E800020)
         struct.pack_into(">I", data, 0x230, 0xF821FF91)
         # Section headers at 0x400; shstrtab is section 2.
         names = b"\0.text\0.opd\0.shstrtab\0"
@@ -103,9 +105,9 @@ class GTDecompTests(unittest.TestCase):
             toc, opd = gtdecomp.find_opd(elf)
             self.assertEqual(toc, 0x3800)
             self.assertEqual([(x.descriptor_va, x.code_va) for x in opd[:2]],
-                             [(0x3000, 0x1000), (0x3008, 0x1010)])
+                             [(0x3000, 0x1000), (0x3008, 0x1080)])
             candidates = {x.code_va: x for x in gtdecomp.discover_function_candidates(elf, opd)}
-            self.assertIn("direct-call", candidates[0x1020].evidence)
+            self.assertIn("direct-call", candidates[0x1050].evidence)
             self.assertIn("stack-prologue", candidates[0x1030].evidence)
 
 

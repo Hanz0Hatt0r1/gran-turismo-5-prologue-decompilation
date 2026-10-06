@@ -25,3 +25,14 @@ Accepted matches must preserve the reference and target build/module/address, ma
 - `import-context`
 
 See [the analysis schema](../schema.md) for the canonical cross-build record.
+
+## Evidence ranking
+
+Generated matches are ranked only after a fingerprint match exists. The report combines the fingerprint method with callgraph, import/NID, and RTTI/vtable context.
+
+- `evidence_score`: deterministic 0–100 ranking score.
+- `evidence_confidence`: `probable` for scores at or above 75, otherwise `speculative`.
+- `evidence_reasons`: compact trace of which evidence layers contributed.
+- `review_status`: generated rows remain `candidate`.
+
+A high ranking is not an acceptance decision. `confirmed` remains reserved for independently reviewed evidence, and secondary context never creates a cross-build match on its own.

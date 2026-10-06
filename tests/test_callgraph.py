@@ -19,6 +19,7 @@ class FakeELF:
         ]
         self.start = start
         self.end = end
+        self.entry = 0
 
     def va_to_offset(self, va):
         if self.start <= va < self.end:

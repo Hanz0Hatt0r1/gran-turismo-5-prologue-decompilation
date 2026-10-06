@@ -642,7 +642,36 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
     return sorted(rows, key=lambda r: r.code_va)
 
 
-def extract_call_edges(\n    elf: PS3ELF,\n    function_starts: Sequence[int],\n    max_size: int = 0x4000,\n) -> List[CallEdge]:\n    """Extract direct PPU call edges from conservative function ranges.\n\n    Only direct bl/bla-class branches are emitted. This deliberately excludes\n    indirect calls through registers/OPD descriptors, so the result is a\n    high-confidence partial call graph rather than a guessed complete one.\n    """\n    ranges = function_ranges_from_starts(elf, function_starts, max_size=max_size)\n    rows: List[CallEdge] = []\n    for start, end in ranges:\n        off = elf.va_to_offset(start)\n        if off is None:\n            continue\n        for rel in range(0, end - start, 4):\n            va = start + rel\n            ins = _u32(elf.data, off + rel)\n            if ((ins >> 26) & 0x3F) != 18 or not (ins & 1):\n                continue\n            target = _ppc_branch_target(ins, va)\n            if target is None:\n                continue\n            rows.append(CallEdge(start, va, target, "direct"))\n    return rows\n\n\ndef build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
+def extract_call_edges(
+    elf: PS3ELF,
+    function_starts: Sequence[int],
+    max_size: int = 0x4000,
+) -> List[CallEdge]:
+    """Extract direct PPU call edges from conservative function ranges.
+
+    Only direct bl/bla-class branches are emitted. This deliberately excludes
+    indirect calls through registers/OPD descriptors, so the result is a
+    high-confidence partial call graph rather than a guessed complete one.
+    """
+    ranges = function_ranges_from_starts(elf, function_starts, max_size=max_size)
+    rows: List[CallEdge] = []
+    for start, end in ranges:
+        off = elf.va_to_offset(start)
+        if off is None:
+            continue
+        for rel in range(0, end - start, 4):
+            va = start + rel
+            ins = _u32(elf.data, off + rel)
+            if ((ins >> 26) & 0x3F) != 18 or not (ins & 1):
+                continue
+            target = _ppc_branch_target(ins, va)
+            if target is None:
+                continue
+            rows.append(CallEdge(start, va, target, "direct"))
+    return rows
+
+
+def build_fingerprints_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Fingerprint]:
     rows: List[Fingerprint] = []
     for va, end in function_ranges_from_starts(elf, starts, max_size=max_size):
         size = end - va
@@ -1176,6 +1205,44 @@ def vtable_context_match_ratio(
     union = ref | tgt
     return len(ref & tgt) / len(union) if union else None
 
+def _evidence_strength(ratio: Optional[float]) -> str:
+    if ratio is None:
+        return "neutral"
+    if ratio >= 0.75:
+        return "strong"
+    if ratio >= 0.5:
+        return "supporting"
+    return "weak"
+
+
+def match_evidence_rank(
+    method: str,
+    callgraph_ratio: Optional[float],
+    import_ratio: Optional[float],
+    vtable_ratio: Optional[float],
+) -> Tuple[int, str, str]:
+    """Rank an existing fingerprint match without accepting it automatically."""
+    score = 60 if method == "normalized-full" else 50
+    reasons = [method]
+    for label, ratio in (
+        ("callgraph", callgraph_ratio),
+        ("import-context", import_ratio),
+        ("rtti-vtable", vtable_ratio),
+    ):
+        strength = _evidence_strength(ratio)
+        if strength == "strong":
+            score += 10
+            reasons.append(f"{label}:strong")
+        elif strength == "supporting":
+            score += 7
+            reasons.append(f"{label}:supporting")
+        elif strength == "weak":
+            reasons.append(f"{label}:weak")
+    score = min(score, 100)
+    confidence = "probable" if score >= 75 else "speculative"
+    return score, confidence, ",".join(reasons)
+
+
 def callgraph_match_ratio(
     reference_code_va: int,
     target_code_va: int,
@@ -1225,8 +1292,10 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     bimports, _ = find_imports(b)
     aimport_context = import_context_by_function(aedges, aimports)
     bimport_context = import_context_by_function(bedges, bimports)
-    atypes = vtable_context_by_function(find_vtables(a, find_rtti_objects(a, list(a.iter_ascii_strings(min_len=4, alloc_only=True))), aopd))
-    btypes = vtable_context_by_function(find_vtables(b, find_rtti_objects(b, list(b.iter_ascii_strings(min_len=4, alloc_only=True))), bopd))
+    artti = find_rtti_objects(a, list(a.iter_ascii_strings(min_len=4, alloc_only=True)))
+    brtti = find_rtti_objects(b, list(b.iter_ascii_strings(min_len=4, alloc_only=True)))
+    atypes = vtable_context_by_function(find_vtables(a, artti, aopd))
+    btypes = vtable_context_by_function(find_vtables(b, brtti, bopd))
     ap = _fp_index(afp, "sha_prefix")
     bp = _fp_index(bfp, "sha_prefix")
     matches: List[Tuple[Fingerprint, Fingerprint, str]] = []
@@ -1255,7 +1324,8 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
         ratio = callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target)
         import_ratio = import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context)
         vtable_ratio = vtable_context_match_ratio(x.code_va, y.code_va, atypes, btypes)
-        enriched_matches.append((x, y, method, ratio, import_ratio, vtable_ratio))
+        score, confidence, reasons = match_evidence_rank(method, ratio, import_ratio, vtable_ratio)
+        enriched_matches.append((x, y, method, ratio, import_ratio, vtable_ratio, score, confidence, reasons))
 
     with (out / "function_matches.csv").open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
@@ -1263,8 +1333,9 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
             "reference_code_va", "target_code_va", "method",
             "reference_size", "target_size", "callgraph_ratio", "callgraph_evidence",
             "import_ratio", "import_evidence", "vtable_ratio", "vtable_evidence",
+            "evidence_score", "evidence_confidence", "evidence_reasons", "review_status",
         ])
-        for x, y, method, ratio, import_ratio, vtable_ratio in sorted(enriched_matches, key=lambda t: t[0].code_va):
+        for x, y, method, ratio, import_ratio, vtable_ratio, score, confidence, reasons in sorted(enriched_matches, key=lambda t: (-t[6], t[0].code_va)):
             evidence = (
                 "neutral" if ratio is None else
                 "strong" if ratio >= 0.75 else
@@ -1278,6 +1349,7 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
                 "neutral" if import_ratio is None else "supporting" if import_ratio >= 0.5 else "weak",
                 "" if vtable_ratio is None else f"{vtable_ratio:.3f}",
                 "neutral" if vtable_ratio is None else "supporting" if vtable_ratio >= 0.5 else "weak",
+                score, confidence, reasons, "candidate",
             ])
 
     summary = {
@@ -1318,6 +1390,8 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
             vtable_context_match_ratio(x.code_va, y.code_va, atypes, btypes) is None
             for x, y, _ in matches
         ),
+        "ranking_probable": sum(row[7] == "probable" for row in enriched_matches),
+        "ranking_speculative": sum(row[7] == "speculative" for row in enriched_matches),
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     return summary
