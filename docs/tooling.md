@@ -121,3 +121,5 @@ has been reviewed.
 
 A small `report-for-chat.tar.zst` is produced when `zstd` is installed. It
 contains manifests and logs but not the ELF or the full pseudocode corpus.
+
+`gtverify.py verify-compare` validates two local `gtdecomp.py index` outputs plus an optional `function_matches.csv` and `summary.json`. It checks build SHA/entry metadata when build records are supplied and ensures every match points to an indexed function with a supported method, score, confidence, and review state.
