@@ -80,7 +80,7 @@ For each subsystem:
 - Add call-graph and string-xref extraction.
 - [x] Add reviewed symbol/address catalog validation and search.
 - [x] Add ELF-backed verification of reviewed build/function metadata.
-- [ ] Automate full cross-build verification from local indexes for both builds.
+- [x] Automate full cross-build verification from local indexes for both builds.
 - Add confidence-scored fuzzy cross-build matching only where deterministic matching is insufficient.
 
 ## Phase 6 — Integration
