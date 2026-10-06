@@ -7,6 +7,8 @@
 
 struct test_state {
     uint32_t offsets[8];
+    uintptr_t destinations[8];
+    const uint8_t *base;
     size_t applied;
     size_t cleaned;
 };
@@ -19,7 +21,9 @@ static int apply_item(
     struct test_state *state = (struct test_state *)context;
     assert(destination != NULL);
     assert(state->applied < 8u);
-    state->offsets[state->applied++] = item->destination_offset;
+    state->offsets[state->applied] = item->destination_offset;
+    state->destinations[state->applied] = (uintptr_t)destination;
+    ++state->applied;
     assert(item->key_name != NULL);
     if (strcmp(item->key_name, "GT5_FINGERPRINT_SIZE") == 0) {
         assert(item->payload_size == sizeof(uint32_t));
@@ -52,7 +56,7 @@ static int fail_second_item(
 static void test_success_preserves_observed_order(void)
 {
     uint8_t storage[0x80] = {0};
-    struct test_state state = {{0}, 0u, 0u};
+    struct test_state state = {{0}, {0}, storage, 0u, 0u};
 
     assert(gt5_apply_keyed_startup_config(
         storage,
@@ -66,17 +70,19 @@ static void test_success_preserves_observed_order(void)
 
     assert(state.applied == 5u);
     assert(state.offsets[0] == 0x00u);
+    assert(state.destinations[0] == (uintptr_t)(storage + 0x00u));
     assert(state.offsets[1] == 0x14u);
     assert(state.offsets[2] == 0x28u);
     assert(state.offsets[3] == 0x3cu);
     assert(state.offsets[4] == 0x50u);
+    assert(state.destinations[4] == (uintptr_t)(storage + 0x50u));
     assert(state.cleaned == 0u);
 }
 
 static void test_failure_cleans_in_reverse(void)
 {
     uint8_t storage[0x80] = {0};
-    struct test_state state = {{0}, 0u, 0u};
+    struct test_state state = {{0}, {0}, storage, 0u, 0u};
 
     assert(gt5_apply_keyed_startup_config(
         storage,
