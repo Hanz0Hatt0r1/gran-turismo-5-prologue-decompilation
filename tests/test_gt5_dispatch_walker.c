@@ -46,9 +46,9 @@ static void test_two_node_traversal(void)
         {0x1004, 0x1200},
         {0x1100, 0x0000},
         {0x1104, 0x2000},
-        {0x1200, 0x1208},
         {0x1208, 0x3000},
-        {0x3004, 0x4000},
+        {0x3000, 0x7000},
+        {0x3004, 0x8000},
         {0x2008, 0x2200},
         {0x2200, 0x5000},
         {0x2204, 0x6000},
@@ -58,8 +58,8 @@ static void test_two_node_traversal(void)
     gt5_walk_ppu_dispatch_list(0x0f00, read_u32, invoke, &ctx);
 
     assert(ctx.calls == 2);
-    assert(ctx.codes[0] == 0x3000);
-    assert(ctx.tocs[0] == 0x4000);
+    assert(ctx.codes[0] == 0x7000);
+    assert(ctx.tocs[0] == 0x8000);
     assert(ctx.codes[1] == 0x5000);
     assert(ctx.tocs[1] == 0x6000);
 }
