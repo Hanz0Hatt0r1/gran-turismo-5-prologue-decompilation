@@ -1,0 +1,56 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010970.toc.001
+build: BCUS-98114
+module: EBOOT.BIN
+function_va: 0x00010970
+confidence: probable
+status: reviewed
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+anchors:
+  - toc_disp: -0x7f30
+    string: "scripts/gt5/Application"
+    reference_va: 0x000109ac
+    role: "application/script path anchor"
+  - toc_disp: -0x7f24
+    string: "1.00"
+    reference_va: 0x00010ab0
+    role: "version-like metadata; exact field unresolved"
+  - toc_disp: -0x7f1c
+    string: "PDIVersion"
+    role: "product/version metadata label"
+  - toc_disp: -0x7f18
+    string: "ProductVersion"
+    role: "product/version metadata label"
+  - toc_disp: -0x7f14
+    string: "350.001"
+    role: "version-like metadata; exact field unresolved"
+  - toc_disp: -0x7f10
+    string: "RequireSystemVersion"
+    role: "system-version metadata label"
+  - toc_disp: -0x7f0c
+    string: "BCUS-98114"
+    role: "build/title identity anchor"
+  - toc_disp: -0x7f08
+    string: "DiscProductNumber"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f04
+    string: "GameProductNumber"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f00
+    string: "DataProductNumber"
+    role: "product-number metadata label"
+  - toc_disp: -0x7efc
+    string: "BCUS98114"
+    role: "compact build identity anchor"
+  - toc_disp: -0x7ef8
+    string: "DiscProductNumberShort"
+    role: "product-number metadata label"
+  - toc_disp: -0x7ef4
+    string: "GameProductNumberShort"
+    role: "product-number metadata label"
+  - toc_disp: -0x7ef0
+    string: "DataProductNumberShort"
+    role: "product-number metadata label"
+interpretation:
+  - "The function is adjacent to a coherent TOC metadata cluster covering application path, version/system-version labels, and build/product identity."
+  - "These strings provide structural evidence for a metadata-driven application loader but do not establish exact parser/control-flow semantics."
