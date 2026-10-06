@@ -7,6 +7,7 @@ triage; it is not a semantic assignment to a function or subsystem.
 """
 from __future__ import annotations
 import argparse
+import bisect
 import json
 import re
 from pathlib import Path
@@ -113,6 +114,30 @@ def extract_toc_source_xrefs(
         key=lambda row: (str(row["category"]), str(row["name"]), int(str(row["source_va"]), 16)),
     )
 
+def summarize_opd_containment(
+    toc_xrefs: List[Dict[str, object]],
+    function_ranges: List[Tuple[int, int]],
+) -> Dict[str, int]:
+    """Summarize which TOC-xref instructions fall inside OPD-derived ranges."""
+    starts = [start for start, _ in function_ranges]
+    contained = 0
+    unique_functions = set()
+    total = 0
+    for row in toc_xrefs:
+        for value in row["instruction_vas"]:
+            total += 1
+            va = int(str(value), 16)
+            i = bisect.bisect_right(starts, va) - 1
+            if i >= 0 and function_ranges[i][0] <= va < function_ranges[i][1]:
+                contained += 1
+                unique_functions.add(function_ranges[i][0])
+    return {
+        "xref_instruction_count": total,
+        "contained_xref_instruction_count": contained,
+        "uncontained_xref_instruction_count": total - contained,
+        "unique_functions_touched": len(unique_functions),
+    }
+
 def extract_source_files(elf: PS3ELF) -> List[Dict[str, object]]:
     rows: List[Dict[str, object]] = []
     seen = set()
@@ -132,8 +157,10 @@ def build_report(elf: PS3ELF) -> Dict[str, object]:
     for row in files:
         cat = str(row["category"])
         counts[cat] = counts.get(cat, 0) + 1
-    toc_va, _ = find_opd(elf)
+    toc_va, descriptors = find_opd(elf)
     toc_xrefs = extract_toc_source_xrefs(elf, toc_va, files)
+    opd_ranges = function_ranges_from_starts(elf, (d.code_va for d in descriptors))
+    opd_containment = summarize_opd_containment(toc_xrefs, opd_ranges)
     return {
         "schema": 1,
         "tool": "source_inventory.py",
@@ -155,6 +182,11 @@ def build_report(elf: PS3ELF) -> Dict[str, object]:
         "toc_referenced_category_counts": dict(sorted(
             Counter(str(row["category"]) for row in toc_xrefs).items()
         )),
+        "opd_range_mapping": {
+            **opd_containment,
+            "function_range_count": len(opd_ranges),
+            "range_method": "OPD-derived starts with first linear blr end marker",
+        },
         "files": files,
         "toc_xrefs": toc_xrefs,
     }
