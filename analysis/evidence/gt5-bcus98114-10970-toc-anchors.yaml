@@ -6,51 +6,65 @@ function_va: 0x00010970
 confidence: probable
 status: reviewed
 input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+toc_va: 0x01846af0
 anchors:
-  - toc_disp: -0x7f30
+  - toc_disp: -0x7f50
+    toc_slot_va: 0x0183eba0
     string: "scripts/gt5/Application"
     reference_va: 0x000109ac
     role: "application/script path anchor"
-  - toc_disp: -0x7f24
+  - toc_disp: -0x7f44
+    toc_slot_va: 0x0183ebac
     string: "1.00"
-    reference_va: 0x00010ab0
     role: "version-like metadata; exact field unresolved"
-  - toc_disp: -0x7f1c
+  - toc_disp: -0x7f3c
+    toc_slot_va: 0x0183ebb4
     string: "PDIVersion"
     role: "product/version metadata label"
-  - toc_disp: -0x7f18
+  - toc_disp: -0x7f38
+    toc_slot_va: 0x0183ebb8
     string: "ProductVersion"
     role: "product/version metadata label"
-  - toc_disp: -0x7f14
+  - toc_disp: -0x7f34
+    toc_slot_va: 0x0183ebbc
     string: "350.001"
     role: "version-like metadata; exact field unresolved"
-  - toc_disp: -0x7f10
+  - toc_disp: -0x7f30
+    toc_slot_va: 0x0183ebc0
     string: "RequireSystemVersion"
     role: "system-version metadata label"
-  - toc_disp: -0x7f0c
+  - toc_disp: -0x7f2c
+    toc_slot_va: 0x0183ebc4
     string: "BCUS-98114"
     role: "build/title identity anchor"
-  - toc_disp: -0x7f08
+  - toc_disp: -0x7f28
+    toc_slot_va: 0x0183ebc8
     string: "DiscProductNumber"
     role: "product-number metadata label"
-  - toc_disp: -0x7f04
+  - toc_disp: -0x7f24
+    toc_slot_va: 0x0183ebcc
     string: "GameProductNumber"
     role: "product-number metadata label"
-  - toc_disp: -0x7f00
+  - toc_disp: -0x7f20
+    toc_slot_va: 0x0183ebd0
     string: "DataProductNumber"
     role: "product-number metadata label"
-  - toc_disp: -0x7efc
+  - toc_disp: -0x7f1c
+    toc_slot_va: 0x0183ebd4
     string: "BCUS98114"
     role: "compact build identity anchor"
-  - toc_disp: -0x7ef8
+  - toc_disp: -0x7f18
+    toc_slot_va: 0x0183ebd8
     string: "DiscProductNumberShort"
     role: "product-number metadata label"
-  - toc_disp: -0x7ef4
+  - toc_disp: -0x7f14
+    toc_slot_va: 0x0183ebdc
     string: "GameProductNumberShort"
     role: "product-number metadata label"
-  - toc_disp: -0x7ef0
+  - toc_disp: -0x7f10
+    toc_slot_va: 0x0183ebe0
     string: "DataProductNumberShort"
     role: "product-number metadata label"
 interpretation:
-  - "The function is adjacent to a coherent TOC metadata cluster covering application path, version/system-version labels, and build/product identity."
-  - "These strings provide structural evidence for a metadata-driven application loader but do not establish exact parser/control-flow semantics."
+  - "The function's immediate TOC window contains a coherent metadata cluster covering the application path, version/system-version labels, and build/product identity."
+  - "These strings provide structural evidence for a metadata-driven application loader but do not establish exact parser or control-flow semantics."
