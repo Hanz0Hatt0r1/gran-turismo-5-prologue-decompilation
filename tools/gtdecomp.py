@@ -512,6 +512,40 @@ def _is_stack_prologue(ins: int) -> bool:
     return -0x8000 <= disp < 0
 
 
+def _prune_nested_direct_call_evidence(elf: PS3ELF, evidence: Dict[int, set]) -> None:
+    """Remove direct-call targets that are local labels inside known functions.
+
+    OPD/entry starts provide the initial set of hard boundaries. A direct call
+    whose target occurs before the first blr in such a function is treated
+    as a local label, not a new function. The heuristic is intentionally
+    conservative and only prunes candidates; it never invents a boundary.
+    """
+    import bisect
+
+    opd_starts = sorted(
+        va for va, kinds in evidence.items() if kinds.intersection({"opd", "entry"})
+    )
+
+    def is_inside_open_strong_function(va: int) -> bool:
+        i = bisect.bisect_left(opd_starts, va) - 1
+        if i < 0:
+            return False
+        previous = opd_starts[i]
+        for probe in range(previous, va, 4):
+            off = elf.va_to_offset(probe)
+            if off is None or off + 4 > len(elf.data):
+                break
+            if _u32(elf.data, off) == 0x4E800020:
+                return False
+        return True
+
+    for va, kinds in list(evidence.items()):
+        if "direct-call" not in kinds or not is_inside_open_strong_function(va):
+            continue
+        kinds.discard("direct-call")
+        if not kinds:
+            del evidence[va]
+
 def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDescriptor]) -> List[FunctionCandidate]:
     """Discover PPU function starts with explicit evidence and confidence scores.
 
@@ -556,9 +590,10 @@ def discover_function_candidates(elf: PS3ELF, descriptors: Sequence[FunctionDesc
                     add(nxt, "after-blr")
                     break
 
-    # Strong boundaries are established by OPD/entry/direct-call evidence.
-    # A stack prologue inside the interval between two strong starts is not a
-    # new function unless the previous strong function has already returned.
+    # Prune direct-call targets that are labels inside an OPD/entry function.
+    _prune_nested_direct_call_evidence(elf, evidence)
+
+    # Recompute the strong starts after pruning nested direct-call labels.
     strong_starts = sorted(
         va for va, kinds in evidence.items()
         if kinds.intersection({"opd", "entry", "direct-call"})
