@@ -248,15 +248,15 @@ class PS3ELF:
 def find_opd(elf: PS3ELF) -> Tuple[int, List[FunctionDescriptor]]:
     """Recover Sony PPU 8-byte function descriptors from the entry section.
 
-    PS3 executables use ELFv1-style OPD records with two big-endian u64
-    values: code address and TOC address. The ELF entry points at a descriptor
-    rather than directly at the first instruction.
+    PS3 executables in the 32-bit ABI use compact 8-byte OPD records with two
+    big-endian u32 values: code address and TOC address. The ELF entry points at
+    a descriptor rather than directly at the first instruction.
     """
     entry_off = elf.va_to_offset(elf.entry)
     if entry_off is None or entry_off + 8 > len(elf.data):
         raise ValueError("ELF entry does not map to file data")
-    entry_code = _u64(elf.data, entry_off)
-    toc = _u64(elf.data, entry_off + 8)
+    entry_code = _u32(elf.data, entry_off)
+    toc = _u32(elf.data, entry_off + 4)
     if not elf.in_executable_segment(entry_code):
         raise ValueError("entry descriptor does not point to executable code")
     sec = elf.section_for_va(elf.entry)
@@ -269,8 +269,8 @@ def find_opd(elf: PS3ELF) -> Tuple[int, List[FunctionDescriptor]]:
         off = elf.va_to_offset(va)
         if off is None or off + 8 > len(elf.data):
             continue
-        code = _u64(elf.data, off)
-        cur_toc = _u64(elf.data, off + 8)
+        code = _u32(elf.data, off)
+        cur_toc = _u32(elf.data, off + 4)
         if cur_toc == toc and elf.in_executable_segment(code):
             descriptors.append(FunctionDescriptor(va, code, cur_toc))
     return toc, descriptors
