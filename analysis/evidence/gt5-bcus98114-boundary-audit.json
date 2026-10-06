@@ -14,7 +14,7 @@
   "post_blr_linked_calls_excluded": 1,
   "interpretation": {
     "status": "review-required",
-    "confidence": "high",
+    "confidence": "probable",
     "finding": "The first linear blr is not a universally safe function terminator.",
     "action": "Retain the conservative first-blr rule for fingerprinting, but review the 57 continuation-suspect functions before using first-blr ranges as semantic truth."
   },
