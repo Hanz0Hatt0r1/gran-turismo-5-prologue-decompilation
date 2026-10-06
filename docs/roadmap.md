@@ -35,8 +35,9 @@ The executable-intelligence layer is the current engineering priority.
 - [ ] Compare GT5 retail against GT5 Prologue.
 - [ ] Classify matches as normalized-full, normalized-prefix, or manually verified.
 - [ ] Transfer only research metadata (names, subsystem membership, evidence), never code.
+- [x] Accept the reviewed ELFv1 entry cross-build identity.
 - [ ] Identify shared subsystem families and build-specific forks.
-- [ ] Add explicit review status to every promoted cross-build match.
+- [x] Add explicit review status to every promoted cross-build match.
 
 ## Phase 3 — Core subsystem map
 
