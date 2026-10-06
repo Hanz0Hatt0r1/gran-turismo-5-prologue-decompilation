@@ -1,0 +1,71 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010970.toc.001
+build: BCUS-98114
+module: EBOOT.BIN
+function_va: 0x00010970
+confidence: probable
+status: reviewed
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+toc_va: 0x01846af0
+anchors:
+  - toc_disp: -0x7f50
+    toc_slot_va: 0x0183eba0
+    reference_va: 0x000109ac
+    string: "scripts/gt5/Application"
+    role: "direct application/script path anchor"
+  - toc_disp: -0x7f44
+    toc_slot_va: 0x0183ebac
+    string: "1.00"
+    role: "version-like metadata; exact field unresolved"
+  - toc_disp: -0x7f3c
+    toc_slot_va: 0x0183ebb4
+    string: "PDIVersion"
+    role: "product/version metadata label"
+  - toc_disp: -0x7f38
+    toc_slot_va: 0x0183ebb8
+    string: "ProductVersion"
+    role: "product/version metadata label"
+  - toc_disp: -0x7f34
+    toc_slot_va: 0x0183ebbc
+    string: "350.001"
+    role: "version-like metadata; exact field unresolved"
+  - toc_disp: -0x7f30
+    toc_slot_va: 0x0183ebc0
+    string: "RequireSystemVersion"
+    role: "system-version metadata label"
+  - toc_disp: -0x7f2c
+    toc_slot_va: 0x0183ebc4
+    string: "BCUS-98114"
+    role: "build/title identity anchor"
+  - toc_disp: -0x7f28
+    toc_slot_va: 0x0183ebc8
+    string: "DiscProductNumber"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f24
+    toc_slot_va: 0x0183ebcc
+    string: "GameProductNumber"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f20
+    toc_slot_va: 0x0183ebd0
+    string: "DataProductNumber"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f1c
+    toc_slot_va: 0x0183ebd4
+    string: "BCUS98114"
+    role: "compact build identity anchor"
+  - toc_disp: -0x7f18
+    toc_slot_va: 0x0183ebd8
+    string: "DiscProductNumberShort"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f14
+    toc_slot_va: 0x0183ebdc
+    string: "GameProductNumberShort"
+    role: "product-number metadata label"
+  - toc_disp: -0x7f10
+    toc_slot_va: 0x0183ebe0
+    string: "DataProductNumberShort"
+    role: "product-number metadata label"
+interpretation:
+  - "The immediate TOC window is a coherent application/build metadata cluster adjacent to the loader."
+  - "Only the path at 0x000109ac is a direct instruction xref in this function; the remaining strings are contextual TOC anchors."
+  - "No semantic parser or field-owner names are promoted from these strings alone."
