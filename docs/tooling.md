@@ -74,6 +74,30 @@ rewritten independently under `src/` and tested separately. The CI pipeline
 compiles and runs the current clean-room C startup helpers with strict warning
 flags so reconstructed behavior cannot silently regress.
 
+## Metadata verification
+
+Use `tools/gtverify.py` to verify a user-provided ELF against reviewed build and function metadata.
+A build record checks SHA-256, ELF entry descriptor, entry code, and TOC. Function records check
+the declared/verifiable range plus normalized full and prefix fingerprints.
+
+Single function:
+
+```bash
+python3 tools/gtverify.py verify --elf /path/to/EBOOT.ELF \
+  --build-record analysis/builds/gt5-bcus98114.yaml \
+  --function-record analysis/functions/gt5-bcus98114-eboot-entry.yaml
+```
+
+Whole function catalog:
+
+```bash
+python3 tools/gtverify.py verify --elf /path/to/EBOOT.ELF \
+  --build-record analysis/builds/gt5-bcus98114.yaml \
+  --function-dir analysis/functions
+```
+
+The verifier reads the user-provided executable locally and never copies it into the repository.
+
 ## Import symbol names
 
 Import NIDs are extracted directly from each executable and remain the stable
