@@ -36,3 +36,7 @@ Generated matches are ranked only after a fingerprint match exists. The report c
 - `review_status`: generated rows remain `candidate`.
 
 A high ranking is not an acceptance decision. `confirmed` remains reserved for independently reviewed evidence, and secondary context never creates a cross-build match on its own.
+
+## Schema validation
+
+Cross-build records are schema-validated in CI. Both reference and target build/module/address identities, the comparison method, confidence, and explicit review status are required. Validation is structural and does not accept matches automatically.
