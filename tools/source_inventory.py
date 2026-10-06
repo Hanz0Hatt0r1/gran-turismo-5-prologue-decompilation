@@ -37,6 +37,82 @@ def classify_source_name(name: str) -> str:
             return category
     return "unclassified"
 
+def toc_load_slot(ins: int, toc_va: int) -> Optional[Tuple[int, int]]:
+    """Resolve a PPU lwz/ld using r2 as a TOC base into (slot_va, width)."""
+    op = (ins >> 26) & 0x3F
+    if op not in (32, 58):  # lwz / ld
+        return None
+    if ((ins >> 16) & 0x1F) != 2:  # rA must be r2 (TOC)
+        return None
+    disp = ins & 0xFFFF
+    if disp & 0x8000:
+        disp -= 0x10000
+    return toc_va + disp, 8 if op == 58 else 4
+
+
+def _read_u64_va(elf: PS3ELF, va: int) -> Optional[int]:
+    off = elf.va_to_offset(va)
+    if off is None or off + 8 > len(elf.data):
+        return None
+    return int.from_bytes(elf.data[off : off + 8], "big")
+
+
+def extract_toc_source_xrefs(
+    elf: PS3ELF,
+    toc_va: int,
+    source_files: List[Dict[str, object]],
+) -> List[Dict[str, object]]:
+    """Find executable TOC loads whose resolved slot points at a source string."""
+    source_by_va = {int(str(row["va"]), 16): row for row in source_files}
+    grouped: Dict[int, Dict[str, object]] = {}
+    for section in elf.section_headers:
+        if not (section.flags & 0x4) or section.size < 4:
+            continue
+        for rel in range(0, section.size - 3, 4):
+            ins_va = section.addr + rel
+            ins = elf.read_u32_va(ins_va)
+            if ins is None:
+                continue
+            resolved = toc_load_slot(ins, toc_va)
+            if resolved is None:
+                continue
+            slot_va, width = resolved
+            value = elf.read_u32_va(slot_va)
+            candidates = []
+            if value is not None:
+                candidates.append(value)
+            if width == 8:
+                wide = _read_u64_va(elf, slot_va)
+                if wide is not None:
+                    candidates.append(wide)
+            for source_va in dict.fromkeys(candidates):
+                source = source_by_va.get(source_va)
+                if source is None:
+                    continue
+                row = grouped.setdefault(
+                    source_va,
+                    {
+                        "source_va": source["va"],
+                        "name": source["name"],
+                        "category": source["category"],
+                        "toc_slot_va": f"0x{slot_va:08x}",
+                        "instruction_vas": [],
+                        "confidence": "probable",
+                        "evidence": "toc-load-slot",
+                    },
+                )
+                row["instruction_vas"].append(f"0x{ins_va:08x}")
+    for row in grouped.values():
+        row["instruction_vas"] = sorted(
+            set(row["instruction_vas"]),
+            key=lambda value: int(value, 16),
+        )
+        row["xref_count"] = len(row["instruction_vas"])
+    return sorted(
+        grouped.values(),
+        key=lambda row: (str(row["category"]), str(row["name"]), int(str(row["source_va"]), 16)),
+    )
+
 def extract_source_files(elf: PS3ELF) -> List[Dict[str, object]]:
     rows: List[Dict[str, object]] = []
     seen = set()
