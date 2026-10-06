@@ -62,6 +62,8 @@ proprietary SDK material, or extracted copyrighted assets.
 analysis project. The Ghidra scripts first materialize OPD entry points and
 apply derived evidence, then export one pseudocode file per indexed function.
 
+`tools/gtverify.py verify` can validate promoted build/function metadata and the derived GT5 source-xref function map against the exact user-provided ELF. It checks SHA-256, ELFv1 entry/TOC metadata, function fingerprints where declared, and derived source-xref control totals/function mappings; mismatches are reported rather than auto-promoted.
+
 `tools/audit_boundaries.py` performs a non-destructive boundary audit on a
 user-provided ELF. Only unlinked direct branches that cross the first linear
 `blr` are counted as continuation evidence; linked branches are calls and are
