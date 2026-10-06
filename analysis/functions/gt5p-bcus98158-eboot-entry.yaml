@@ -1,0 +1,25 @@
+schema: 1
+id: gt5p.bcus98158.eboot.00010230
+build: BCUS-98158
+module: EBOOT.BIN
+address:
+  va: 0x00010230
+name:
+  current: eboot_entry
+  candidates:
+    - ppu_entry_stub
+confidence: confirmed
+status: analyzed
+evidence:
+  - type: entry_chain
+    detail: "ELF entry field 0x000717d8 resolves through an ELFv1 OPD descriptor to code address 0x00010230."
+  - type: opd
+    detail: "The entry descriptor contains code VA 0x00010230 and TOC VA 0x0007d110."
+  - type: neighboring_function
+    detail: "The routine establishes r2 from the descriptor, creates the initial stack frame, and directly calls the CRT/runtime bootstrap at 0x00010368."
+callees:
+  - 0x00010368
+subsystems:
+  - startup
+notes:
+  - "The semantic identity remains address-derived until independent source/name evidence is established."
