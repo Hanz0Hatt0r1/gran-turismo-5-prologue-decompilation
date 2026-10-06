@@ -1,0 +1,43 @@
+schema: 1
+status: initial-inventory
+scope: "Known build/region identities represented by reviewed repository metadata; this is not a claim of exhaustive worldwide revision coverage."
+
+games:
+  - game: Gran Turismo 5
+    known_builds:
+      - title_id: BCUS-98114
+        region: US
+        role: reference-build
+        status: reviewed
+        profile: analysis/builds/gt5-bcus98114.json
+    region_status:
+      US: reviewed
+      JP: unknown
+      Asia: unknown
+      EU: unknown
+      Other: unknown
+    revision_status:
+      retail_reference: reviewed
+      updates: unknown
+
+  - game: Gran Turismo 5 Prologue
+    known_builds:
+      - title_id: BCUS-98158
+        region: US
+        role: target-build
+        status: reviewed
+        profile: analysis/builds/gt5p-bcus98158.json
+    region_status:
+      US: reviewed
+      JP: unknown
+      Asia: unknown
+      EU: unknown
+      Other: unknown
+    revision_status:
+      retail_reference: reviewed
+      updates: unknown
+
+identity_policy:
+  - "A title ID and reviewed executable SHA identify a concrete local build profile."
+  - "Unknown region/revision entries remain explicit unknowns until independently verified."
+  - "No executable, SELF, firmware, keys, SDK material, or game assets are stored in this inventory."
