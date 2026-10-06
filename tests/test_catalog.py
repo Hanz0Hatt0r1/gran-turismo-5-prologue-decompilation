@@ -97,6 +97,55 @@ observations:
         self.assertIn("analysis/functions/entry.yaml", paths)
         self.assertIn("analysis/evidence/startup.yaml", paths)
 
+    def test_validation_accepts_crossref_record(self):
+        root = self._fixture()
+        crossrefs = root / "analysis" / "crossref"
+        crossrefs.mkdir(parents=True)
+        (crossrefs / "crt.yaml").write_text(
+            """schema: 1
+id: gt5-vs-gt5p-crt
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010338
+target:
+  build: BCUS-98158
+  module: EBOOT.BIN
+  va: 0x00010368
+method: manual
+confidence: probable
+review_status: pending
+""", encoding="utf-8")
+        )
+        result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
+        self.assertTrue(result["valid"])
+
+    def test_validation_rejects_invalid_crossref_metadata(self):
+        root = self._fixture()
+        crossrefs = root / "analysis" / "crossref"
+        crossrefs.mkdir(parents=True)
+        (crossrefs / "bad.yaml").write_text(
+            """schema: 1
+id: invalid-match
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: nope
+target:
+  build: BCUS-98158
+  module: EBOOT.BIN
+  va: 0x00010368
+method: nonsense
+confidence: probable
+review_status: mystery
+""", encoding="utf-8")
+        )
+        result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
+        self.assertFalse(result["valid"])
+        messages = [error["message"] for error in result["errors"]]
+        self.assertIn("invalid address: reference.va", messages)
+        self.assertIn("unsupported cross-build method: nonsense", messages)
+        self.assertIn("unsupported review_status: mystery", messages)
     def test_summary_reports_kind_build_and_function_counts(self):
         root = self._fixture()
         result = gtcatalog.summarize(list(gtcatalog.iter_records(root)))
