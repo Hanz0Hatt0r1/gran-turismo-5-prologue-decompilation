@@ -131,7 +131,7 @@ def _yaml_scalar(text: str) -> Any:
         return False
     if ADDRESS_RE.fullmatch(value):
         return value.lower()
-    if re.fullmatch(r"-?\d+", value):
+    if re.fullmatch(r"-?[0-9]+", value):
         try:
             return int(value, 10)
         except ValueError:
