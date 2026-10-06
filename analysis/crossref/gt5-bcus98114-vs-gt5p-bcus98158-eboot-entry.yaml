@@ -28,3 +28,4 @@ notes:
   - "This candidate does not transfer semantic names or code between builds."
   - "No normalized fingerprint is asserted because the canonical Prologue profile currently derives from existing analysis metadata rather than a repository-stored executable index."
   - "Accepted by manual review because both builds independently resolve the ELFv1 entry field through an OPD descriptor to the same code entry role at 0x00010230. The identity scope is limited to the ABI entry routine and does not assert source-level or subsystem equivalence."
+  - "Reference-side ELF metadata and normalized fingerprint were independently reproduced from the local supplied ELF; see analysis/evidence/gt5-bcus98114-entry-local-verification.yaml."
