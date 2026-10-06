@@ -200,6 +200,8 @@ def _flatten_json(value: Any, prefix: str = "") -> Dict[str, Any]:
 
 def record_kind(path: Path) -> str:
     parts = {part.lower() for part in path.parts}
+    if path.name.lower() == "region-inventory.yaml":
+        return "inventory"
     if "builds" in parts:
         return "build"
     if "functions" in parts:
