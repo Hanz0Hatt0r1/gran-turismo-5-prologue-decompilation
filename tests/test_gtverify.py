@@ -127,14 +127,14 @@ fingerprints:
             root = Path(td)
             elf_path = self.make_elf(root)
             elf = gtverify.gtdecomp.PS3ELF(elf_path)
-            record_path = root / "build-u64.json"
+            record_path = root / "build-opd.json"
             record_path.write_text(
                 '{"schema":1,"game":"Synthetic","title_id":"SYNTH","role":"test",'
                 '"executable_sha256":"' + elf.sha256 + '",'
                 '"format":"ELF64-big-endian-PowerPC64",'
                 '"entry_descriptor_va":"0x00003000",'
-                '"entry_code_va":"0x100000001000",'
-                '"toc_va":"0x200000003800"}',
+                '"entry_code_va":"0x00001000",'
+                '"toc_va":"0x00003800"}',
                 encoding="utf-8",
             )
             record = gtcatalog.load_record(record_path, root)
