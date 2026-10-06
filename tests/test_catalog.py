@@ -116,7 +116,6 @@ method: manual
 confidence: probable
 review_status: pending
 """, encoding="utf-8")
-        )
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
         self.assertTrue(result["valid"])
 
