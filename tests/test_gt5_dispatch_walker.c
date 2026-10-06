@@ -41,6 +41,7 @@ static void invoke(uint32_t code_va, uint32_t toc_va, void *opaque)
 static void test_two_node_traversal(void)
 {
     static const struct memory_word words[] = {
+        {0x0f00, 0x1000},
         {0x1000, 0x1100},
         {0x1004, 0x1200},
         {0x1100, 0x0000},
@@ -54,7 +55,7 @@ static void test_two_node_traversal(void)
     };
     struct test_context ctx = {words, sizeof(words) / sizeof(words[0]), {0}, {0}, 0};
 
-    gt5_walk_ppu_dispatch_list(0x1000, read_u32, invoke, &ctx);
+    gt5_walk_ppu_dispatch_list(0x0f00, read_u32, invoke, &ctx);
 
     assert(ctx.calls == 2);
     assert(ctx.codes[0] == 0x3000);
@@ -66,7 +67,7 @@ static void test_two_node_traversal(void)
 static void test_null_head_is_noop(void)
 {
     struct test_context ctx = {0};
-    gt5_walk_ppu_dispatch_list(0, read_u32, invoke, &ctx);
+    gt5_walk_ppu_dispatch_list(0x0f00, read_u32, invoke, &ctx);
     assert(ctx.calls == 0);
 }
 
