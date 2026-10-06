@@ -1145,6 +1145,37 @@ def import_context_match_ratio(
     union = ref | tgt
     return len(ref & tgt) / len(union) if union else None
 
+def vtable_context_by_function(
+    vtables: Sequence[Dict[str, object]]
+) -> Dict[int, set[str]]:
+    """Map functions to conservative RTTI-derived vtable type identities."""
+    out: Dict[int, set[str]] = {}
+    for row in vtables:
+        code_va = int(row["code_va"])
+        encoded = str(row.get("encoded", ""))
+        demangled = str(row.get("demangled", ""))
+        # Prefer the encoded RTTI identity; demangled text is retained only
+        # as a human-readable companion and is not required for matching.
+        identity = encoded or demangled
+        if identity:
+            out.setdefault(code_va, set()).add(identity)
+    return out
+
+
+def vtable_context_match_ratio(
+    reference_code_va: int,
+    target_code_va: int,
+    reference_context: Dict[int, set[str]],
+    target_context: Dict[int, set[str]],
+) -> Optional[float]:
+    """Compare RTTI/vtable identities for an existing function match."""
+    ref = reference_context.get(reference_code_va, set())
+    tgt = target_context.get(target_code_va, set())
+    if not ref and not tgt:
+        return None
+    union = ref | tgt
+    return len(ref & tgt) / len(union) if union else None
+
 def callgraph_match_ratio(
     reference_code_va: int,
     target_code_va: int,
@@ -1194,6 +1225,8 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     bimports, _ = find_imports(b)
     aimport_context = import_context_by_function(aedges, aimports)
     bimport_context = import_context_by_function(bedges, bimports)
+    atypes = vtable_context_by_function(find_vtables(a, find_rtti_objects(a, list(a.iter_ascii_strings(min_len=4, alloc_only=True))), aopd))
+    btypes = vtable_context_by_function(find_vtables(b, find_rtti_objects(b, list(b.iter_ascii_strings(min_len=4, alloc_only=True))), bopd))
     ap = _fp_index(afp, "sha_prefix")
     bp = _fp_index(bfp, "sha_prefix")
     matches: List[Tuple[Fingerprint, Fingerprint, str]] = []
@@ -1221,16 +1254,17 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     for x, y, method in matches:
         ratio = callgraph_match_ratio(x.code_va, y.code_va, aedges, bedges, reference_to_target)
         import_ratio = import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context)
-        enriched_matches.append((x, y, method, ratio, import_ratio))
+        vtable_ratio = vtable_context_match_ratio(x.code_va, y.code_va, atypes, btypes)
+        enriched_matches.append((x, y, method, ratio, import_ratio, vtable_ratio))
 
     with (out / "function_matches.csv").open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow([
             "reference_code_va", "target_code_va", "method",
             "reference_size", "target_size", "callgraph_ratio", "callgraph_evidence",
-            "import_ratio", "import_evidence",
+            "import_ratio", "import_evidence", "vtable_ratio", "vtable_evidence",
         ])
-        for x, y, method, ratio, import_ratio in sorted(enriched_matches, key=lambda t: t[0].code_va):
+        for x, y, method, ratio, import_ratio, vtable_ratio in sorted(enriched_matches, key=lambda t: t[0].code_va):
             evidence = (
                 "neutral" if ratio is None else
                 "strong" if ratio >= 0.75 else
@@ -1242,6 +1276,8 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
                 "" if ratio is None else f"{ratio:.3f}", evidence,
                 "" if import_ratio is None else f"{import_ratio:.3f}",
                 "neutral" if import_ratio is None else "supporting" if import_ratio >= 0.5 else "weak",
+                "" if vtable_ratio is None else f"{vtable_ratio:.3f}",
+                "neutral" if vtable_ratio is None else "supporting" if vtable_ratio >= 0.5 else "weak",
             ])
 
     summary = {
@@ -1271,6 +1307,15 @@ def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
         ),
         "import_context_neutral": sum(
             import_context_match_ratio(x.code_va, y.code_va, aimport_context, bimport_context) is None
+            for x, y, _ in matches
+        ),
+        "vtable_context_supported": sum(
+            vtable_context_match_ratio(x.code_va, y.code_va, atypes, btypes) is not None
+            and vtable_context_match_ratio(x.code_va, y.code_va, atypes, btypes) >= 0.5
+            for x, y, _ in matches
+        ),
+        "vtable_context_neutral": sum(
+            vtable_context_match_ratio(x.code_va, y.code_va, atypes, btypes) is None
             for x, y, _ in matches
         ),
     }
