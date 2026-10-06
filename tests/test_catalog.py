@@ -193,6 +193,26 @@ review_status: mystery
         self.assertIn("invalid address: reference.va", messages)
         self.assertIn("unsupported cross-build method: nonsense", messages)
         self.assertIn("unsupported review_status: mystery", messages)
+    def test_region_inventory_is_not_treated_as_build_record(self):
+        root = Path(tempfile.mkdtemp())
+        inventory = root / "analysis" / "builds"
+        inventory.mkdir(parents=True)
+        path = inventory / "region-inventory.yaml"
+        path.write_text(
+            """schema: 1
+status: initial-inventory
+scope: "reviewed build/region identities"
+""",
+            encoding="utf-8",
+        )
+
+        records = list(gtcatalog.iter_records(root))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].kind, "inventory")
+        result = gtcatalog.validate_records(records)
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["counts_by_kind"], {"inventory": 1})
+
     def test_summary_reports_kind_build_and_function_counts(self):
         root = self._fixture()
         result = gtcatalog.summarize(list(gtcatalog.iter_records(root)))
