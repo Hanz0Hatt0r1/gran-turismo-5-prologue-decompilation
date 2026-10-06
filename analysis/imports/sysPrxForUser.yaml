@@ -16,3 +16,19 @@ symbols:
     name: sys_process_exit
     confidence: confirmed
     source: "PS3 Developer wiki Nids.txt"
+  - nid: 0x8461e528
+    name: sys_time_get_system_time
+    confidence: confirmed
+    source: "PS3 Developer wiki VSH Exports"
+  - nid: 0x42b23552
+    name: sys_prx_register_library
+    confidence: confirmed
+    source: "PS3 Developer wiki VSH Exports"
+  - nid: 0x2c847572
+    name: _sys_process_atexitspawn
+    confidence: confirmed
+    source: "PS3 Developer wiki VSH Exports"
+  - nid: 0x96328741
+    name: _sys_process_at_Exitspawn
+    confidence: confirmed
+    source: "PS3 Developer wiki VSH Exports"
