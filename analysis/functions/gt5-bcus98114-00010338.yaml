@@ -1,0 +1,52 @@
+schema: 1
+id: gt5.bcus98114.eboot.00010338
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x00010338
+name:
+  current: startup_main_10338
+  candidates:
+    - crt_runtime_bootstrap
+    - ppu_startup_runtime
+confidence: probable
+status: analyzed
+evidence:
+  - type: neighboring_function
+    detail: "The routine follows the confirmed 0x00010230 entry wrapper and has a distinct stack frame beginning at 0x00010338."
+  - type: stack_prologue
+    detail: "Creates a 160-byte stack frame and preserves r26-r31 plus the link register."
+  - type: callgraph
+    detail: "Performs a startup sequence containing sys_initialize_tls, sys_time_get_system_time, sys_prx_register_library, process exit-spawn registration, internal startup helpers, and final runtime dispatch."
+  - type: import_nid
+    detail: "The imported calls resolve to stable sysPrxForUser NIDs: 0x744680a2, 0x8461e528, 0x42b23552, 0x2c847572, and 0x96328741."
+callees:
+  - 0x0111bd24
+  - 0x00d39298
+  - 0x00d392a8
+  - 0x00d392b8
+  - 0x00d392c8
+  - 0x0111bd64
+  - 0x00010200
+  - 0x0111bc84
+  - 0x0111bc04
+  - 0x0111bda4
+  - 0x00010970
+  - 0x00d392d8
+subsystems:
+  - startup
+  - runtime
+notes:
+  - "0x00010338 is not promoted to a semantic game-main name; the strongest current interpretation is a CRT/runtime bootstrap that transitions toward application initialization."
+  - "The loops at 0x00010394 and 0x000103c0 copy 32-bit values through TOC-derived pointers; exact container semantics remain unresolved."
+  - "The conditional block around 0x00010464-0x000104b4 checks TOC-backed state before registering process-exit/runtime callbacks."
+  - "The calls at 0x00d39298-0x00d392d8 and 0x00010970 remain internal code addresses without independent semantic names."
+provenance:
+  disassembly:
+    tool: llvm-objdump
+    target: powerpc64-unknown-linux-gnu
+    range: "0x00010338-0x000104f0"
+  import_names:
+    source: "PS3 Developer wiki VSH Exports"
+    url: "https://www.psdevwiki.com/ps3/VSH_Exports"
+    independent_of_binary: true
