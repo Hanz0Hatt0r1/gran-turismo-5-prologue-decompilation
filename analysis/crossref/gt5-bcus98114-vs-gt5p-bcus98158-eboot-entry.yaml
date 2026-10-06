@@ -9,8 +9,8 @@ target:
   module: EBOOT.BIN
   va: 0x00010230
 method: manual
-confidence: probable
-review_status: pending
+confidence: confirmed
+review_status: accepted
 relationship:
   reference_name: eboot_entry
   target_name: eboot_entry
@@ -27,4 +27,4 @@ evidence:
 notes:
   - "This candidate does not transfer semantic names or code between builds."
   - "No normalized fingerprint is asserted because the canonical Prologue profile currently derives from existing analysis metadata rather than a repository-stored executable index."
-  - "Promote review_status only after a deterministic local comparison of the two user-provided executable indexes."
+  - "Accepted by manual review because both builds independently resolve the ELFv1 entry field through an OPD descriptor to the same code entry role at 0x00010230. The identity scope is limited to the ABI entry routine and does not assert source-level or subsystem equivalence."
