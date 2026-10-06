@@ -11,6 +11,7 @@ struct test_state {
     const uint8_t *base;
     size_t applied;
     size_t cleaned;
+    uint32_t cleaned_offsets[8];
 };
 
 static int apply_item(
@@ -38,10 +39,12 @@ static void cleanup_item(
 {
     struct test_state *state = (struct test_state *)context;
     (void)item;
+    assert(state->cleaned < 8u);
+    state->cleaned_offsets[state->cleaned] = item->destination_offset;
     ++state->cleaned;
 }
 
-static int fail_second_item(
+static int fail_fifth_item(
     const gt5_keyed_item *item,
     void *destination,
     void *context)
@@ -50,13 +53,13 @@ static int fail_second_item(
     (void)item;
     assert(destination != NULL);
     ++state->applied;
-    return state->applied == 2u ? -7 : 0;
+    return state->applied == 5u ? -7 : 0;
 }
 
 static void test_success_preserves_observed_order(void)
 {
     uint8_t storage[0x80] = {0};
-    struct test_state state = {{0}, {0}, storage, 0u, 0u};
+    struct test_state state = {{0}, {0}, storage, 0u, 0u, {0}};
 
     assert(gt5_apply_keyed_startup_config(
         storage,
@@ -82,7 +85,7 @@ static void test_success_preserves_observed_order(void)
 static void test_failure_cleans_in_reverse(void)
 {
     uint8_t storage[0x80] = {0};
-    struct test_state state = {{0}, {0}, storage, 0u, 0u};
+    struct test_state state = {{0}, {0}, storage, 0u, 0u, {0}};
 
     assert(gt5_apply_keyed_startup_config(
         storage,
@@ -90,11 +93,15 @@ static void test_failure_cleans_in_reverse(void)
         NULL,
         NULL,
         NULL,
-        fail_second_item,
+        fail_fifth_item,
         cleanup_item,
         &state) == -7);
-    assert(state.applied == 2u);
-    assert(state.cleaned == 1u);
+    assert(state.applied == 5u);
+    assert(state.cleaned == 4u);
+    assert(state.cleaned_offsets[0] == 0x3cu);
+    assert(state.cleaned_offsets[1] == 0x28u);
+    assert(state.cleaned_offsets[2] == 0x14u);
+    assert(state.cleaned_offsets[3] == 0x00u);
 }
 
 int main(void)
