@@ -33,6 +33,8 @@ evidence:
     detail: "The body calls 0x00013274, 0x00012860, 0x00013208, and the 0x00d393xx helper layer while propagating a startup/result status."
   - type: runtime
     detail: "The body also performs an indirect call through a loaded function pointer near 0x00010a34, consistent with dispatch through an initialized object/table."
+  - type: control_flow
+    detail: "The 0x00010a34-0x00010a70 tail walks a linked runtime structure: it loads the head pointer from TOC slot 0x0183eba4 (TOC-0x7f4c), follows a node link at +0, resolves a dispatch structure through +4/+8, loads code/TOC pair fields, performs bctrl, then follows the next node until the link becomes null."
 callees:
   - 0x00013274
   - 0x00012860
