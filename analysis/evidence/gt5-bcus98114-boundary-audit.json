@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "build": "gt5-bcus98114",
+  "input_sha256": "bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc",
+  "entry_descriptor_va": "0x017f8150",
+  "entry_code_va": "0x00010230",
+  "opd_descriptors": 14052,
+  "unique_opd_code": 8485,
+  "direct_control_transfers_to_exec": 797430,
+  "blr_count": 42599,
+  "stack_prologue_count": 42745,
+  "post_blr_continuation_functions": 57,
+  "post_blr_continuation_edges": 139,
+  "post_blr_conditional_edges": 102,
+  "post_blr_unconditional_edges": 37,
+  "nested_direct_call_targets_before_blr": 2078,
+  "nested_stack_prologues_before_blr": 2060,
+  "opd_overlaps_before_first_blr": 0,
+  "interpretation": {
+    "status": "review-required",
+    "finding": "The first linear blr is not a universally safe function terminator.",
+    "scope": "GT5 BCUS-98114 reference build",
+    "confidence": "high",
+    "action": "Keep the current blr heuristic conservative for now, but review the 57 continuation functions before using first-blr ranges as semantic boundaries."
+  },
+  "examples": [
+    {
+      "function_va": "0x1b11b4",
+      "first_blr_va": "0x1b2028",
+      "next_opd_va": "0x1b2d5c",
+      "branch_source_va": "0x1b1518",
+      "branch_target_va": "0x1b202c",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x235904",
+      "first_blr_va": "0x235fb4",
+      "next_opd_va": "0x237250",
+      "branch_source_va": "0x235e00",
+      "branch_target_va": "0x235fe4",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x2472f8",
+      "first_blr_va": "0x248030",
+      "next_opd_va": "0x248098",
+      "branch_source_va": "0x24750c",
+      "branch_target_va": "0x248034",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x24a774",
+      "first_blr_va": "0x24b3f8",
+      "next_opd_va": "0x24b6bc",
+      "branch_source_va": "0x24a93c",
+      "branch_target_va": "0x24b3fc",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x24d40c",
+      "first_blr_va": "0x24e090",
+      "next_opd_va": "0x24e0a4",
+      "branch_source_va": "0x24d5d4",
+      "branch_target_va": "0x24e094",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x24e578",
+      "first_blr_va": "0x24f1fc",
+      "next_opd_va": "0x24f210",
+      "branch_source_va": "0x24e740",
+      "branch_target_va": "0x24f200",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x24fab8",
+      "first_blr_va": "0x2507b4",
+      "next_opd_va": "0x2507c8",
+      "branch_source_va": "0x24fcac",
+      "branch_target_va": "0x2507b8",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x252020",
+      "first_blr_va": "0x252e88",
+      "next_opd_va": "0x252e9c",
+      "branch_source_va": "0x2522b4",
+      "branch_target_va": "0x252e8c",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x2537c8",
+      "first_blr_va": "0x2544ac",
+      "next_opd_va": "0x2544c0",
+      "branch_source_va": "0x2539bc",
+      "branch_target_va": "0x2544b0",
+      "opcode": "0x12",
+      "link": "0"
+    },
+    {
+      "function_va": "0x255534",
+      "first_blr_va": "0x255b6c",
+      "next_opd_va": "0x255b84",
+      "branch_source_va": "0x2555e4",
+      "branch_target_va": "0x255b70",
+      "opcode": "0x12",
+      "link": "0"
+    }
+  ]
+}
