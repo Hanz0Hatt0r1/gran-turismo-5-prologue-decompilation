@@ -1,0 +1,33 @@
+schema: 1
+id: gt5p.bcus98158.eboot.bootstrap.001
+build: BCUS-98158
+module: EBOOT.BIN
+subject:
+  - 0x00010230
+  - 0x00010368
+  - 0x000106e0
+confidence: probable
+status: analyzed
+provenance:
+  source: "Existing repository BCUS-98158 analysis from PR #10"
+  binary_in_git: false
+observations:
+  - "The US GT5 Prologue executable identifies itself with BCUS-98158 and related gt5p product/build strings."
+  - "ELF entry field 0x000717d8 is an ELFv1 PPU function descriptor resolving to code 0x00010230 and TOC 0x0007d110."
+  - "0x00010230 establishes the TOC pointer, creates the initial stack frame, and calls 0x00010368."
+  - "0x00010368 performs CRT/runtime duties including TLS initialization, startup-state normalization, static initialization, system-time setup, and exit-spawn registration before calling 0x000106e0."
+  - "0x000106e0 transitions into game-data and filesystem initialization, including handling CELL_GAMEDATA_ERROR_BROKEN and loading CELL_SYSMODULE_FS."
+evidence:
+  - type: entry_chain
+    detail: "0x000717d8 -> 0x00010230 -> 0x00010368 -> 0x000106e0"
+  - type: import
+    detail: "The existing import analysis resolves sys_initialize_tls, sys_time_get_system_time, _sys_process_atexitspawn, sys_process_exit, cellSysmoduleInitialize, and cellSysmoduleLoadModule."
+  - type: string
+    detail: "The analyzed executable contains /dev_bdvd/PS3_GAME/USRDIR and /dev_bdvd/PS3_GAME/USRDIR/GT.VOL."
+  - type: runtime
+    detail: "The caller of 0x000106e0 is dominated by CRT setup and final-result handling, supporting 0x000106e0 as the first probable game-level bootstrap."
+unresolved:
+  - "Exact semantic names of 0x00010368 and 0x000106e0."
+  - "TOC-backed global identities used by 0x000106e0."
+  - "Complete 0x000106e0 subsystem split and main-loop path."
+  - "Cross-build validation of these GT5 Prologue functions against retail GT5."
