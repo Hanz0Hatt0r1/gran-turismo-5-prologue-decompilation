@@ -84,11 +84,47 @@ functions:
       - "Saves r26-r31 and establishes a large stack frame; exact semantics remain unresolved."
     calls:
       - 0x0111bd24
+      - 0x00d39298
+      - 0x00d392a8
+      - 0x00d392b8
+      - 0x00d392c8
+      - 0x0111bd64
+      - 0x00010200
+      - 0x0111bc84
+      - 0x0111bc04
+      - 0x0111bda4
+      - 0x00010970
+      - 0x00d392d8
     import_context:
       - library: sysPrxForUser
         nid: 0x744680a2
         name: sys_initialize_tls
         stub_va: 0x0111bd24
+        callsite_va: 0x0001038c
+        name_confidence: confirmed
+      - library: sysPrxForUser
+        nid: 0x8461e528
+        name: sys_time_get_system_time
+        stub_va: 0x0111bd64
+        callsite_va: 0x00010444
+        name_confidence: confirmed
+      - library: sysPrxForUser
+        nid: 0x42b23552
+        name: sys_prx_register_library
+        stub_va: 0x0111bc84
+        callsite_va: 0x0001048c
+        name_confidence: confirmed
+      - library: sysPrxForUser
+        nid: 0x2c847572
+        name: _sys_process_atexitspawn
+        stub_va: 0x0111bc04
+        callsite_va: 0x00010498
+        name_confidence: confirmed
+      - library: sysPrxForUser
+        nid: 0x96328741
+        name: _sys_process_at_Exitspawn
+        stub_va: 0x0111bda4
+        callsite_va: 0x000104a4
         name_confidence: confirmed
 
 edges:
@@ -169,4 +205,8 @@ import_evidence:
   notes:
     - "The referenced 0x0111bdxx addresses resolve to the PS3 PPU import stubs listed under sysPrxForUser."
     - "NID values are recorded as stable import identities. Platform API names are promoted only when independently verified."
-    - "Verified names for 0xa2c7ba64, 0x744680a2, and 0xe6f2c1e7 are cataloged under analysis/imports/sysPrxForUser.yaml."
+    - "Verified names for 0xa2c7ba64, 0x744680a2, 0x8461e528, 0x42b23552, 0x2c847572, 0x96328741, and 0xe6f2c1e7 are supported by the public PS3 Developer wiki NID table."
+  external_reference:
+    url: "https://www.psdevwiki.com/ps3/VSH_Exports"
+    scope: "sysPrxForUser export NID names"
+    independent_of_binary: true
