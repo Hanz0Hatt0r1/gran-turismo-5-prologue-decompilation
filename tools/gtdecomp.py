@@ -1118,6 +1118,37 @@ def _fp_index(rows: Sequence[Fingerprint], attr: str) -> Dict[str, List[Fingerpr
     return out
 
 
+def callgraph_match_ratio(
+    reference_code_va: int,
+    target_code_va: int,
+    reference_edges: Sequence[CallEdge],
+    target_edges: Sequence[CallEdge],
+    reference_to_target: Dict[int, int],
+) -> Optional[float]:
+    """Compare recognized callee identities for an already matched function.
+
+    Only callees that participate in a unique fingerprint match are compared.
+    An empty recognized edge set is neutral (None), not a mismatch. This
+    keeps indirect calls and unresolved targets outside the confidence signal.
+    """
+    ref = {
+        reference_to_target[e.target_va]
+        for e in reference_edges
+        if e.caller_va == reference_code_va and e.target_va in reference_to_target
+    }
+    target_values = set(reference_to_target.values())
+    tgt = {
+        e.target_va
+        for e in target_edges
+        if e.caller_va == target_code_va and e.target_va in target_values
+    }
+    if not ref and not tgt:
+        return None
+    union = ref | tgt
+    if not union:
+        return None
+    return len(ref & tgt) / len(union)
+
 def compare_elfs(reference: Path, target: Path, out: Path) -> Dict[str, object]:
     out.mkdir(parents=True, exist_ok=True)
     a = PS3ELF(reference)
