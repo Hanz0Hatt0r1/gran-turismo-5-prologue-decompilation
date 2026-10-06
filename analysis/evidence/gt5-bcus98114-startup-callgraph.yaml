@@ -1,6 +1,7 @@
 schema: 1
 build: BCUS-98114
 module: EBOOT.BIN
+confidence: probable
 evidence_level: probable
 status: analyzed
 input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
