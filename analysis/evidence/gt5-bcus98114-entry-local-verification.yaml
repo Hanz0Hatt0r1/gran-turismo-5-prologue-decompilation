@@ -1,0 +1,22 @@
+schema: 1
+id: gt5.bcus98114.eboot.entry-local-verification.001
+build: BCUS-98114
+module: EBOOT.BIN
+confidence: confirmed
+status: reviewed
+provenance:
+  source: local-research-input
+  executable_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  binary_in_git: false
+method:
+  - elf-header
+  - opd-entry-resolution
+  - normalized-fingerprint
+observations:
+  - "The supplied ELF SHA-256 is bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc."
+  - "ELF e_entry is 0x017f8150; the ELFv1 OPD descriptor resolves to code 0x00010230 and TOC 0x01846af0."
+  - "The first four instructions at 0x00010230 normalize to the same byte sequence used by the reviewed fingerprint."
+  - "The reproduced normalized-full SHA-1 is 0d9887537d3a1371142daf75c8f9adef735897ea, matching the reviewed GT5 entry function record."
+  - "The verification was performed offline against the user-provided ELF; executable bytes are not stored in the repository."
+notes:
+  - "This confirms the reference-build entry metadata independently of repository file contents."
