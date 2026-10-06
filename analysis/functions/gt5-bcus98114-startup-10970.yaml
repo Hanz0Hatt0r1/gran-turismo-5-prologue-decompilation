@@ -35,6 +35,8 @@ evidence:
     detail: "The body also performs an indirect call through a loaded function pointer near 0x00010a34, consistent with dispatch through an initialized object/table."
   - type: control_flow
     detail: "The 0x00010a34-0x00010a70 tail walks a linked runtime structure: it loads the head pointer from TOC slot 0x0183eba4 (TOC-0x7f4c), follows a node link at +0, resolves a dispatch structure through +4/+8, loads code/TOC pair fields, performs bctrl, then follows the next node until the link becomes null."
+  - type: reconstruction
+    detail: "The traversal can be modeled without committing to a semantic node type: read next at node+0, intermediate at node+4, dispatch record at intermediate+8, then code/TOC at record+0/+4 and invoke."
 callees:
   - 0x00013274
   - 0x00012860
