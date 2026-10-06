@@ -61,6 +61,11 @@ proprietary SDK material, or extracted copyrighted assets.
 `gtdecomp.py decompile` accepts a local Ghidra install and orchestrates a fresh
 analysis project. The Ghidra scripts first materialize OPD entry points and
 apply derived evidence, then export one pseudocode file per indexed function.
+
+`tools/audit_boundaries.py` performs a non-destructive boundary audit on a
+user-provided ELF. Only unlinked direct branches that cross the first linear
+`blr` are counted as continuation evidence; linked branches are calls and are
+reported separately. The audit never alters function boundaries automatically.
 The output manifest keeps the normalized fingerprint beside each Ghidra name so
 that later builds can reuse research labels through the cross-build matcher.
 
