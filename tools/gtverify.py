@@ -54,6 +54,108 @@ def _fingerprint_for_range(elf: gtdecomp.PS3ELF, start: int, end: int) -> Dict[s
     }
 
 
+INDEX_REQUIRED_MANIFEST = ("schema", "sha256", "format", "entry_descriptor_va", "entry_code_va", "toc_va", "discovered_function_addresses")
+VALID_MATCH_METHODS = {"normalized-full", "normalized-prefix", "manual", "callgraph", "rtti-vtable", "import-context"}
+VALID_REVIEW_STATUSES = {"candidate", "pending", "accepted", "rejected"}
+VALID_MATCH_CONFIDENCES = {"confirmed", "probable", "speculative"}
+
+def _read_index_functions(index_dir: Path) -> Tuple[set, List[str]]:
+    path = index_dir / "discovered_functions.csv"
+    if not path.is_file():
+        return set(), [f"missing discovered_functions.csv: {index_dir}"]
+    rows = list(csv.DictReader(path.read_text(encoding="utf-8").splitlines()))
+    addresses = set()
+    errors: List[str] = []
+    digest_re = re.compile(r"^[0-9a-fA-F]{40}$")
+    for row in rows:
+        address = gtcatalog.normalize_address(row.get("code_va"))
+        if address is None:
+            errors.append(f"invalid code_va: {row.get('code_va')}")
+            continue
+        if address in addresses:
+            errors.append(f"duplicate discovered function address: {address}")
+        addresses.add(address)
+        try:
+            size = int(row.get("size", ""), 10)
+            insns = int(row.get("insns", ""), 10)
+        except ValueError:
+            errors.append(f"invalid size/insns at {address}")
+            continue
+        if size <= 0 or size % 4 or insns != size // 4:
+            errors.append(f"invalid size/insns relationship at {address}")
+        for field in ("sha_full", "sha_prefix"):
+            if not digest_re.fullmatch(row.get(field, "")):
+                errors.append(f"invalid {field} at {address}")
+    return addresses, errors
+
+def verify_index_dir(index_dir: Path, build_record: Optional[Path] = None) -> Dict[str, Any]:
+    manifest_path = index_dir / "manifest.json"
+    if not manifest_path.is_file():
+        return {"path": str(index_dir), "valid": False, "checks": [{"check": "manifest", "ok": False, "error": "missing manifest.json"}]}
+    manifest = _load_json(manifest_path)
+    checks: List[Dict[str, Any]] = []
+    errors: List[str] = []
+    for field in INDEX_REQUIRED_MANIFEST:
+        checks.append({"check": f"manifest.{field}", "ok": field in manifest and manifest[field] not in (None, ""), "value": manifest.get(field)})
+    digest = str(manifest.get("sha256", ""))
+    checks.append({"check": "manifest.sha256_format", "ok": bool(re.fullmatch(r"[0-9a-fA-F]{64}", digest))})
+    for field in ("entry_descriptor_va", "entry_code_va", "toc_va"):
+        checks.append({"check": f"manifest.{field}.format", "ok": _hex(manifest.get(field)) is not None})
+    addresses, function_errors = _read_index_functions(index_dir)
+    errors.extend(function_errors)
+    expected_count = manifest.get("discovered_function_addresses")
+    checks.append({"check": "discovered_function_count", "expected": expected_count, "actual": len(addresses), "ok": expected_count == len(addresses)})
+    if build_record:
+        record = gtcatalog.load_record(build_record, build_record.parent)
+        expected_sha = str(_field(record, "executable_sha256") or "").lower()
+        checks.append({"check": "build_record.sha256", "expected": expected_sha, "actual": digest.lower(), "ok": expected_sha == digest.lower()})
+        for field in ("entry_descriptor_va", "entry_code_va", "toc_va"):
+            expected = gtcatalog.normalize_address(_field(record, field))
+            actual = gtcatalog.normalize_address(manifest.get(field))
+            checks.append({"check": f"build_record.{field}", "expected": expected, "actual": actual, "ok": expected == actual})
+    return {"path": str(index_dir), "kind": "index", "valid": not errors and all(x["ok"] for x in checks), "manifest": manifest, "checks": checks, "errors": errors, "function_addresses": len(addresses)}
+
+def verify_compare_indexes(reference_index: Path, target_index: Path, match_csv: Optional[Path] = None, summary_path: Optional[Path] = None, reference_build_record: Optional[Path] = None, target_build_record: Optional[Path] = None) -> Dict[str, Any]:
+    reference = verify_index_dir(reference_index, reference_build_record)
+    target = verify_index_dir(target_index, target_build_record)
+    checks: List[Dict[str, Any]] = []
+    rows: List[Dict[str, str]] = []
+    if match_csv:
+        if not match_csv.is_file():
+            checks.append({"check": "function_matches.csv", "ok": False, "error": "missing file"})
+        else:
+            rows = list(csv.DictReader(match_csv.read_text(encoding="utf-8").splitlines()))
+            ref_addrs, ref_errors = _read_index_functions(reference_index)
+            tgt_addrs, tgt_errors = _read_index_functions(target_index)
+            row_errors = list(ref_errors) + list(tgt_errors)
+            for row in rows:
+                ref = gtcatalog.normalize_address(row.get("reference_code_va"))
+                tgt = gtcatalog.normalize_address(row.get("target_code_va"))
+                if ref not in ref_addrs: row_errors.append(f"reference address not in index: {row.get('reference_code_va')}")
+                if tgt not in tgt_addrs: row_errors.append(f"target address not in index: {row.get('target_code_va')}")
+                if row.get("method") not in VALID_MATCH_METHODS: row_errors.append(f"unsupported method: {row.get('method')}")
+                if row.get("review_status") not in VALID_REVIEW_STATUSES: row_errors.append(f"unsupported review_status: {row.get('review_status')}")
+                if row.get("evidence_confidence") not in VALID_MATCH_CONFIDENCES: row_errors.append(f"unsupported evidence_confidence: {row.get('evidence_confidence')}")
+                try:
+                    score = int(row.get("evidence_score", ""), 10)
+                    if score < 0 or score > 100: raise ValueError
+                except ValueError:
+                    row_errors.append(f"invalid evidence_score: {row.get('evidence_score')}")
+            checks.append({"check": "function_matches.csv", "row_count": len(rows), "ok": not row_errors, "errors": row_errors})
+    if summary_path:
+        if not summary_path.is_file():
+            checks.append({"check": "summary.json", "ok": False, "error": "missing file"})
+        else:
+            summary = _load_json(summary_path)
+            checks.append({"check": "summary.reference_sha256", "expected": reference.get("manifest", {}).get("sha256"), "actual": summary.get("reference_sha256"), "ok": summary.get("reference_sha256") == reference.get("manifest", {}).get("sha256")})
+            checks.append({"check": "summary.target_sha256", "expected": target.get("manifest", {}).get("sha256"), "actual": summary.get("target_sha256"), "ok": summary.get("target_sha256") == target.get("manifest", {}).get("sha256")})
+            if match_csv: checks.append({"check": "summary.matches", "expected": summary.get("matches"), "actual": len(rows), "ok": summary.get("matches") == len(rows)})
+    return {"valid": reference["valid"] and target["valid"] and all(x["ok"] for x in checks), "reference": reference, "target": target, "checks": checks}
+def _load_json(path: Path) -> Dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict): raise ValueError(f"expected JSON object: {path}")
+    return value
+
 def verify_source_xref_function_map(elf: gtdecomp.PS3ELF, map_path: Path) -> Dict[str, Any]:
     """Verify a derived source-xref function map against the same ELF."""
     snapshot = json.loads(map_path.read_text(encoding="utf-8"))
@@ -185,11 +287,25 @@ def _parser() -> argparse.ArgumentParser:
     cmd.add_argument("--function-record", action="append", default=[], type=Path)
     cmd.add_argument("--function-dir", action="append", default=[], type=Path)
     cmd.add_argument("--source-xref-function-map", type=Path)
+    compare = sub.add_parser("verify-compare")
+    compare.add_argument("--reference-index", required=True, type=Path)
+    compare.add_argument("--target-index", required=True, type=Path)
+    compare.add_argument("--match-csv", type=Path)
+    compare.add_argument("--summary", type=Path)
+    compare.add_argument("--reference-build-record", type=Path)
+    compare.add_argument("--target-build-record", type=Path)
     return parser
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "verify-compare":
+        result = verify_compare_indexes(
+            args.reference_index, args.target_index, args.match_csv, args.summary,
+            args.reference_build_record, args.target_build_record,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["valid"] else 1
     function_records = list(args.function_record)
     for directory in args.function_dir:
         function_records.extend(
