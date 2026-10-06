@@ -8,8 +8,14 @@ name:
   current: startup_helper_106ac
 confidence: probable
 status: reviewed
+provenance:
+  source_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+  disassembly:
+    tool: project-compatible PPC instruction normalization
+    range: "0x000106ac-0x000107bc"
+  fingerprint_verified: true
 fingerprints:
-  normalized_full: cbe39f44c67150874c0a4ae99c5446bfd8fa7f3d85323a8acd8089ef54833dab
+  normalized_full: ec02f88d5fad7ac9b53ea46f7317c43094e293ce
 reconstructed_operations:
   - id: argument_gate
     range: "0x000106b4-0x000106d4"
