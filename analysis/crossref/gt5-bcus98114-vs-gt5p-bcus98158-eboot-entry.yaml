@@ -1,0 +1,30 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-bcus98158-eboot-entry
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010230
+target:
+  build: BCUS-98158
+  module: EBOOT.BIN
+  va: 0x00010230
+method: manual
+confidence: probable
+review_status: pending
+relationship:
+  reference_name: eboot_entry
+  target_name: eboot_entry
+  identity_scope: "ELFv1 PPU entry routine / ABI startup role"
+evidence:
+  - type: entry_chain
+    detail: "Both builds resolve the ELF e_entry field through an OPD descriptor to code address 0x00010230."
+  - type: opd
+    detail: "Both entry descriptors carry a code VA and TOC VA; the TOC values differ between builds and are not treated as stable identity."
+  - type: callgraph
+    detail: "Both 0x00010230 entry routines directly transfer control into a distinct CRT/runtime bootstrap function."
+  - type: cross_build
+    detail: "The relationship is based on independently documented startup structure, not on absolute address equality alone."
+notes:
+  - "This candidate does not transfer semantic names or code between builds."
+  - "No normalized fingerprint is asserted because the canonical Prologue profile currently derives from existing analysis metadata rather than a repository-stored executable index."
+  - "Promote review_status only after a deterministic local comparison of the two user-provided executable indexes."
