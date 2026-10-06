@@ -121,7 +121,7 @@ def _yaml_scalar(text: str) -> Any:
     value = text.strip()
     if not value:
         return None
-    if value.startswith((""", "'")) and value[-1:] == value[0]:
+    if value.startswith(('"', "'")) and value[-1:] == value[0]:
         return value[1:-1]
     if value in {"null", "Null", "NULL", "~"}:
         return None
