@@ -17,11 +17,31 @@ Contributions should advance reproducible reverse engineering, documentation, or
 
 1. Identify the exact build/module under study.
 2. Record addresses/offsets and the method used to reach the conclusion.
-3. Name functions conservatively.
-4. Separate confirmed behavior from hypotheses.
-5. Link related issues and notes.
-6. Keep commits narrowly scoped.
+3. Run or reproduce the smallest useful M1 indexer query before making semantic claims.
+4. Name functions conservatively.
+5. Separate confirmed behavior from hypotheses.
+6. For cross-build matches, retain both build addresses and the matching method.
+7. Link related issues and notes.
+8. Keep commits narrowly scoped.
+9. Add synthetic tests for tooling behavior where practical.
+
+## Research data
+
+Use the schema in `analysis/schema.md`.
+
+A reviewed function should not exist only as a Ghidra name or pseudocode file. Promote its evidence, confidence, and relationships into repository-readable research metadata.
+
+Generated local indexes may be large; do not commit them merely because they were generated.
 
 ## Pull requests
 
-A useful PR should state what subsystem/build it covers, what changed, how it was verified, unresolved questions, and whether any names or structures remain speculative.
+A useful PR should state:
+- subsystem/build/module;
+- what changed;
+- how it was verified;
+- unresolved questions;
+- whether names/structures remain speculative;
+- whether generated output was used only as local evidence;
+- clean-room/licensing considerations.
+
+Prefer small, reviewable PRs over large decompiler dumps.
