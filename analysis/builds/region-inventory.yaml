@@ -1,6 +1,6 @@
 schema: 1
 status: initial-inventory
-scope: "Known build/region identities represented by reviewed repository metadata; this is not a claim of exhaustive worldwide revision coverage."
+scope: "Known executable profiles plus publicly cataloged release product IDs; public catalog entries are not executable-verification records."
 
 games:
   - game: Gran Turismo 5
@@ -10,15 +10,37 @@ games:
         role: reference-build
         status: reviewed
         profile: analysis/builds/gt5-bcus98114.json
+    public_release_ids:
+      US:
+        - BCUS-98114
+        - BCUS-98272
+        - BCUS-98114SA
+      EU_AU:
+        - BCES-00569
+      Asia:
+        - BCAS-20164
+      JP:
+        - BCJS-30050
+        - BCJS-30001
+      Korea:
+        - BCKS-10096
+      Later_editions_or_revisions:
+        - BCAS-20229
+        - BCAS-20267
+        - BCUS-98394
+        - BCJS-30100
     region_status:
-      US: reviewed
-      JP: unknown
-      Asia: unknown
-      EU: unknown
+      US: reviewed-executable
+      JP: cataloged-public-release
+      Asia: cataloged-public-release
+      EU: cataloged-public-release
+      AU: cataloged-public-release
+      Korea: cataloged-public-release
       Other: unknown
     revision_status:
-      retail_reference: reviewed
-      updates: unknown
+      retail_reference: reviewed-executable
+      updates: cataloged-public-release
+      later_editions: cataloged-public-release
 
   - game: Gran Turismo 5 Prologue
     known_builds:
@@ -27,17 +49,45 @@ games:
         role: target-build
         status: reviewed
         profile: analysis/builds/gt5p-bcus98158.json
+    public_release_ids:
+      US:
+        - BCUS-98158
+        - NPUA-80075
+      EU_AU:
+        - BCES-00104
+      Asia:
+        - BCAS-20027
+      JP:
+        - BCJS-30017
+        - BCJS-30031
+      Korea:
+        - BCKS-10030
     region_status:
-      US: reviewed
-      JP: unknown
-      Asia: unknown
-      EU: unknown
+      US: reviewed-executable
+      JP: cataloged-public-release
+      Asia: cataloged-public-release
+      EU: cataloged-public-release
+      AU: cataloged-public-release
+      Korea: cataloged-public-release
       Other: unknown
     revision_status:
-      retail_reference: reviewed
-      updates: unknown
+      retail_reference: reviewed-executable
+      updates: cataloged-public-release
+      Spec_III: cataloged-public-release
+
+public_sources:
+  - source: "GameFAQs / GameSpot release data for Gran Turismo 5"
+    url: "https://gamefaqs.gamespot.com/ps3/941103-gran-turismo-5/data"
+    role: release-metadata
+  - source: "GameFAQs / GameSpot release data for Gran Turismo 5 Prologue"
+    url: "https://gamefaqs.gamespot.com/ps3/942026-gran-turismo-5-prologue/data"
+    role: release-metadata
+  - source: "PS3 IRD database"
+    url: "https://ps3.aldostools.org/ird.html"
+    role: public-IRD-reference
 
 identity_policy:
   - "A title ID and reviewed executable SHA identify a concrete local build profile."
+  - "Public product IDs identify released editions/regions only; they do not establish executable identity or binary equivalence."
   - "Unknown region/revision entries remain explicit unknowns until independently verified."
   - "No executable, SELF, firmware, keys, SDK material, or game assets are stored in this inventory."
