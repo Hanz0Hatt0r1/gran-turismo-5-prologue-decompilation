@@ -1,0 +1,42 @@
+schema: 1
+id: gt5.bcus98114.eboot.startup-12dd4.001
+build: BCUS-98114
+module: EBOOT.BIN
+confidence: probable
+status: reviewed
+target:
+  va: 0x00012dd4
+  range: "0x00012dd4-0x00013208"
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+evidence:
+  - type: stack_prologue
+    address: 0x00012dd4
+    detail: "PPC64 stack frame: stdu r1,-0xf0(r1), followed by LR and nonvolatile register saves."
+  - type: blr
+    address: 0x00013204
+    detail: "First linear blr terminates the reviewed range at 0x00013208."
+  - type: direct_call
+    address: 0x000132e0
+    detail: "startup_helper_13274 issues a direct bl to 0x00012dd4."
+  - type: string
+    address: 0x00012eac
+    toc_slot_va: 0x0183edec
+    string_va: 0x0152ac90
+    string: "HADHOC"
+    detail: "The instruction lwz r3,-0x7d04(r2) reads a TOC slot whose 32-bit value resolves to the retained ASCII string HADHOC."
+  - type: control_flow
+    address: 0x00012e94
+    detail: "The main scan loop reads a 32-bit state value from r21+0 and branches on NULL before the HADHOC helper call."
+  - type: control_flow
+    address: 0x000131b0
+    detail: "Each loop iteration advances the source/result cursor r26 by 4 bytes before returning to the loop head."
+fingerprint:
+  normalized_full: fc53d1df3d0b19dcd5905f8cdd9e9058e456f4f1
+  normalized_prefix: 8e8fb779ee168d82d565cdd6ded2efe26cdb2483
+interpretation:
+  - "0x12dd4 is a loader/module-management helper reached only from the reviewed 0x13274 startup dispatch helper."
+  - "The exact presence of HADHOC as an argument is reproducible from the ELF and materially strengthens the module-loading interpretation."
+  - "The 0xd397xx and 0xd398xx addresses are ABI/PIC veneers; their target APIs are intentionally left unnamed here."
+unresolved:
+  - "Exact semantic identity of the 0x00d397b8 target and the runtime state structure at 0x00d...",
+  - "Whether the scanned entries correspond one-to-one with HModule objects or another module registry representation."
