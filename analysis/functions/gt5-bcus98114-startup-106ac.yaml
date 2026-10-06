@@ -1,0 +1,39 @@
+schema: 1
+id: gt5.bcus98114.eboot.000106ac
+build: BCUS-98114
+module: EBOOT.BIN
+address:
+  va: 0x000106ac
+name:
+  current: startup_helper_106ac
+confidence: probable
+status: reviewed
+fingerprints:
+  normalized_full: cbe39f44c67150874c0a4ae99c5446bfd8fa7f3d85323a8acd8089ef54833dab
+evidence:
+  - type: stack_prologue
+    detail: "0x000106ac begins with stdu r1,-0x90(r1), saves LR and r29, and forms a complete PPC64 function frame."
+  - type: blr
+    detail: "The first linear return instruction occurs at 0x000107b8, giving a conservative range 0x000106ac-0x000107bc."
+  - type: neighboring_function
+    detail: "0x000106e0 is inside the 0x000106ac range and is therefore an internal block, not an independently accepted function start."
+  - type: direct_call
+    detail: "The routine contains multiple local helper calls in the 0x00d4f3xx/0x00d4f7xx region and state-dependent cleanup branches."
+  - type: string
+    detail: "TOC-relative data used by the body names GT5_FINGERPRINT, GT5_FINGERPRINT_SIZE, GT5_CLIENT_CERTIFICATE, GT5_CLIENT_PRIVATEKEY, and GT5P_TVBASEKEY."
+  - type: string
+    detail: "The fingerprint-size path passes the immediate value 16; certificate/private-key/base-key payload addresses are treated as opaque data and are not copied into repository metadata."
+callers: []
+callees:
+  - 0x00d4f704
+  - 0x00d4f684
+  - 0x00d4f604
+  - 0x00d4f3cc
+  - 0x00d4f4b4
+  - 0x00d4f59c
+subsystems:
+  - startup
+  - online-service-configuration
+notes:
+  - "The semantic role remains unresolved; this record exists to make the boundary decision explicit and reproducible."
+  - "The function body is 0x110 bytes (272 decimal) including the terminating blr."

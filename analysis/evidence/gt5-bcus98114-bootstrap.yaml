@@ -14,7 +14,7 @@ observations:
   - "0x00010338 has a PPC64 stack frame and saves nonvolatile registers, consistent with a real function boundary."
   - "0x00010338 calls several local/import trampoline targets and reaches 0x00010454, which calls 0x00010200."
   - "The address 0x00010368 is inside 0x00010338 and must not be promoted as an independent function solely from candidate heuristics."
-  - "The region around 0x00106d8c contains a substantial function-like body; 0x00106e0fc is not independently accepted as a function start without additional boundary evidence."
+  - "A stack prologue at 0x000106ac establishes a separate function boundary; 0x000106e0 is inside that function and is not accepted as an independent start."
 evidence:
   - type: entry_chain
     detail: "0x017f8150 -> 0x00010230 -> 0x00010338"
@@ -30,3 +30,4 @@ unresolved:
   - "Semantic identity of 0x00010338."
   - "Exact import names behind trampoline targets in the early startup path."
   - "Complete startup/main-loop call graph."
+  - "Semantic identity of 0x000106ac and the exact helper/API roles in its body."
