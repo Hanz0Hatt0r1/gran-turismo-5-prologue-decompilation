@@ -108,6 +108,14 @@ Initial methods: `normalized-full`, `normalized-prefix`, `manual`, `callgraph`, 
 
 A cross-build match must never silently overwrite a manually verified target name.
 
+Generated comparison output may also include:
+- `evidence_score`: deterministic ranking score for an existing fingerprint match.
+- `evidence_confidence`: `probable` or `speculative` based on the score; this is not acceptance.
+- `evidence_reasons`: compact explanation of the score from the fingerprint method and secondary evidence.
+- `review_status`: generated candidates remain `candidate` until independently reviewed.
+
+The ranking is intentionally one-way: secondary callgraph, import-context, and RTTI/vtable evidence can strengthen an already established fingerprint match, but cannot create a match or mark it accepted. The tool does not emit `confirmed` automatically; that level remains a human-reviewed status.
+
 ## Generated versus reviewed data
 
 Generated output belongs in local output directories unless intentionally promoted to a reviewed research artifact.
