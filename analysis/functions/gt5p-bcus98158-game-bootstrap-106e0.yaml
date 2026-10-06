@@ -1,0 +1,31 @@
+schema: 1
+id: gt5p.bcus98158.eboot.000106e0
+build: BCUS-98158
+module: EBOOT.BIN
+address:
+  va: 0x000106e0
+name:
+  current: game_bootstrap_106e0
+  candidates:
+    - game_startup
+confidence: probable
+status: analyzed
+evidence:
+  - type: direct_call
+    detail: "The CRT/runtime bootstrap at 0x00010368 calls 0x000106e0 after TLS and initialization setup."
+  - type: string
+    detail: "The routine enters game-data/filesystem startup paths and is associated with GT5 Prologue build strings and filesystem resource paths."
+  - type: import
+    detail: "The existing Prologue analysis observes cellSysmoduleInitialize and cellSysmoduleLoadModule(CELL_SYSMODULE_FS) in this routine."
+  - type: runtime
+    detail: "A large application-state frame and service initialization distinguish 0x000106e0 from the preceding CRT layer."
+callees:
+  - 0x00000000
+subsystems:
+  - startup
+  - game-bootstrap
+  - filesystem
+  - game-data
+notes:
+  - "0x000106e0 is a likely game-level bootstrap boundary in the current Prologue analysis."
+  - "The zero placeholder in callees is intentionally not a semantic edge; detailed callee promotion remains unresolved and should be added only from independently reviewed direct-call extraction."
