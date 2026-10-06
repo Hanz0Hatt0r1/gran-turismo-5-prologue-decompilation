@@ -12,7 +12,8 @@ name:
 confidence: probable
 status: reviewed
 fingerprints:
-  normalized_full: 8f1f8ed2b9b7b7f8a6a2d8b74b8cc7a5dc9e2f7c8c6f86d5b2d9e2a79b4c1f31
+  normalized_full: 5bd7ac80989be48f2e2e6a1a089a3d660736226b
+  normalized_prefix_256: b1a6ad0a71987e83a50eeec9c7393e07f3f17855
 evidence:
   - type: stack_prologue
     detail: "Begins with stdu r1,-0xa0(r1) at 0x00010338, saves r26-r31 and LR, and keeps the incoming argument registers in nonvolatile registers."
