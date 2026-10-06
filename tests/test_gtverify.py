@@ -191,6 +191,13 @@ fingerprints:
                     gtverify.gtdecomp.PS3ELF(elf_path), snapshot
                 )
             self.assertFalse(result["valid"])
+    def test_parser_accepts_source_xref_function_map(self):
+        args = gtverify._parser().parse_args([
+            "verify",
+            "--elf", "EBOOT.ELF",
+            "--source-xref-function-map", "analysis/evidence/map.json",
+        ])
+        self.assertEqual(args.source_xref_function_map, Path("analysis/evidence/map.json"))
     def test_verify_rejects_wrong_fingerprint(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
