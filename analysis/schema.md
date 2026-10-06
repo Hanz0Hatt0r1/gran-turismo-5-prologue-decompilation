@@ -140,6 +140,8 @@ build/function/evidence records. They require both build/module/address sides, a
 comparison method, confidence, and an explicit `review_status`.
 
 Allowed review states are `candidate`, `pending`, `accepted`, and `rejected`.
+An `accepted` cross-build record must use `confidence: confirmed` and declare
+`relationship.identity_scope` so the accepted equivalence remains explicitly scoped.
 Validation never promotes a match; it only rejects malformed metadata.
 ## Generated versus reviewed data
 
