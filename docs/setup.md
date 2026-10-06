@@ -78,3 +78,22 @@ python3 tools/gtcatalog.py summary analysis
 ```
 
 The catalog utility is dependency-free and only understands the project's simple YAML mapping subset plus JSON. It detects malformed identity fields and duplicate function addresses within a build/module; it never stores or reads game binaries.
+
+Verify a promoted build/function record against a local ELF:
+
+```bash
+python3 tools/gtverify.py verify \
+  --elf /path/to/EBOOT.ELF \
+  --build-record analysis/builds/gt5-bcus98114.yaml \
+  --function-record analysis/functions/gt5-bcus98114-eboot-entry.yaml
+```
+
+Verify the derived GT5 source-xref function map against the same local ELF:
+
+```bash
+python3 tools/gtverify.py verify \
+  --elf /path/to/EBOOT.ELF \
+  --source-xref-function-map analysis/evidence/gt5-bcus98114-source-xref-function-map.json
+```
+
+The verifier compares the executable SHA-256, ELFv1 entry/TOC metadata, function fingerprints where declared, and derived source-xref control totals/function mappings. It reads user-provided binaries only locally and does not add them to Git.
