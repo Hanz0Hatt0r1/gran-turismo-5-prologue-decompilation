@@ -32,7 +32,9 @@ functions:
     import_context:
       - library: sysPrxForUser
         nid: 0xa2c7ba64
+        name: sys_prx_exitspawn_with_level
         stub_va: 0x0111be04
+        name_confidence: confirmed
   - va: 0x0001027c
     name: startup_helper_1027c
     confidence: probable
@@ -67,7 +69,9 @@ functions:
     import_context:
       - library: sysPrxForUser
         nid: 0xe6f2c1e7
+        name: sys_process_exit
         stub_va: 0x0111bf24
+        name_confidence: confirmed
   - va: 0x00010338
     name: startup_main_10338
     confidence: probable
@@ -82,7 +86,9 @@ functions:
     import_context:
       - library: sysPrxForUser
         nid: 0x744680a2
+        name: sys_initialize_tls
         stub_va: 0x0111bd24
+        name_confidence: confirmed
 
 edges:
   - caller: 0x00010230
@@ -161,4 +167,5 @@ import_evidence:
   source: executable_import_table
   notes:
     - "The referenced 0x0111bdxx addresses resolve to the PS3 PPU import stubs listed under sysPrxForUser."
-    - "NID values are recorded as stable import identities; semantic symbol names are not promoted without an independent NID-name source."
+    - "NID values are recorded as stable import identities. Platform API names are promoted only when independently verified."
+    - "Verified names for 0xa2c7ba64, 0x744680a2, and 0xe6f2c1e7 are cataloged under analysis/imports/sysPrxForUser.yaml."
