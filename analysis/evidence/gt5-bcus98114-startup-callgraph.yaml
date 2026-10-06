@@ -1,0 +1,146 @@
+schema: 1
+build: BCUS-98114
+module: EBOOT.BIN
+evidence_level: probable
+status: analyzed
+input_sha256: bbbc31048dd608f8e959d9a84205b9fd7001b480b707af08c9d1f8c0816672bc
+
+entry:
+  descriptor_va: 0x017f8150
+  code_va: 0x00010230
+  toc_va: 0x01846af0
+
+functions:
+  - va: 0x00010230
+    name: eboot_entry
+    confidence: confirmed
+    evidence:
+      - entry_chain
+      - opd
+      - blr
+    calls:
+      - 0x00010338
+  - va: 0x00010254
+    name: startup_helper_10254
+    confidence: probable
+    evidence:
+      - neighboring_function
+      - stack_prologue
+      - blr
+    calls:
+      - 0x0111be04
+  - va: 0x0001027c
+    name: startup_helper_1027c
+    confidence: probable
+    evidence:
+      - stack_prologue
+      - blr
+    calls:
+      - 0x00d39228
+      - 0x00d39238
+      - 0x00d39248
+      - 0x00d39258
+      - 0x00d39268
+  - va: 0x000102c8
+    name: startup_helper_102c8
+    confidence: probable
+    evidence:
+      - stack_prologue
+      - blr
+    calls:
+      - 0x00010254
+      - 0x00d39278
+      - 0x00d39288
+  - va: 0x00010300
+    name: startup_helper_10300
+    confidence: probable
+    evidence:
+      - stack_prologue
+      - blr
+    calls:
+      - 0x0001027c
+      - 0x0111bf24
+  - va: 0x00010338
+    name: startup_main_10338
+    confidence: probable
+    evidence:
+      - stack_prologue
+      - neighboring_function
+      - blr
+    notes:
+      - "Saves r26-r31 and establishes a large stack frame; exact semantics remain unresolved."
+    calls:
+      - 0x0111bd24
+
+edges:
+  - caller: 0x00010230
+    callsite: 0x0001024c
+    target: 0x00010338
+    kind: direct-bl
+    confidence: confirmed
+  - caller: 0x00010254
+    callsite: 0x00010264
+    target: 0x0111be04
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x0001027c
+    callsite: 0x00010290
+    target: 0x00d39228
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x0001027c
+    callsite: 0x00010298
+    target: 0x00d39238
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x0001027c
+    callsite: 0x000102a0
+    target: 0x00d39248
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x0001027c
+    callsite: 0x000102a8
+    target: 0x00d39258
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x0001027c
+    callsite: 0x000102b0
+    target: 0x00d39268
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x000102c8
+    callsite: 0x000102d8
+    target: 0x00010254
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x000102c8
+    callsite: 0x000102dc
+    target: 0x00d39278
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x000102c8
+    callsite: 0x000102e4
+    target: 0x00d39288
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x00010300
+    callsite: 0x00010314
+    target: 0x0001027c
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x00010300
+    callsite: 0x0001031c
+    target: 0x0111bf24
+    kind: direct-bl
+    confidence: probable
+  - caller: 0x00010338
+    callsite: 0x0001038c
+    target: 0x0111bd24
+    kind: probable-direct-bl
+    confidence: probable
+
+control_flow_notes:
+  - "0x000102fc is an unconditional branch to 0x0001027c, not a new function edge."
+  - "0x00010368 is inside the 0x00010338 prologue/body and is not promoted as a function start."
+  - "The 0x00d392xx targets are retained as raw code addresses until import/semantic evidence identifies their role."
+  - "No semantic startup name is promoted beyond eboot_entry without independent evidence."
