@@ -118,7 +118,6 @@ review_status: accepted
 relationship:
   identity_scope: "ELFv1 PPU entry routine / ABI startup role"
 """, encoding="utf-8")
-        )
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
         self.assertTrue(result["valid"])
 
