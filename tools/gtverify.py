@@ -105,8 +105,8 @@ def verify_build_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord) -
     code_expected = _hex(_field(record, "entry_code_va"))
     toc_expected = _hex(_field(record, "toc_va"))
     entry_off = elf.va_to_offset(elf.entry)
-    actual_code = gtdecomp._u32(elf.data, entry_off) if entry_off is not None else None
-    actual_toc = gtdecomp._u32(elf.data, entry_off + 4) if entry_off is not None else None
+    actual_code = gtdecomp._u64(elf.data, entry_off) if entry_off is not None else None
+    actual_toc = gtdecomp._u64(elf.data, entry_off + 8) if entry_off is not None else None
     checks.append({"check": "entry_code_va", "expected": code_expected, "actual": actual_code, "ok": code_expected == actual_code})
     checks.append({"check": "toc_va", "expected": toc_expected, "actual": actual_toc, "ok": toc_expected == actual_toc})
 
