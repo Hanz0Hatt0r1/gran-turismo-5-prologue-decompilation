@@ -39,9 +39,10 @@ The executable-intelligence layer is the current engineering priority.
 - [ ] Compare GT5 retail against GT5 Prologue.
   - [x] Add the locally supplied UK-marked NPEA-00050 Prologue ELF as a separately hash-pinned comparison build; keep it distinct from the canonical US BCUS-98158 profile.
   - [x] Accept the BCUS-98114 to NPEA-00050 ELFv1 entry-role relationship with scope limited to startup role; the first direct-call targets and normalized entry prefixes differ.
-  - [ ] Review the 125 remaining of 127 generated normalized fingerprint candidates; the current comparison ranks all as speculative.
+  - [ ] Review the 121 remaining of 127 generated normalized fingerprint candidates; the current comparison ranks all as speculative.
     - [x] Inspect `0x00bb6ce0` to `0x00013a70`; the wrapper bodies match after branch normalization, but downstream helpers remain unverified, so both rows stay speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
     - [x] Inspect `0x00cf2e10` to `0x0004b188`; both have the same 188-byte normalized body and `cellGcmSys` NID, but the imported function name is unresolved, so the row stays speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
+    - [x] Inspect `0x00cf2ecc` to `0x0004b270`, `0x00d01688` to `0x00050ac0`, and `0x00d01774` to `0x00050bb8`; each pair has an exact normalized body and matching import NID, but unresolved import names keep all three speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
   - [x] Audit the currently available local input identity; its raw ELF hash
     matches BCUS-98114, while its entry descriptor and TOC differ from the
     BCUS-98158 profile. The former SELF-vs-ELF hash comparison was invalid and
