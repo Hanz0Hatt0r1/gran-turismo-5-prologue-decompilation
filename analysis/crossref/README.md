@@ -16,10 +16,10 @@ comparison build. Its identity audit and fingerprint candidates are recorded in
 [`analysis/evidence/gt5p-npea00050-identity-audit-20261017.md`](../evidence/gt5p-npea00050-identity-audit-20261017.md).
 It does not replace the canonical US BCUS-98158 target. The accepted GT5 to
 NPEA relation covers only the ELFv1 entry role. Separate probable/pending
-cross-reference records cover one startup-coordinator role, eleven function-body
+cross-reference records cover one startup-coordinator role, twelve function-body
 relationships, and one shared-prefix call-graph role; none asserts semantic or source-level
 function identity. The generated function matches remain candidate/speculative,
-with 106 of 127 still unreviewed. The reviewed pairs are documented in [the candidate-review
+with 105 of 127 still unreviewed. The reviewed pairs are documented in [the candidate-review
 note](../evidence/gt5p-npea00050-function-candidate-review-20261017.md) and [the
 startup comparison](../evidence/gt5p-npea00050-gt5-startup-coordinator-review-20261017.md),
 as well as the [helper-body review](../evidence/gt5p-npea00050-helper-00d1a534-review-20261017.md).
@@ -41,6 +41,8 @@ Three callers of the lock helper have separate probable/pending records:
 [`0x00d1ecc4`](gt5-bcus98114-vs-gt5p-npea00050-function-00d1ecc4.yaml).
 The [callgraph candidate `0x00d1f778`](gt5-bcus98114-vs-gt5p-npea00050-function-00d1f778.yaml)
 is probable/pending with one unique exact callee; its other targets remain unresolved.
+The exact-body [callee record for `0x00d1f31c`](gt5-bcus98114-vs-gt5p-npea00050-function-00d1f31c.yaml)
+is probable/pending with one aligned caller pair; another caller remains unmatched.
 
 ## Match lifecycle
 
