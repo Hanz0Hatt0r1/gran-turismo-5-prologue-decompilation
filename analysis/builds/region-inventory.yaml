@@ -1,6 +1,6 @@
 schema: 1
 status: initial-inventory
-scope: "Known executable profiles plus publicly cataloged release product IDs; public catalog entries are not executable-verification records."
+scope: "Known executable profiles plus publicly cataloged release IDs and packaging product codes; public catalog entries are not executable-verification records."
 
 games:
   - game: Gran Turismo 5
@@ -18,7 +18,7 @@ games:
       EU_AU:
         - BCES-00569
       Asia:
-        - BCAS-20164
+        - BCAS-20151
       JP:
         - BCJS-30050
         - BCJS-30001
@@ -29,6 +29,9 @@ games:
         - BCAS-20267
         - BCUS-98394
         - BCJS-30100
+    packaging_product_codes:
+      Asia:
+        - BCAS-20164
     region_status:
       US: reviewed-executable
       JP: cataloged-public-release
@@ -85,6 +88,12 @@ public_sources:
   - source: "GameFAQs / GameSpot release data for Gran Turismo 5"
     url: "https://gamefaqs.gamespot.com/ps3/941103-gran-turismo-5/data"
     role: release-metadata
+  - source: "GT5 Modding Hub regional build inventory"
+    url: "https://nenkai.github.io/gt-modding-hub/builds/gt5/"
+    role: regional-disc-title-id-and-build-index
+  - source: "Retroplace Gran Turismo 5 Asia listing"
+    url: "https://www.retroplace.com/de/spiele/113038--gran-turismo-5"
+    role: packaging-product-code
   - source: "GameFAQs / GameSpot release data for Gran Turismo 5 Prologue"
     url: "https://gamefaqs.gamespot.com/ps3/942026-gran-turismo-5-prologue/data"
     role: release-metadata
