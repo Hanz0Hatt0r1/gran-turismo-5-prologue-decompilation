@@ -23,13 +23,23 @@ are respectively `0x00bb6c90` and `0x00013a20`. That helper pair is also an
 Its direct call targets, however, are `0x00bb6a90` and `0x00013808`, and there
 is no independently established mapping for those targets.
 
+## Candidate `0x00cf2e10` to `0x0004b188`
+
+The table classifies this as a 188-byte `normalized-full` match. Independently
+recomputing the normalized SHA-1 from both pinned ELFs yields
+`7daef03605f0e0386e5d7f5f5d94fc221b714cc2` for each body. Both functions make
+a direct call at offset `0x4c`; the call targets resolve to `cellGcmSys` NID
+`0x21397818` in their respective import tables. The import name is unresolved
+in both local indexes, so this only establishes a shared imported API identity,
+not the API's semantic name.
+
 ## Review result
 
-The outer wrappers have a mechanically matching structure, but the current
-evidence does not establish what the downstream helpers do or whether their
-behavior is equivalent. Keep both rows at `candidate` / `speculative`; do not
-transfer semantic names or add an accepted cross-reference. This review covers
-one of 127 generated rows and does not complete the candidate-review roadmap
-item.
+The first pair has matching wrapper bodies but unresolved downstream helpers.
+The second pair has an exact normalized body and the same imported library/NID.
+Neither review establishes a supported semantic name or accepted cross-build
+identity. Keep both pairs at `candidate` / `speculative`; do not transfer names
+or add accepted cross-references. This note covers two of 127 generated rows;
+125 remain unreviewed.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.
