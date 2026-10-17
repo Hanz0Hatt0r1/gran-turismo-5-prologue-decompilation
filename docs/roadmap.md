@@ -34,6 +34,9 @@ The executable-intelligence layer is the current engineering priority.
 
 - [ ] Compare GT5 retail against GT5 updates.
 - [ ] Compare GT5 retail against GT5 Prologue.
+  - [x] Add the locally supplied UK-marked NPEA-00050 Prologue ELF as a separately hash-pinned comparison build; keep it distinct from the canonical US BCUS-98158 profile.
+  - [x] Accept the BCUS-98114 to NPEA-00050 ELFv1 entry-role relationship with scope limited to startup role; the first direct-call targets and normalized entry prefixes differ.
+  - [ ] Review 131 generated normalized fingerprint candidates; the current comparison ranks all as speculative.
   - [x] Audit the currently available local input identity; its raw ELF hash
     matches BCUS-98114, while its entry descriptor and TOC differ from the
     BCUS-98158 profile. The former SELF-vs-ELF hash comparison was invalid and

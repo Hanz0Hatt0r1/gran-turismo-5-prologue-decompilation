@@ -2,6 +2,10 @@
 
 Evidence notes explain why a function, structure, relationship, or subsystem classification is believed to be true.
 
+## Current local-input audit
+
+- [NPEA-00050 UK-marked Prologue ELF identity and first GT5 comparison](gt5p-npea00050-identity-audit-20261017.md) — exact input hash, local index, reviewed entry-role scope, and unreviewed fingerprint candidates.
+
 ## Minimum record
 
     schema: 1

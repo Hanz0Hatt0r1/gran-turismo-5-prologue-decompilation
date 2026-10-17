@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "game": "Gran Turismo 5 Prologue",
+  "title_id": "NPEA-00050",
+  "role": "comparison-build",
+  "module": "EBOOT.elf",
+  "executable_sha256": "f68bd95b7b4896e74911e68619705172039339aa688c918d6ed7022d36107fbc",
+  "executable_sha256_scope": "elf",
+  "format": "ELF64-big-endian-PowerPC64",
+  "entry_descriptor_va": "0x00071838",
+  "entry_code_va": "0x00010230",
+  "toc_va": "0x0007d230",
+  "baseline_index": {
+    "function_descriptors": 1857,
+    "unique_function_addresses": 1848,
+    "discovered_function_addresses": 1925,
+    "function_candidates": 2693,
+    "rtti_objects": 63,
+    "vtable_slots": 458,
+    "vtable_candidates": 63,
+    "source_file_strings": 0,
+    "toc_string_references": 7,
+    "functions_with_hints": 293,
+    "import_libraries": 8,
+    "import_functions": 77,
+    "direct_call_edges": 2155
+  },
+  "observed_identity": [
+    "NPEA-00050",
+    "NPEA00050",
+    "EP9001-NPEA00050_00",
+    "gt5p",
+    "boot.gt5p.uk.ps3.product-edi-key.release.build",
+    "https://gt5prologue.ps3.online.uk.gran-turismo.com"
+  ],
+  "notes": [
+    "The local raw ELF identifies as a UK-marked NPEA-00050 Gran Turismo 5 Prologue build through its embedded NPTitleID and build strings.",
+    "This profile pins only the supplied raw ELF; no enclosing SELF or package was provided or hashed.",
+    "Keep this build separate from the canonical US BCUS-98158 target profile.",
+    "The entry code VA is 0x00010230, but this build's entry descriptor and TOC differ from the US BCUS-98158 profile."
+  ]
+}
