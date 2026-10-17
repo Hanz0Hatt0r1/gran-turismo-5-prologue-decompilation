@@ -14,10 +14,12 @@
     "vtable_candidates": 1642,
     "import_libraries": 42,
     "import_functions": 716,
-    "toc_string_references": 30459,
-    "functions_with_hints": 5389,
+    "toc_string_references": 19316,
+    "functions_with_hints": 5301,
     "discovered_function_addresses": 54445,
-    "function_candidates": 67205
+    "function_candidates": 67205,
+    "direct_call_edges": 182866,
+    "direct_local_call_edges": 182642
   },
   "notes": [
     "Derived metadata only; executable is intentionally not stored in Git.",

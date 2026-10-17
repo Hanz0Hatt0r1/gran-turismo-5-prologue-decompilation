@@ -31,7 +31,7 @@ The executable-intelligence layer is the current engineering priority.
 - [x] Add canonical BCUS-98158 GT5 Prologue build profile.
 - [x] Resolve the GT5P bootstrap into reviewed function notes.
 - [x] Record the NPEA-00050 `0x00010360` startup function and audit its portable P-code export.
-- [ ] Reconcile Ghidra and static-indexer boundaries for `0x00010360`; its branch-targeted blocks extend 32 bytes past the first `blr`.
+- [x] Reconcile Ghidra and static-indexer boundaries for `0x00010360` with branch-aware range traversal and a synthetic regression test.
 
 ## Phase 2 — Cross-build common-code map
 
@@ -39,7 +39,7 @@ The executable-intelligence layer is the current engineering priority.
 - [ ] Compare GT5 retail against GT5 Prologue.
   - [x] Add the locally supplied UK-marked NPEA-00050 Prologue ELF as a separately hash-pinned comparison build; keep it distinct from the canonical US BCUS-98158 profile.
   - [x] Accept the BCUS-98114 to NPEA-00050 ELFv1 entry-role relationship with scope limited to startup role; the first direct-call targets and normalized entry prefixes differ.
-  - [ ] Review 131 generated normalized fingerprint candidates; the current comparison ranks all as speculative.
+  - [ ] Review 127 generated normalized fingerprint candidates; the current comparison ranks all as speculative.
     - [x] Inspect `0x00bb6ce0` to `0x00013a70`; the wrapper bodies match after branch normalization, but downstream helpers remain unverified, so both rows stay speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
   - [x] Audit the currently available local input identity; its raw ELF hash
     matches BCUS-98114, while its entry descriptor and TOC differ from the
