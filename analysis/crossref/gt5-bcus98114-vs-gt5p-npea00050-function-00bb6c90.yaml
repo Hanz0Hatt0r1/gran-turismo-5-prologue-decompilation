@@ -1,0 +1,30 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00bb6c90
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00bb6c90
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00013a20
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 80-byte function body with two exact caller pairs; the outgoing callee pair differs in size and fingerprint, and no semantic or source identity is asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 80-byte, 20-instruction bodies independently index to normalized SHA-1 c1b73e9b69e84eec39902de2c886f24d05ebfd32."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00bb6ce0 / 0x00013a70 (72 bytes, SHA-1 f9e2e1e0437a8d64223ec132b9a5d6c7d70fe39f) calls this pair at +0x2c (callsites 0x00bb6d0c / 0x00013a9c)."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00bb751c / 0x000146f8 (68 bytes, SHA-1 459efb7afb2916eb0af226468eae5ad8240b7bc6) calls this pair at +0x28 (callsites 0x00bb7544 / 0x00014720)."
+  - type: cross_build
+    detail: "At +0x34 (callsites 0x00bb6cc4 / 0x00013a54), both call 0x00bb6a90 / 0x00013808, whose indexed bodies differ in size and normalized hash (424 bytes, 29b350cc77ea0017c9ef33d6e8aa358fdcf5bcaf; 420 bytes, e76632b2b434d5fab333ddc39e51dc2f7f523c48); this callee pair is not a generated candidate."
+  - type: cross_build
+    detail: "Neither function has an indexed source-file hint or string reference."
+notes:
+  - "The generated row remains candidate/speculative at score 60; the separate pending record adds two exact caller pairs."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."

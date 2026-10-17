@@ -40,7 +40,7 @@ The executable-intelligence layer is the current engineering priority.
 - [ ] Compare GT5 retail against GT5 Prologue.
   - [x] Add the locally supplied UK-marked NPEA-00050 Prologue ELF as a separately hash-pinned comparison build; keep it distinct from the canonical US BCUS-98158 profile.
   - [x] Accept the BCUS-98114 to NPEA-00050 ELFv1 entry-role relationship with scope limited to startup role; the first direct-call targets and normalized entry prefixes differ.
-  - [ ] Review the 111 remaining of 127 generated normalized fingerprint candidates; the generated comparison ranks all as speculative, with eight NPEA-00050 cross-reference records pending at probable confidence.
+  - [ ] Review the 110 remaining of 127 generated normalized fingerprint candidates; the generated comparison ranks all as speculative, with nine NPEA-00050 cross-reference records pending at probable confidence.
   - [x] Add an ELF-backed verifier that regenerates this comparison and checks the committed candidate CSV against both build profiles.
   - [x] Compare startup coordinators at `0x00010338` and `0x00010360`; record probable/pending role-level evidence while keeping the differing full functions out of the generated match table ([review](../analysis/evidence/gt5p-npea00050-gt5-startup-coordinator-review-20261017.md)).
     - [x] Inspect `0x00bb6ce0` to `0x00013a70`; the wrapper bodies match after branch normalization, but downstream helpers remain unverified, so both rows stay speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
@@ -55,6 +55,7 @@ The executable-intelligence layer is the current engineering priority.
     - [x] Review `0x00bb6dbc` to `0x00013b50`; the exact 80-byte body, one matching callee, and two exact caller pairs support a probable/pending body relationship ([cross-reference](../analysis/crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6dbc.yaml)).
     - [x] Review `0x00bb6e0c` to `0x00013ba0`; the exact 76-byte body and aligned exact callee support a probable/pending relationship while incoming caller identities remain unresolved ([cross-reference](../analysis/crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6e0c.yaml)).
     - [x] Review `0x00bb6d74` to `0x00013b08`; the exact 72-byte body and two aligned exact caller pairs support a probable/pending body relationship, while its callee remains unresolved ([cross-reference](../analysis/crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6d74.yaml)).
+    - [x] Review `0x00bb6c90` to `0x00013a20`; the exact 80-byte body and two aligned exact caller pairs support a probable/pending body relationship, while its downstream helper remains unresolved ([cross-reference](../analysis/crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6c90.yaml)).
   - [x] Audit the currently available local input identity; its raw ELF hash
     matches BCUS-98114, while its entry descriptor and TOC differ from the
     BCUS-98158 profile. The former SELF-vs-ELF hash comparison was invalid and
