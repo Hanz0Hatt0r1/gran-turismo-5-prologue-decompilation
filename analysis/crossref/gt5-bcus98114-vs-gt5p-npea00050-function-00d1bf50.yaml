@@ -1,0 +1,26 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00d1bf50
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00d1bf50
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00055438
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 376-byte function body with an aligned direct call to the exact pending lock-helper pair; other local call targets remain unresolved, with no semantic or source identity asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 376-byte, 94-instruction bodies independently index to normalized SHA-1 9a75f7c081f8a6536b89916b64a736be955c0b61."
+  - type: callgraph
+    detail: "At +0x60 (callsites 0x00d1bfb0 / 0x00055498), both call the exact normalized 60-byte helper pair 0x00d1cd64 / 0x00056270 with SHA-1 15c114e437488a6cba2537234a19075a1061d6d0."
+  - type: cross_build
+    detail: "Other aligned local calls at +0x54, +0x110, +0x14c, +0x15c, and +0x164 do not have generated target pairs; no indexed source-file hint or string reference is present."
+notes:
+  - "The generated row remains candidate/speculative at score 70; this pending record adds one exact callee edge."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."
