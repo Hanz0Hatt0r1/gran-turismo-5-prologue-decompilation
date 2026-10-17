@@ -6,6 +6,7 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 
 - [NPEA-00050 UK-marked Prologue ELF identity and first GT5 comparison](gt5p-npea00050-identity-audit-20261017.md) — exact input hash, local index, reviewed entry-role scope, and unreviewed fingerprint candidates.
 - [GT5 to NPEA-00050 function-candidate review](gt5p-npea00050-function-candidate-review-20261017.md) — one wrapper pair inspected; helper behavior remains unverified and no match is promoted.
+- [NPEA-00050 startup function](../functions/gt5p-npea00050-startup-10360.yaml) — Ghidra-reviewed `0x00010360` body and audited one-function portable P-code corpus.
 
 ## Minimum record
 
