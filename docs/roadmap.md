@@ -40,7 +40,7 @@ The executable-intelligence layer is the current engineering priority.
 - [ ] Compare GT5 retail against GT5 Prologue.
   - [x] Add the locally supplied UK-marked NPEA-00050 Prologue ELF as a separately hash-pinned comparison build; keep it distinct from the canonical US BCUS-98158 profile.
   - [x] Accept the BCUS-98114 to NPEA-00050 ELFv1 entry-role relationship with scope limited to startup role; the first direct-call targets and normalized entry prefixes differ.
-  - [ ] Review the 118 remaining of 127 generated normalized fingerprint candidates; the generated comparison ranks all as speculative, with three cross-reference records pending at probable confidence.
+  - [ ] Review the 116 remaining of 127 generated normalized fingerprint candidates; the generated comparison ranks all as speculative, with three cross-reference records pending at probable confidence.
   - [x] Add an ELF-backed verifier that regenerates this comparison and checks the committed candidate CSV against both build profiles.
   - [x] Compare startup coordinators at `0x00010338` and `0x00010360`; record probable/pending role-level evidence while keeping the differing full functions out of the generated match table ([review](../analysis/evidence/gt5p-npea00050-gt5-startup-coordinator-review-20261017.md)).
     - [x] Inspect `0x00bb6ce0` to `0x00013a70`; the wrapper bodies match after branch normalization, but downstream helpers remain unverified, so both rows stay speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
@@ -49,6 +49,7 @@ The executable-intelligence layer is the current engineering priority.
     - [x] Review `0x00d1cd64` to `0x00056270`; identical normalized bodies call the same `sys_lwmutex_lock` import and three exact caller pairs reach them at matching offsets, recorded as a probable/pending helper relation ([cross-reference](crossref/gt5-bcus98114-vs-gt5p-npea00050-lwmutex-lock-helper.yaml)).
     - [x] Review `0x00d1a534` to `0x000539c0`; the 320-byte normalized bodies and a matched caller pair support a probable/pending function-body relationship, without semantic or source identity ([review](../analysis/evidence/gt5p-npea00050-helper-00d1a534-review-20261017.md)).
     - [x] Review `0x00d18dd0` to `0x00052228`; the 172-byte normalized bodies match, but one callee pair is absent and another is only a prefix candidate, so the row remains speculative ([review](../analysis/evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
+    - [x] Review `0x00d1cda0` to `0x000562e8` and `0x00d1ce8c` to `0x000564d0`; both exact bodies call the same raw import NID, while caller and local-callee pairs remain unresolved, so both generated rows stay speculative ([review](../analysis/evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
   - [x] Audit the currently available local input identity; its raw ELF hash
     matches BCUS-98114, while its entry descriptor and TOC differ from the
     BCUS-98158 profile. The former SELF-vs-ELF hash comparison was invalid and
