@@ -21,6 +21,7 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 - [GT5 to NPEA-00050 lock-helper caller `0x00d1ecc4`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1ecc4.yaml) — probable/pending exact 184-byte body with an aligned call to the reviewed lock helper.
 - [GT5 to NPEA-00050 callgraph candidate `0x00d1f778`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1f778.yaml) — probable/pending exact 220-byte body with one unique exact callee; repeated and differing targets remain unresolved.
 - [GT5 to NPEA-00050 exact-body callee `0x00d1f31c`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1f31c.yaml) — probable/pending exact 220-byte body supported by one aligned caller pair; another caller remains unmatched.
+- [GT5 to NPEA-00050 exact-body callee `0x00be877c`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00be877c.yaml) — probable/pending exact 152-byte body with one unique aligned callee pair; another callee caller remains unmatched.
 
 ## Minimum record
 

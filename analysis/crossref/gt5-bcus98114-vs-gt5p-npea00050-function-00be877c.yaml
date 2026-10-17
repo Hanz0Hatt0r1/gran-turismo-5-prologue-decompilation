@@ -1,0 +1,26 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00be877c
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00be877c
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x0002a9d8
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 152-byte function body with one exact outgoing callee pair; another caller of that callee remains unmatched, and no semantic or source identity is asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 152-byte, 38-instruction bodies independently index to normalized SHA-1 683696a78f7eb02015beba464d1cb3a2f6e56726, unique in each build index."
+  - type: callgraph
+    detail: "Both functions make one direct call at +0x30 (callsites 0x00be87ac / 0x0002aa08) to the exact 32-byte callee pair 0x00be875c / 0x0002a9b8, whose normalized SHA-1 is 5c77f425af562b8bc52361e0cbfe3dcddc1d1a0f and is unique in each build index."
+  - type: cross_build
+    detail: "The callee pair has another caller in each build, 0x00be894c / 0x0002abb0, but those bodies differ in size (64 / 76 bytes) and have no generated candidate pair. The reviewed functions have no other indexed callers, source-file hints, or string references."
+notes:
+  - "The generated row remains candidate/speculative at score 70; the separate record scopes the probable relationship to the exact body and aligned callee edge."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."
