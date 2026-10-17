@@ -98,6 +98,10 @@ Ghidra name, source/vtable evidence, status, and output path. The generated
 pseudocode is local reverse-engineering material and is intentionally ignored
 by Git.
 
+Use repeatable `--function-va 0x00010730` arguments to export selected indexed
+functions only. Explicit addresses bypass the hinted-function filter and must
+exist in the generated index.
+
 ### Tests
 
 ```bash

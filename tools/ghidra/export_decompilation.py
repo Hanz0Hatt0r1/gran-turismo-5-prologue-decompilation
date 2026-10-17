@@ -21,6 +21,8 @@ else:
 timeout_seconds = int(script_args[2]) if len(script_args) >= 3 else 90
 scope = script_args[3] if len(script_args) >= 4 else "hinted"
 limit = int(script_args[4]) if len(script_args) >= 5 else 0
+function_va_arg = script_args[5] if len(script_args) >= 6 else ""
+function_vas = sorted(set(int(value, 16) for value in function_va_arg.split(",") if value))
 if scope not in ("hinted", "all"):
     raise ValueError("scope must be hinted or all")
 functions_dir = os.path.join(output_root, "functions")
@@ -64,14 +66,19 @@ fields = [
     "error",
 ]
 selected = sorted(fingerprints)
-if scope == "hinted":
+if function_vas:
+    missing = [va for va in function_vas if va not in fingerprints]
+    if missing:
+        raise ValueError("function VA is not in the indexed function set: %s" % ", ".join("0x%08x" % va for va in missing))
+    selected = function_vas
+elif scope == "hinted":
     selected = [va for va in selected if va in hints]
 if limit > 0:
     selected = selected[:limit]
 
 with open(manifest_path, "w") as mf:
-    writer = csv.DictWriter(mf, fieldnames=fields)
-    writer.writeheader()
+    manifest_writer = csv.DictWriter(mf, fieldnames=fields)
+    manifest_writer.writeheader()
     for code_va in selected:
         if monitor.isCancelled():
             break
@@ -91,20 +98,20 @@ with open(manifest_path, "w") as mf:
             "error": "",
         }
         if fn is None:
-            writer.writerow(row)
+            manifest_writer.writerow(row)
             continue
         try:
             result = decompiler.decompileFunction(fn, timeout_seconds, monitor)
             if not result.decompileCompleted():
                 row["status"] = "failed"
                 row["error"] = result.getErrorMessage() or "decompilation did not complete"
-                writer.writerow(row)
+                manifest_writer.writerow(row)
                 continue
             decompiled = result.getDecompiledFunction()
             if decompiled is None:
                 row["status"] = "failed"
                 row["error"] = "Ghidra returned no decompiled function"
-                writer.writerow(row)
+                manifest_writer.writerow(row)
                 continue
             rel = os.path.join("functions", "%08x.c" % code_va)
             dst = os.path.join(output_root, rel)
@@ -122,7 +129,7 @@ with open(manifest_path, "w") as mf:
         except Exception as exc:
             row["status"] = "failed"
             row["error"] = str(exc)
-        writer.writerow(row)
+        manifest_writer.writerow(row)
 
 try:
     decompiler.dispose()

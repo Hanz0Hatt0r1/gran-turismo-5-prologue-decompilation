@@ -59,8 +59,12 @@ proprietary SDK material, or extracted copyrighted assets.
 ## Headless decompilation
 
 `gtdecomp.py decompile` accepts a local Ghidra install and orchestrates a fresh
-analysis project. The Ghidra scripts first materialize OPD entry points and
-apply derived evidence, then export one pseudocode file per indexed function.
+analysis project. It prefers Ghidra's PyGhidra launcher for its Python scripts
+and fails if the export manifest is missing. The Ghidra scripts first
+materialize OPD entry points and apply derived evidence, then export one
+pseudocode file per indexed function.
+Repeat `--function-va 0x00010730` to export only selected indexed functions;
+explicit addresses bypass the hinted-function filter.
 
 `tools/audit_boundaries.py` performs a non-destructive boundary audit on a
 user-provided ELF. Only unlinked direct branches that cross the first linear

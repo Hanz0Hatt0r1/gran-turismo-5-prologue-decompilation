@@ -3,6 +3,7 @@ import struct
 import tempfile
 import unittest
 import sys
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,6 +66,91 @@ class GTDecompTests(unittest.TestCase):
             tool = support / "analyzeHeadless"
             tool.write_text("#!/bin/sh\n")
             self.assertEqual(gtdecomp.resolve_analyze_headless(Path(td)), tool.resolve())
+
+    def test_resolve_prefers_pyghidra_launcher_when_available(self):
+        with tempfile.TemporaryDirectory() as td:
+            support = Path(td) / "support"
+            support.mkdir()
+            headless = support / "analyzeHeadless"
+            headless.write_text("#!/bin/sh\n")
+            pyghidra = support / "pyghidraRun"
+            pyghidra.write_text("#!/bin/sh\n")
+            self.assertEqual(gtdecomp.resolve_analyze_headless(Path(td)), pyghidra.resolve())
+
+    def test_decompile_rejects_missing_export_manifest(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out = root / "out"
+            decompiled = out / "decompiled"
+            decompiled.mkdir(parents=True)
+            stale_manifest = decompiled / "decompilation_manifest.csv"
+            stale_manifest.write_text("code_va,status\n0x00001000,ok\n")
+            stale_summary = out / "decompile-summary.json"
+            stale_summary.write_text("{}\n")
+            with mock.patch.object(gtdecomp, "index_elf", return_value={"sha256": "a" * 64}):
+                with mock.patch.object(gtdecomp, "resolve_analyze_headless", return_value=Path("/ghidra/analyzeHeadless")):
+                    with mock.patch.object(gtdecomp.subprocess, "run"):
+                        with self.assertRaisesRegex(RuntimeError, "did not produce decompilation_manifest.csv"):
+                            gtdecomp.decompile_elf(root / "input.elf", out, root / "ghidra")
+            self.assertFalse(stale_manifest.exists())
+            self.assertFalse(stale_summary.exists())
+
+    def test_decompile_uses_pyghidra_headless_class_and_project_arguments(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out = root / "out"
+
+            def write_manifest(command, check):
+                manifest = out / "decompiled" / "decompilation_manifest.csv"
+                manifest.write_text("code_va,status\n0x00001000,ok\n")
+
+            with mock.patch.object(gtdecomp, "index_elf", return_value={"sha256": "a" * 64}):
+                with mock.patch.object(gtdecomp, "resolve_analyze_headless", return_value=Path("/ghidra/support/pyghidraRun")):
+                    with mock.patch.object(gtdecomp.subprocess, "run", side_effect=write_manifest) as run:
+                        result = gtdecomp.decompile_elf(
+                            root / "input.elf",
+                            out,
+                            root / "ghidra",
+                            limit=1,
+                            function_vas=[0x1000, 0x2000],
+                        )
+
+            command = run.call_args.args[0]
+            self.assertEqual(command[:2], [
+                "/ghidra/support/pyghidraRun",
+                "-H",
+            ])
+            self.assertEqual(command[2], str(out / "ghidra-project"))
+            self.assertEqual(command[3], "gtdecomp_aaaaaaaaaaaa")
+            self.assertEqual(command[18], "1")
+            self.assertEqual(result["selected_functions"], 1)
+
+    def test_decompile_rejects_manifest_missing_requested_function(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out = root / "out"
+
+            def write_empty_manifest(command, check):
+                manifest = out / "decompiled" / "decompilation_manifest.csv"
+                manifest.write_text("code_va,status\n")
+
+            with mock.patch.object(gtdecomp, "index_elf", return_value={"sha256": "a" * 64}):
+                with mock.patch.object(gtdecomp, "resolve_analyze_headless", return_value=Path("/ghidra/support/pyghidraRun")):
+                    with mock.patch.object(gtdecomp.subprocess, "run", side_effect=write_empty_manifest):
+                        with self.assertRaisesRegex(RuntimeError, "does not match requested function selection"):
+                            gtdecomp.decompile_elf(
+                                root / "input.elf", out, root / "ghidra", function_vas=[0x10730]
+                            )
+
+    def test_decompile_parser_accepts_repeated_function_vas(self):
+        with mock.patch.object(gtdecomp, "decompile_elf", return_value={}) as decompile:
+            with mock.patch("builtins.print"):
+                result = gtdecomp.main([
+                    "decompile", "EBOOT.elf", "--ghidra", "/opt/ghidra",
+                    "--function-va", "0x00010730", "--function-va", "0x00010360",
+                ])
+        self.assertEqual(result, 0)
+        self.assertEqual(decompile.call_args.kwargs["function_vas"], [0x10730, 0x10360])
 
     def test_parse_minimal_ppc64_elf_and_opd(self):
         # Build a tiny synthetic PS3-like ELF with one executable segment and
