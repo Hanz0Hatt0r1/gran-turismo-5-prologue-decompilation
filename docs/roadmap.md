@@ -30,6 +30,8 @@ The executable-intelligence layer is the current engineering priority.
 - [x] Audit function-boundary heuristics against confirmed GT5 entry/OPD data.
 - [x] Add canonical BCUS-98158 GT5 Prologue build profile.
 - [x] Resolve the GT5P bootstrap into reviewed function notes.
+- [x] Record the NPEA-00050 `0x00010360` startup function and audit its portable P-code export.
+- [ ] Reconcile Ghidra and static-indexer boundaries for `0x00010360`; its branch-targeted blocks extend 32 bytes past the first `blr`.
 
 ## Phase 2 — Cross-build common-code map
 

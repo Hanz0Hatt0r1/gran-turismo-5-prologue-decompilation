@@ -1,0 +1,55 @@
+schema: 1
+id: gt5p.npea00050.eboot.00010360
+build: NPEA-00050
+module: EBOOT.elf
+address:
+  va: 0x00010360
+name:
+  current: sub_00010360
+  candidates:
+    - startup_bootstrap
+confidence: probable
+status: analyzed
+fingerprints:
+  normalized_full: 7a4dea8a68bec79ba51167628e960d940207b3ac
+  normalized_prefix: 33388ef900b408c4daf886d77a8dbd0d080b4f79
+evidence:
+  - type: entry_chain
+    detail: "The NPEA-00050 ELFv1 entry descriptor 0x00071838 resolves to 0x00010230, which directly calls 0x00010360."
+  - type: stack_prologue
+    detail: "The function establishes a 160-byte PPC64 stack frame and saves LR and nonvolatile registers r26-r31."
+  - type: direct_call
+    detail: "It stores startup state through TOC-relative globals, copies two argument arrays, calls initialization routines and 0x00010200, then calls 0x00010730 and forwards its result to 0x0004b7d0."
+  - type: neighboring_function
+    detail: "Conditional branches at 0x00010498 and 0x000104a8 target 0x00010538 and 0x00010528 after the first return at 0x00010524; the Ghidra body includes these blocks through 0x00010547."
+callers:
+  - 0x00010230
+callees:
+  - 0x0005b4e4
+  - 0x000324b0
+  - 0x00050d20
+  - 0x0004f080
+  - 0x00050840
+  - 0x0005b504
+  - 0x00010200
+  - 0x0005b484
+  - 0x0005b404
+  - 0x0005b524
+  - 0x00010730
+  - 0x0004b7d0
+subsystems:
+  - startup
+provenance:
+  input_sha256: f68bd95b7b4896e74911e68619705172039339aa688c918d6ed7022d36107fbc
+  disassembly:
+    tool: "Ghidra 12.1.2_DEV headless"
+    range: "0x00010360-0x00010548"
+  portable_pcode:
+    schema: REVENGINSTR.PcodeCorpus/1
+    artifact: ../evidence/gt5p-npea00050-startup-bootstrap-pcode.jsonl
+    sha256: 5aa78f537dd03a3e7f9adc7329f78c2fa655858c151191453d2c0bb53068f238
+    audit: "REVENGINSTR.PcodeAudit/1: one ok row, portable contract passed, zero leakage findings"
+    exporter_revision: d918e9319ce0773e16f692a4dac1cdc92a1561e2
+notes:
+  - "The exact CRT or application-runtime role is unresolved; NPEA-00050 import names are not resolved in the local index."
+  - "The static gtdecomp range ends at 0x00010528 (456 bytes) on the first return. Ghidra includes branch-targeted side blocks and reports a 488-byte body, so the shorter range must not be used as a complete function fingerprint."
