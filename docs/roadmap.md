@@ -34,6 +34,11 @@ The executable-intelligence layer is the current engineering priority.
 
 - [ ] Compare GT5 retail against GT5 updates.
 - [ ] Compare GT5 retail against GT5 Prologue.
+  - [x] Audit the currently available local input identity; the file under the
+    BCUS-98158 local path verifies as BCUS-98114 and is excluded from matching.
+    See [the identity audit](evidence/gt5p-local-input-identity-audit-20261017.md).
+  - [ ] Re-run the comparison after a BCUS-98158 input verifies against its
+    checked-in build profile.
   - [x] Accept structural ELFv1 entry identity as a reviewed role-level match.
   - [ ] Confirm CRT/common-code matches from normalized fingerprints using local indexes for both builds.
 - [ ] Classify matches as normalized-full, normalized-prefix, or manually verified.
