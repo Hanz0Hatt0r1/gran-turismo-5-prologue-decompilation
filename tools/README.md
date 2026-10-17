@@ -62,6 +62,10 @@ unique normalized-prefix matches are used as a lower-confidence fallback.
 This is intended to transfer research labels between GT5 retail, GT5 Prologue,
 and updates without assuming that absolute addresses are stable.
 
+To check a committed comparison against both local inputs and build records, use
+`gtverify.py cross-build`; the command regenerates and verifies the candidate
+CSV and relevant cross-reference records. See [the tooling guide](../docs/tooling.md#metadata-verification).
+
 ### Import an existing Ghidra C export
 
 Older Ghidra projects can be folded into the same database without rerunning

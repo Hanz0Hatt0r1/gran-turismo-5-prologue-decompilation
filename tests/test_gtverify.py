@@ -1,9 +1,15 @@
+import csv
 import json
+import shutil
 import struct
+import sys
 import tempfile
 import unittest
 from unittest import mock
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
 
 import gtcatalog
 import gtverify
@@ -37,6 +43,86 @@ class VerifyTests(unittest.TestCase):
         path = root / "tiny.elf"
         path.write_bytes(data)
         return path
+
+    @staticmethod
+    def make_cross_build_fixture(root: Path):
+        reference_elf = VerifyTests.make_elf(root)
+        target_elf = root / "target.elf"
+        shutil.copyfile(reference_elf, target_elf)
+        reference = gtverify.gtdecomp.PS3ELF(reference_elf)
+        target = gtverify.gtdecomp.PS3ELF(target_elf)
+
+        build_paths = []
+        for title_id, elf in (("SYNTH-A", reference), ("SYNTH-B", target)):
+            path = root / f"{title_id}.json"
+            path.write_text(json.dumps({
+                "schema": 1,
+                "game": "Synthetic",
+                "title_id": title_id,
+                "role": "test",
+                "module": "EBOOT.ELF",
+                "executable_sha256": elf.sha256,
+                "format": "ELF64-big-endian-PowerPC64",
+                "entry_descriptor_va": "0x00003000",
+                "entry_code_va": "0x00001000",
+                "toc_va": "0x00003800",
+            }), encoding="utf-8")
+            build_paths.append(path)
+
+        crossref_dir = root / "crossref"
+        crossref_dir.mkdir()
+        candidate_csv = crossref_dir / "matches.csv"
+        row = {
+            "reference_code_va": "0x00001000",
+            "target_code_va": "0x00001000",
+            "method": "normalized-full",
+            "reference_size": "8",
+            "target_size": "8",
+            "callgraph_ratio": "",
+            "callgraph_evidence": "neutral",
+            "import_ratio": "",
+            "import_evidence": "neutral",
+            "vtable_ratio": "",
+            "vtable_evidence": "neutral",
+            "evidence_score": "60",
+            "evidence_confidence": "speculative",
+            "evidence_reasons": "normalized-full",
+            "review_status": "candidate",
+        }
+        with candidate_csv.open("w", newline="", encoding="utf-8") as output:
+            writer = csv.DictWriter(output, fieldnames=list(row))
+            writer.writeheader()
+            writer.writerow(row)
+        generated_dir = root / "generated"
+        generated_dir.mkdir()
+        shutil.copyfile(candidate_csv, generated_dir / "function_matches.csv")
+        (crossref_dir / "match.yaml").write_text(
+            """schema: 1
+id: synthetic-match
+reference:
+  build: SYNTH-A
+  module: EBOOT.ELF
+  va: 0x00001000
+target:
+  build: SYNTH-B
+  module: EBOOT.ELF
+  va: 0x00001000
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: same normalized synthetic function body
+""",
+            encoding="utf-8",
+        )
+        return reference_elf, build_paths[0], target_elf, build_paths[1], candidate_csv
+
+    @staticmethod
+    def fake_compare(reference_elf: Path, target_elf: Path, output_dir: Path, candidate_csv: Path):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        source = candidate_csv.parent.parent / "generated" / "function_matches.csv"
+        shutil.copyfile(source, output_dir / "function_matches.csv")
+        return {"matches": 1}
 
     def test_verify_function_record(self):
         with tempfile.TemporaryDirectory() as td:
@@ -261,6 +347,51 @@ fingerprints:
             "--source-xref-function-map", "analysis/evidence/map.json",
         ])
         self.assertEqual(args.source_xref_function_map, Path("analysis/evidence/map.json"))
+
+    def test_verify_cross_build_regenerates_matches_and_checks_profiles(self):
+        with tempfile.TemporaryDirectory() as td:
+            args = self.make_cross_build_fixture(Path(td))
+            with mock.patch.object(
+                gtverify.gtdecomp,
+                "compare_elfs",
+                side_effect=lambda ref, target, out: self.fake_compare(ref, target, out, args[-1]),
+            ):
+                result = gtverify.verify_cross_build(*args)
+            self.assertTrue(result["valid"])
+            self.assertTrue(result["catalog"]["valid"])
+            self.assertTrue(result["candidate_csv"]["valid"])
+            self.assertEqual(result["comparison"]["matches"], 1)
+            self.assertEqual(result["crossrefs"]["checked"], 1)
+
+    def test_verify_cross_build_rejects_stale_candidate_csv(self):
+        with tempfile.TemporaryDirectory() as td:
+            args = list(self.make_cross_build_fixture(Path(td)))
+            candidate_csv = args[-1]
+            candidate_csv.write_text(
+                "reference_code_va,target_code_va,method\n"
+                "0x00002000,0x00002000,normalized-full\n",
+                encoding="utf-8",
+            )
+            with mock.patch.object(
+                gtverify.gtdecomp,
+                "compare_elfs",
+                side_effect=lambda ref, target, out: self.fake_compare(ref, target, out, args[-1]),
+            ):
+                result = gtverify.verify_cross_build(*args)
+            self.assertFalse(result["valid"])
+            self.assertFalse(result["candidate_csv"]["valid"])
+
+    def test_parser_accepts_cross_build_inputs(self):
+        args = gtverify._parser().parse_args([
+            "cross-build",
+            "--reference-elf", "reference.elf",
+            "--reference-build-record", "reference.json",
+            "--target-elf", "target.elf",
+            "--target-build-record", "target.json",
+            "--candidate-csv", "matches.csv",
+        ])
+        self.assertEqual(args.reference_elf, Path("reference.elf"))
+        self.assertEqual(args.target_build_record, Path("target.json"))
     def test_verify_rejects_wrong_fingerprint(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

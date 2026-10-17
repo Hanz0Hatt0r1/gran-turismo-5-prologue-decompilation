@@ -105,6 +105,19 @@ python3 tools/gtverify.py verify --elf /path/to/EBOOT.ELF \
 
 `gtverify.py verify` also supports `--source-xref-function-map` to validate the derived GT5 source-file TOC xref snapshot against the exact same user-provided ELF; it checks SHA-256, control totals, and the semantic function-map fields without promoting names.
 
+To verify the GT5 BCUS-98114 and locally supplied NPEA-00050 comparison together, run:
+
+```bash
+python3 tools/gtverify.py cross-build \
+  --reference-elf /path/to/GT5/EBOOT.ELF \
+  --reference-build-record analysis/builds/gt5-bcus98114.yaml \
+  --target-elf /path/to/GT5-Prologue/EBOOT.elf \
+  --target-build-record analysis/builds/gt5p-npea00050.json \
+  --candidate-csv analysis/crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv
+```
+
+This checks both build profiles, regenerates the cross-build comparison from the supplied ELFs, and compares every CSV field and row with the committed candidate report. It also checks relevant YAML cross-reference addresses and confirms normalized cross-references appear in the regenerated match set. Temporary comparison output is removed when the command exits; the input ELFs stay local.
+
 The verifier reads the user-provided executable locally and never copies it into the repository.
 
 ## Import symbol names

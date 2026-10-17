@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import re
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -230,6 +232,167 @@ def verify(
     }
 
 
+def _read_csv(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
+    with path.open("r", newline="", encoding="utf-8") as source:
+        reader = csv.DictReader(source)
+        return list(reader.fieldnames or []), list(reader)
+
+
+def _build_identity(record: gtcatalog.CatalogRecord) -> Tuple[str, str]:
+    build = str(_field(record, "title_id") or _field(record, "build") or "")
+    module = str(_field(record, "module") or "")
+    return build, module
+
+
+def verify_crossref_records(
+    crossref_dir: Path,
+    reference: gtdecomp.PS3ELF,
+    target: gtdecomp.PS3ELF,
+    reference_build: gtcatalog.CatalogRecord,
+    target_build: gtcatalog.CatalogRecord,
+    generated_rows: Sequence[Dict[str, str]],
+) -> Dict[str, Any]:
+    """Check relevant cross-build records against both ELFs and the regenerated match set."""
+    reference_id, reference_module = _build_identity(reference_build)
+    target_id, target_module = _build_identity(target_build)
+    generated = {
+        (row.get("reference_code_va", "").lower(), row.get("target_code_va", "").lower(), row.get("method", ""))
+        for row in generated_rows
+    }
+    checks: List[Dict[str, Any]] = []
+
+    for record in gtcatalog.iter_records(crossref_dir):
+        if record.kind != "crossref":
+            continue
+        ref_id = str(_field(record, "reference.build") or "")
+        record_target_id = str(_field(record, "target.build") or "")
+        if ref_id == reference_id and record_target_id == target_id:
+            ref_elf, tgt_elf = reference, target
+            expected_ref_module, expected_target_module = reference_module, target_module
+            ref_address = _hex(_field(record, "reference.va"))
+            target_address = _hex(_field(record, "target.va"))
+        elif ref_id == target_id and record_target_id == reference_id:
+            ref_elf, tgt_elf = target, reference
+            expected_ref_module, expected_target_module = target_module, reference_module
+            ref_address = _hex(_field(record, "reference.va"))
+            target_address = _hex(_field(record, "target.va"))
+        else:
+            continue
+
+        record_reference_module = str(_field(record, "reference.module") or "")
+        record_target_module = str(_field(record, "target.module") or "")
+        method = str(_field(record, "method") or "")
+        ok = (
+            ref_address is not None
+            and target_address is not None
+            and record_reference_module.casefold() == expected_ref_module.casefold()
+            and record_target_module.casefold() == expected_target_module.casefold()
+            and ref_elf.in_executable_segment(ref_address)
+            and tgt_elf.in_executable_segment(target_address)
+        )
+        if ok and method in {"normalized-full", "normalized-prefix"}:
+            pair = (f"0x{ref_address:08x}", f"0x{target_address:08x}", method)
+            ok = pair in generated
+            if not ok:
+                reverse_pair = (pair[1], pair[0], method)
+                ok = reverse_pair in generated
+        checks.append({
+            "path": record.path,
+            "method": method,
+            "reference_va": ref_address,
+            "target_va": target_address,
+            "valid": bool(ok),
+        })
+
+    return {
+        "valid": all(item["valid"] for item in checks),
+        "checked": len(checks),
+        "records": checks,
+    }
+
+
+def verify_cross_build(
+    reference_elf_path: Path,
+    reference_build_path: Path,
+    target_elf_path: Path,
+    target_build_path: Path,
+    candidate_csv: Path,
+) -> Dict[str, Any]:
+    """Rebuild a cross-build match report and compare it with committed evidence."""
+    reference = gtdecomp.PS3ELF(reference_elf_path)
+    target = gtdecomp.PS3ELF(target_elf_path)
+    reference_build = gtcatalog.load_record(reference_build_path, reference_build_path.parent)
+    target_build = gtcatalog.load_record(target_build_path, target_build_path.parent)
+    reference_check = verify_build_record(reference, reference_build)
+    target_check = verify_build_record(target, target_build)
+    catalog_records = [reference_build, target_build, *gtcatalog.iter_records(candidate_csv.parent)]
+    catalog_check = gtcatalog.validate_records(catalog_records)
+
+    with tempfile.TemporaryDirectory(prefix="gt5-cross-build-verify-") as temporary:
+        comparison = gtdecomp.compare_elfs(reference_elf_path, target_elf_path, Path(temporary))
+        generated_csv = Path(temporary) / "function_matches.csv"
+        expected_fields, expected_rows = _read_csv(candidate_csv)
+        generated_fields, generated_rows = _read_csv(generated_csv)
+        csv_matches = expected_fields == generated_fields and expected_rows == generated_rows
+        differences: List[Dict[str, Any]] = []
+        if expected_fields != generated_fields:
+            differences.append({
+                "kind": "header",
+                "expected": expected_fields,
+                "actual": generated_fields,
+            })
+        for index, (expected, actual) in enumerate(zip(expected_rows, generated_rows)):
+            if expected != actual:
+                differences.append({"kind": "row", "index": index, "expected": expected, "actual": actual})
+                if len(differences) >= 5:
+                    break
+        if len(expected_rows) != len(generated_rows):
+            differences.append({
+                "kind": "row_count",
+                "expected": len(expected_rows),
+                "actual": len(generated_rows),
+            })
+
+        crossrefs = verify_crossref_records(
+            candidate_csv.parent,
+            reference,
+            target,
+            reference_build,
+            target_build,
+            generated_rows,
+        )
+
+    return {
+        "valid": (
+            reference_check["valid"]
+            and target_check["valid"]
+            and catalog_check["valid"]
+            and csv_matches
+            and crossrefs["valid"]
+        ),
+        "catalog": catalog_check,
+        "reference": {
+            "elf": str(reference_elf_path),
+            "sha256": reference.sha256,
+            "build_record": reference_check,
+        },
+        "target": {
+            "elf": str(target_elf_path),
+            "sha256": target.sha256,
+            "build_record": target_check,
+        },
+        "comparison": comparison,
+        "candidate_csv": {
+            "path": str(candidate_csv),
+            "valid": csv_matches,
+            "committed_rows": len(expected_rows),
+            "regenerated_rows": len(generated_rows),
+            "differences": differences,
+        },
+        "crossrefs": crossrefs,
+    }
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -240,11 +403,32 @@ def _parser() -> argparse.ArgumentParser:
     cmd.add_argument("--function-record", action="append", default=[], type=Path)
     cmd.add_argument("--function-dir", action="append", default=[], type=Path)
     cmd.add_argument("--source-xref-function-map", type=Path)
+    cross = sub.add_parser("cross-build", help="verify both ELF profiles and regenerate their committed match CSV")
+    cross.add_argument("--reference-elf", required=True, type=Path)
+    cross.add_argument("--reference-build-record", required=True, type=Path)
+    cross.add_argument("--target-elf", required=True, type=Path)
+    cross.add_argument("--target-build-record", required=True, type=Path)
+    cross.add_argument("--candidate-csv", required=True, type=Path)
     return parser
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "cross-build":
+        try:
+            result = verify_cross_build(
+                args.reference_elf,
+                args.reference_build_record,
+                args.target_elf,
+                args.target_build_record,
+                args.candidate_csv,
+            )
+        except (OSError, ValueError, KeyError) as exc:
+            print(json.dumps({"valid": False, "error": str(exc)}, indent=2, sort_keys=True))
+            return 2
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result["valid"] else 1
+
     function_records = list(args.function_record)
     for directory in args.function_dir:
         function_records.extend(
