@@ -49,6 +49,11 @@ games:
         role: target-build
         status: reviewed
         profile: analysis/builds/gt5p-bcus98158.json
+      - title_id: NPEA-00050
+        region: UK
+        role: comparison-build
+        status: verified-local-elf
+        profile: analysis/builds/gt5p-npea00050.json
     public_release_ids:
       US:
         - BCUS-98158
@@ -64,6 +69,7 @@ games:
         - BCKS-10030
     region_status:
       US: reviewed-executable
+      UK: verified-local-elf
       JP: cataloged-public-release
       Asia: cataloged-public-release
       EU: cataloged-public-release
@@ -88,6 +94,7 @@ public_sources:
 
 identity_policy:
   - "A title ID and reviewed executable SHA identify a concrete local build profile."
+  - "A locally verified ELF profile identifies that exact input and does not establish equivalence with another region or revision."
   - "Public product IDs identify released editions/regions only; they do not establish executable identity or binary equivalence."
   - "Unknown region/revision entries remain explicit unknowns until independently verified."
   - "No executable, SELF, firmware, keys, SDK material, or game assets are stored in this inventory."

@@ -9,6 +9,15 @@ Cross-build analysis is a first-class layer. Builds remain independent; only rev
 
 The purpose of the pair is to use structurally stable code, imports, RTTI/vtables, strings, and call-graph context from the reference build to accelerate analysis of the Prologue executable without treating the builds as identical.
 
+## Additional local Prologue input
+
+The user-supplied UK-marked `NPEA-00050` raw ELF is tracked as a separate
+comparison build. Its identity audit and fingerprint candidates are recorded in
+[`analysis/evidence/gt5p-npea00050-identity-audit-20261017.md`](../evidence/gt5p-npea00050-identity-audit-20261017.md).
+It does not replace the canonical US BCUS-98158 target. The accepted GT5 to
+NPEA relation covers only the ELFv1 entry role; the generated function matches
+remain unreviewed candidates.
+
 ## Match lifecycle
 
 `generated -> candidate -> evidence reviewed -> accepted`

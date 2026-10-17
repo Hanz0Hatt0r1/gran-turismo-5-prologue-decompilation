@@ -1,0 +1,27 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-eboot-entry-role
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010230
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00010230
+method: manual
+confidence: confirmed
+review_status: accepted
+relationship:
+  reference_name: eboot_entry
+  target_name: eboot_entry
+  identity_scope: "ELFv1 PPU executable entry role only; no function-body or source-level equivalence"
+evidence:
+  - type: entry_chain
+    detail: "BCUS-98114 ELF e_entry descriptor 0x017f8150 and NPEA-00050 descriptor 0x00071838 both resolve to code VA 0x00010230."
+  - type: opd
+    detail: "The TOC values differ: 0x01846af0 in BCUS-98114 and 0x0007d230 in NPEA-00050."
+  - type: cross_build
+    detail: "The four-instruction normalized entry prefixes differ, and the first direct-call targets are build-specific (0x00010338 versus 0x00010360)."
+notes:
+  - "The accepted relation is limited to the ABI entry role established by each ELFv1 descriptor."
+  - "No function-body identity, subsystem equivalence, or semantic-name transfer is asserted."
