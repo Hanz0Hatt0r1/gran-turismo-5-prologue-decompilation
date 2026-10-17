@@ -33,13 +33,25 @@ a direct call at offset `0x4c`; the call targets resolve to `cellGcmSys` NID
 in both local indexes, so this only establishes a shared imported API identity,
 not the API's semantic name.
 
+## Additional exact imported-API candidates
+
+Each pair below has an independently recomputed equal normalized-full SHA-1,
+a direct call at the same function-relative offset, and the same import
+library/NID in both builds. Import names remain unresolved.
+
+| GT5 to NPEA-00050 | Bytes | Normalized SHA-1 | Import identity | Call offset |
+| --- | ---: | --- | --- | ---: |
+| `0x00cf2ecc` to `0x0004b270` | 64 | `62782eaa8ed0ffa9945e517a52c8206607837916` | `cellGcmSys` / `0x15bae46b` | `0x24` |
+| `0x00d01688` to `0x00050ac0` | 68 | `06b1782da59fca38f53acc0a08991b02496474e2` | `sysPrxForUser` / `0x1bc200f4` | `0x2c` |
+| `0x00d01774` to `0x00050bb8` | 44 | `17c8fc516cd9736e78a44f3d438f1db36207ef0a` | `sysPrxForUser` / `0xc3476d0c` | `0x14` |
+
 ## Review result
 
 The first pair has matching wrapper bodies but unresolved downstream helpers.
 The second pair has an exact normalized body and the same imported library/NID.
 Neither review establishes a supported semantic name or accepted cross-build
-identity. Keep both pairs at `candidate` / `speculative`; do not transfer names
-or add accepted cross-references. This note covers two of 127 generated rows;
-125 remain unreviewed.
+identity. Keep all six reviewed pairs at `candidate` / `speculative`; do not
+transfer names or add accepted cross-references. Six match rows have been
+inspected; 121 of the 127 generated rows remain unreviewed.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.
