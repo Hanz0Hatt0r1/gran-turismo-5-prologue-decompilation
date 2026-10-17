@@ -68,6 +68,9 @@ relationship with one unique matched callee; repeated and differing targets
 remain unresolved, leaving 106 candidates unreviewed.
 The review of `0x00d1f31c` to `0x00057130` adds an exact-body relationship
 supported by one aligned caller pair; 105 candidates remain unreviewed.
+The unique-prefix review of `0x00d1f854` to `0x00057688` leaves the candidate
+speculative because its only exact callee is an 8-byte body; 104 candidates
+remain unreviewed.
 The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.
