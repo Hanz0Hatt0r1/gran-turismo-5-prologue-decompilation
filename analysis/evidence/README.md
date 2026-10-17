@@ -14,6 +14,7 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 - [GT5 to NPEA-00050 exact-body cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1a96c.yaml) — probable/pending 576-byte normalized-full body relationship supported by four aligned callee edges; no semantic identity asserted.
 - [GT5 to NPEA-00050 startup-cluster cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6dbc.yaml) — probable/pending exact 80-byte body relationship supported by one callee and two caller pairs.
 - [GT5 to NPEA-00050 adjacent startup-cluster cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6e0c.yaml) — probable/pending exact 76-byte body relationship supported by an aligned exact callee pair; incoming callers remain unresolved.
+- [GT5 to NPEA-00050 central startup-cluster cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6d74.yaml) — probable/pending exact 72-byte body relationship supported by two aligned caller pairs; the outgoing callee remains unresolved.
 
 ## Minimum record
 

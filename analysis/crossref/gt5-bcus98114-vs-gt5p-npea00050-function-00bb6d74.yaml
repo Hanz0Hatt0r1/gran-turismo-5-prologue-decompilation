@@ -1,0 +1,32 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00bb6d74
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00bb6d74
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00013b08
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 72-byte function body with two exact incoming caller pairs; its outgoing callee and two additional caller pairs remain unresolved, and no semantic or source identity is asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 72-byte, 18-instruction bodies independently index to normalized SHA-1 c46391a1b562c0af723f469ede93c114e1af4e69."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00bb6dbc / 0x00013b50 (80 bytes, SHA-1 03737ecf00ab0a013646ab319fb3254e80901624) calls this pair at +0x34 (callsites 0x00bb6df0 / 0x00013b84)."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00bb6e0c / 0x00013ba0 (76 bytes, SHA-1 600c57d1fc55f8a69229d66d8172ad871c105a65) calls this pair at +0x30 (callsites 0x00bb6e3c / 0x00013bd0)."
+  - type: cross_build
+    detail: "At +0x2c (callsites 0x00bb6da0 / 0x00013b34), both call 0x00bb6a90 / 0x00013808, whose indexed bodies differ in size and normalized hash (424 bytes, 29b350cc77ea0017c9ef33d6e8aa358fdcf5bcaf; 420 bytes, e76632b2b434d5fab333ddc39e51dc2f7f523c48); this callee pair is not a generated candidate."
+  - type: cross_build
+    detail: "Two other indexed callers do not form generated pairs: GT5 0x00bb71bc and 0x00bb73ac (80 bytes; SHA-1 b19f61a03e9d39e4e4a11a7c2a13c342f9cc6236 and 4ca8c68bfa85f67b3f5a20d4baef770ecc6d7f1c) versus NPEA 0x00014390 and 0x00014580 (88 bytes; SHA-1 6718c410ba891409b6eb4eb0f8c39059fd3221fa and 23c3a70addec37ad16b839e68c3343cdcfa1bfbc)."
+  - type: cross_build
+    detail: "Neither function has an indexed source-file hint or string reference."
+notes:
+  - "The generated row remains candidate/speculative at score 60; the separate pending record adds two exact incoming caller pairs."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."
