@@ -185,6 +185,30 @@ generated row stays `candidate` / `speculative`; the separate
 [cross-reference record](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1f31c.yaml)
 is probable/pending without a semantic or source name.
 
+## Candidate `0x00d1f854` to `0x00057688`
+
+The generated row is a unique `normalized-prefix` candidate with sizes 324 / 328
+bytes and score 60 (`speculative`). Both first 256 normalized bytes have SHA-1
+`0f3331b38487a0d5e31e8e87a1b0a09127719eb2`; each prefix is unique in its
+build index, but the full bodies differ (SHA-1
+`1396901f44961b129b4c5605a9467fa4f7126ee4` /
+`5dc8f3f62e76ab37a790a16850d555c3c4bcd63e`). Neither function has an indexed
+source-file hint or string reference.
+
+The only exact outgoing target pair is an 8-byte, two-instruction body at
+`0x00d17cb4` / `0x00051058`, called at `+0x44`. The other calls reach
+`0x00d1f5fc` / `0x00057418` and `0x00d1f3f8` / `0x00057210` at `+0x70` and
+`+0x8c`, which have no generated target pairs. Calls at `+0xb0` and `+0xd8`
+reach a 56-byte fingerprint that occurs at three addresses in each build, so
+those targets are ambiguous. Incoming callers also do not form a generated
+pair: GT5 `0x00d1f998` is 1,668 bytes, while NPEA `0x000577d0` and
+`0x00057910` are 320 and 1,312 bytes.
+
+The unique prefix is recorded as reviewed, but the full bodies differ and the
+single exact two-instruction callee is too little context to support a
+separate cross-reference. The generated row remains `candidate` /
+`speculative`.
+
 ## Candidate `0x00cf2e10` to `0x0004b188`
 
 The table classifies this as a 188-byte `normalized-full` match. Independently
@@ -353,7 +377,7 @@ At the time of this review, seven match rows had been inspected and 120 of the
 `0x00d1a534` to `0x000539c0` is recorded in the [helper-body review
 note](gt5p-npea00050-helper-00d1a534-review-20261017.md), and the review of
 `0x00d18dd0` to `0x00052228` plus the two import-context pairs above, bringing
-the current totals to twenty-two inspected rows and 105 unreviewed rows. The
+the current totals to twenty-three inspected rows and 104 unreviewed rows. The
 reviewed generated rows remain candidate/speculative; all fourteen NPEA probable
 cross-reference records remain pending.
 
