@@ -1,0 +1,28 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-lwmutex-lock-helper
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00d1cd64
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00056270
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 60-byte helper body and sys_lwmutex_lock import call; no source-level or higher-level game-function identity asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 60-byte function bodies independently recompute to normalized SHA-1 15c114e437488a6cba2537234a19075a1061d6d0."
+  - type: import
+    detail: "Both functions call sysPrxForUser NID 0x1573dc3f at function offset 0x10; the PS3 NID table and RPCS3 loader trace label it sys_lwmutex_lock."
+  - type: callgraph
+    detail: "Three separately normalized-full caller pairs call the functions at matching offsets: 0x00d1bf50 to 0x00055438 at +0x60; 0x00d1c130 to 0x00055618 at +0x4c; and 0x00d1ecc4 to 0x00056b40 at +0x74."
+  - type: cross_build
+    detail: "The relationship is limited to the normalized helper body and lock API call; no game-function name or code is transferred."
+notes:
+  - "The generated comparison CSV still records this row as candidate/speculative at score 70; the manual pending record adds incoming caller evidence not included in that rank."
+  - "The relationship has not been accepted."
+  - "NID references: https://www.psdevwiki.com/ps3/Ps3.xml and https://gist.github.com/Tripticon84/59be9941b1df565474c1a2de4167a762"
