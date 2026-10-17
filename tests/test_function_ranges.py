@@ -43,6 +43,35 @@ class BlrFunctionRangeTests(unittest.TestCase):
         ranges = function_ranges_from_starts(elf, [0x1000, 0x1030])
         self.assertEqual(ranges[0], (0x1000, 0x1030))
 
+    def test_conditional_branch_keeps_cold_block_after_first_return(self):
+        elf = FakeElf()
+        words = {
+            0x1000: (16 << 26) | (12 << 21) | (2 << 16) | 0x0018,
+            0x1004: 0x60000000,
+            0x1008: 0x60000000,
+            0x100C: 0x60000000,
+            0x1010: 0x60000000,
+            0x1014: 0x4E800020,
+            0x1018: 0x60000000,
+            0x101C: (18 << 26) | ((-20) & 0x03FFFFFC),
+        }
+        for va, word in words.items():
+            off = va - 0x1000
+            elf.data[off:off + 4] = word.to_bytes(4, "big")
+
+        ranges = function_ranges_from_starts(elf, [0x1000, 0x1030])
+
+        self.assertEqual(ranges[0], (0x1000, 0x1020))
+
+    def test_conditional_branch_does_not_cross_candidate_boundary(self):
+        elf = FakeElf()
+        elf.data[0:4] = ((16 << 26) | (12 << 21) | (2 << 16) | 0x0030).to_bytes(4, "big")
+        elf.data[4:8] = (0x4E800020).to_bytes(4, "big")
+
+        ranges = function_ranges_from_starts(elf, [0x1000, 0x1030])
+
+        self.assertEqual(ranges[0], (0x1000, 0x1008))
+
 
 if __name__ == "__main__":
     unittest.main()

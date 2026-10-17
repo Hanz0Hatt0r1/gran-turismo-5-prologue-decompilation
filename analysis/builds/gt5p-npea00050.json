@@ -19,11 +19,12 @@
     "vtable_slots": 458,
     "vtable_candidates": 63,
     "source_file_strings": 0,
-    "toc_string_references": 7,
+    "toc_string_references": 11,
     "functions_with_hints": 293,
     "import_libraries": 8,
     "import_functions": 77,
-    "direct_call_edges": 2155
+    "direct_call_edges": 2936,
+    "direct_local_call_edges": 2936
   },
   "observed_identity": [
     "NPEA-00050",

@@ -470,7 +470,7 @@ def normalize_ppc_instruction(ins: int) -> int:
 
 
 def function_ranges_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: int = 0x4000) -> List[Tuple[int, int]]:
-    """Return conservative ranges from sorted candidate function entry points."""
+    """Return bounded ranges including reachable direct-branch basic blocks."""
     funcs = sorted(set(va for va in starts if elf.in_executable_segment(va)))
     rows: List[Tuple[int, int]] = []
     for i, va in enumerate(funcs):
@@ -482,16 +482,7 @@ def function_ranges_from_starts(elf: PS3ELF, starts: Iterable[int], max_size: in
         if not (va < next_va <= seg_end):
             next_va = seg_end
         scan_end = min(next_va, va + max_size, seg_end)
-        # A return instruction is a stronger local end marker than a later
-        # candidate. Use the first linear blr when it occurs before the
-        # candidate boundary; otherwise retain the conservative old range.
-        end = scan_end
-        off = elf.va_to_offset(va)
-        if off is not None:
-            for rel in range(0, scan_end - va, 4):
-                if _u32(elf.data, off + rel) == 0x4E800020:
-                    end = va + rel + 4
-                    break
+        end = _reachable_function_end(elf, va, scan_end)
         end -= (end - va) % 4
         if end > va:
             rows.append((va, end))
@@ -509,6 +500,62 @@ def _ppc_branch_target(ins: int, va: int) -> Optional[int]:
     if disp & 0x02000000:
         disp -= 0x04000000
     return disp if ((ins >> 1) & 1) else va + disp
+
+
+def _ppc_cond_branch_target(ins: int, va: int) -> Optional[int]:
+    if ((ins >> 26) & 0x3F) != 16:
+        return None
+    disp = ins & 0x0000FFFC
+    if disp & 0x8000:
+        disp -= 0x10000
+    return disp if ((ins >> 1) & 1) else va + disp
+
+
+def _reachable_function_end(elf: PS3ELF, start: int, limit: int) -> int:
+    """Bound a function by following local direct branches and returns.
+
+    Conditional branch targets can lead to cold/error blocks placed after a
+    linear return. Follow those blocks only below the next candidate boundary.
+    Calls fall through; forward unconditional branches are treated as exits to
+    avoid absorbing an unrecognized tail-call target.
+    """
+    pending = [start]
+    visited = set()
+    end = start
+    while pending:
+        pc = pending.pop()
+        while start <= pc < limit and pc not in visited:
+            off = elf.va_to_offset(pc)
+            if off is None or off + 4 > len(elf.data):
+                break
+            visited.add(pc)
+            end = max(end, pc + 4)
+            ins = _u32(elf.data, off)
+            op = (ins >> 26) & 0x3F
+            if ins == 0x4E800020:  # blr
+                break
+            if op == 16:  # bc / bcl
+                if not (ins & 1):
+                    target = _ppc_cond_branch_target(ins, pc)
+                    if target is not None and start <= target < limit and target % 4 == 0:
+                        pending.append(target)
+                pc += 4
+                continue
+            if op == 18:  # b / bl
+                if ins & 1:  # bl: call, then continue at the fall-through
+                    pc += 4
+                    continue
+                target = _ppc_branch_target(ins, pc)
+                if target is not None and start <= target <= pc and target < limit and target % 4 == 0:
+                    pending.append(target)
+                break
+            if op == 19 and ((ins >> 1) & 0x3FF) in {16, 528}:
+                if ins & 1:  # bclrl / bcctrl: indirect call
+                    pc += 4
+                    continue
+                break
+            pc += 4
+    return end
 
 
 def _is_stack_prologue(ins: int) -> bool:

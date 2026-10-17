@@ -52,4 +52,4 @@ provenance:
     exporter_revision: d918e9319ce0773e16f692a4dac1cdc92a1561e2
 notes:
   - "The exact CRT or application-runtime role is unresolved; NPEA-00050 import names are not resolved in the local index."
-  - "The static gtdecomp range ends at 0x00010528 (456 bytes) on the first return. Ghidra includes branch-targeted side blocks and reports a 488-byte body, so the shorter range must not be used as a complete function fingerprint."
+  - "The branch-aware gtdecomp range now includes the conditional-branch side blocks through 0x00010547 and matches Ghidra's 488-byte function body; gtverify reproduces its normalized fingerprint."

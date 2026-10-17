@@ -29,7 +29,7 @@ The outer wrappers have a mechanically matching structure, but the current
 evidence does not establish what the downstream helpers do or whether their
 behavior is equivalent. Keep both rows at `candidate` / `speculative`; do not
 transfer semantic names or add an accepted cross-reference. This review covers
-one of 131 generated rows and does not complete the candidate-review roadmap
+one of 127 generated rows and does not complete the candidate-review roadmap
 item.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.

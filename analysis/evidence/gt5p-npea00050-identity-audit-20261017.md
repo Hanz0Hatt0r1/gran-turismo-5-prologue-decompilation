@@ -13,7 +13,8 @@ endpoint. The local indexer independently reports title ID `NPEA-00050`.
 `0x00010230` and TOC `0x0007d230`. Its reproducible index contains 1,857 OPD
 descriptors, 1,848 unique function addresses, 1,925 discovered function
 addresses, 2,693 candidates, 63 RTTI objects, 458 vtable slots, 8 import
-libraries, 77 imports, and 2,155 direct call edges. `gtverify.py verify` passed
+libraries, 77 imports, and 2,936 direct call edges. The CFG-aware index also records 11 TOC string
+references; the earlier linear range scan found 7. `gtverify.py verify` passed
 the raw ELF SHA, entry descriptor, entry code, and TOC checks against
 [`gt5p-npea00050.json`](../builds/gt5p-npea00050.json).
 
@@ -25,15 +26,18 @@ entry descriptors and TOCs differ.
 ## GT5 retail comparison
 
 The GT5 BCUS-98114 local ELF was re-indexed with the current `gtdecomp.py`; its
-SHA still matches the reviewed profile. The current index reports 54,445
-discovered function addresses and 67,205 function candidates. Those values,
-plus 30,459 TOC string references and 5,389 functions with hints, replace the
-stale counts in the checked-in baseline profile.
+SHA still matches the reviewed profile. The CFG-aware index reports 54,445 discovered function addresses and 67,205
+function candidates, plus 19,316 TOC string references, 5,301 functions with
+hints, and 182,866 direct call edges (182,642 local). The range walker follows
+reachable conditional-branch blocks and stops at returns or the next strong
+candidate boundary. These counts replace the earlier linear-scan metrics in
+the checked-in baseline profile.
 
-The current fingerprint comparison emitted 131 rows: 126 normalized-full and
-5 normalized-prefix candidates. All 131 remain `candidate` and `speculative`;
-22 have supporting callgraph context and 12 have supporting import context.
-None was ranked probable. The full CSV is
+The earlier linear-range comparison emitted 131 rows. After CFG-aware function
+ranges, the current comparison emits 127 rows: 117 normalized-full and 10
+normalized-prefix candidates. All remain `candidate` and `speculative`; 22 have
+supporting callgraph context and 7 have supporting import context. None was
+ranked probable. The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.
 
