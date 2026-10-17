@@ -16,7 +16,9 @@ comparison build. Its identity audit and fingerprint candidates are recorded in
 [`analysis/evidence/gt5p-npea00050-identity-audit-20261017.md`](../evidence/gt5p-npea00050-identity-audit-20261017.md).
 It does not replace the canonical US BCUS-98158 target. The accepted GT5 to
 NPEA relation covers only the ELFv1 entry role; the generated function matches
-remain unreviewed candidates.
+remain unreviewed candidates. A review of one wrapper candidate is recorded in
+[the candidate-review note](../evidence/gt5p-npea00050-function-candidate-review-20261017.md);
+it remains speculative because its downstream helper targets are not mapped.
 
 ## Match lifecycle
 

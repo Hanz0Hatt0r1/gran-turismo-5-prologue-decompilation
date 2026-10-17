@@ -5,6 +5,7 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 ## Current local-input audit
 
 - [NPEA-00050 UK-marked Prologue ELF identity and first GT5 comparison](gt5p-npea00050-identity-audit-20261017.md) — exact input hash, local index, reviewed entry-role scope, and unreviewed fingerprint candidates.
+- [GT5 to NPEA-00050 function-candidate review](gt5p-npea00050-function-candidate-review-20261017.md) — one wrapper pair inspected; helper behavior remains unverified and no match is promoted.
 
 ## Minimum record
 
