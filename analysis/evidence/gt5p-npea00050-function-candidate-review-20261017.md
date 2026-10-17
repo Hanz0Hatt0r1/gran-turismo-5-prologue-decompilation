@@ -29,29 +29,37 @@ The table classifies this as a 188-byte `normalized-full` match. Independently
 recomputing the normalized SHA-1 from both pinned ELFs yields
 `7daef03605f0e0386e5d7f5f5d94fc221b714cc2` for each body. Both functions make
 a direct call at offset `0x4c`; the call targets resolve to `cellGcmSys` NID
-`0x21397818` in their respective import tables. The import name is unresolved
-in both local indexes, so this only establishes a shared imported API identity,
-not the API's semantic name.
+`0x21397818` in their respective import tables. The local indexes leave the
+name blank, while the external NID cross-check below identifies the imported
+API as `_cellGcmSetFlipCommand`. That labels only the platform call, not either
+game function.
 
 ## Additional exact imported-API candidates
 
 Each pair below has an independently recomputed equal normalized-full SHA-1,
 a direct call at the same function-relative offset, and the same import
-library/NID in both builds. Import names remain unresolved.
+library/NID in both builds. The local index leaves the name blank; the external
+NID cross-check below supplies the API label.
 
-| GT5 to NPEA-00050 | Bytes | Normalized SHA-1 | Import identity | Call offset |
+| GT5 to NPEA-00050 | Bytes | Normalized SHA-1 | Imported API (library / NID) | Call offset |
 | --- | ---: | --- | --- | ---: |
-| `0x00cf2ecc` to `0x0004b270` | 64 | `62782eaa8ed0ffa9945e517a52c8206607837916` | `cellGcmSys` / `0x15bae46b` | `0x24` |
-| `0x00d01688` to `0x00050ac0` | 68 | `06b1782da59fca38f53acc0a08991b02496474e2` | `sysPrxForUser` / `0x1bc200f4` | `0x2c` |
-| `0x00d01774` to `0x00050bb8` | 44 | `17c8fc516cd9736e78a44f3d438f1db36207ef0a` | `sysPrxForUser` / `0xc3476d0c` | `0x14` |
+| `0x00cf2ecc` to `0x0004b270` | 64 | `62782eaa8ed0ffa9945e517a52c8206607837916` | `_cellGcmInitBody` (`cellGcmSys` / `0x15bae46b`) | `0x24` |
+| `0x00d01688` to `0x00050ac0` | 68 | `06b1782da59fca38f53acc0a08991b02496474e2` | `sys_lwmutex_unlock` (`sysPrxForUser` / `0x1bc200f4`) | `0x2c` |
+| `0x00d01774` to `0x00050bb8` | 44 | `17c8fc516cd9736e78a44f3d438f1db36207ef0a` | `sys_lwmutex_destroy` (`sysPrxForUser` / `0xc3476d0c`) | `0x14` |
+
+The [PS3 Developer Wiki NID table](https://www.psdevwiki.com/ps3/Ps3.xml) lists
+these names under the matching import libraries. An [RPCS3 loader trace](https://gist.github.com/Tripticon84/59be9941b1df565474c1a2de4167a762)
+independently reports the same library/NID/name tuples. These sources identify
+platform imports; they do not name the GT5/Prologue functions that call them.
 
 ## Review result
 
 The first pair has matching wrapper bodies but unresolved downstream helpers.
-The second pair has an exact normalized body and the same imported library/NID.
-Neither review establishes a supported semantic name or accepted cross-build
-identity. Keep all six reviewed pairs at `candidate` / `speculative`; do not
-transfer names or add accepted cross-references. Six match rows have been
-inspected; 121 of the 127 generated rows remain unreviewed.
+The other five rows have identical normalized bodies and matched imported API
+identities. Neither review establishes source identity or a supported semantic
+name for any game function. Keep all six reviewed pairs at `candidate` /
+`speculative`; do not transfer platform API names to game functions or add
+accepted cross-references. Six match rows have been inspected; 121 of the 127
+generated rows remain unreviewed.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.
