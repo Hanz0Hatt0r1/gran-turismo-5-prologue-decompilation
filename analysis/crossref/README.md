@@ -15,13 +15,14 @@ The user-supplied UK-marked `NPEA-00050` raw ELF is tracked as a separate
 comparison build. Its identity audit and fingerprint candidates are recorded in
 [`analysis/evidence/gt5p-npea00050-identity-audit-20261017.md`](../evidence/gt5p-npea00050-identity-audit-20261017.md).
 It does not replace the canonical US BCUS-98158 target. The accepted GT5 to
-NPEA relation covers only the ELFv1 entry role. Separate probable/pending manual
-records cover one startup-coordinator role relationship and one lock-helper
-relationship; neither asserts full source-level function identity. The
-generated function matches remain candidate/speculative, with 120 of 127 still
-unreviewed. The reviewed pairs are documented in [the candidate-review
+NPEA relation covers only the ELFv1 entry role. Separate probable/pending
+cross-reference records cover one startup-coordinator role relationship and
+two function-body relationships, none of which asserts semantic or source-level
+function identity. The generated function matches remain candidate/speculative,
+with 119 of 127 still unreviewed. The reviewed pairs are documented in [the candidate-review
 note](../evidence/gt5p-npea00050-function-candidate-review-20261017.md) and [the
-startup comparison](../evidence/gt5p-npea00050-gt5-startup-coordinator-review-20261017.md).
+startup comparison](../evidence/gt5p-npea00050-gt5-startup-coordinator-review-20261017.md),
+as well as the [helper-body review](../evidence/gt5p-npea00050-helper-00d1a534-review-20261017.md).
 
 ## Match lifecycle
 
