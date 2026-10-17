@@ -1566,27 +1566,43 @@ def import_ghidra_c(c_path: Path, index_dir: Path, out: Path) -> Dict[str, objec
 
 
 def resolve_analyze_headless(ghidra: Path) -> Path:
-    """Resolve a Ghidra installation directory or analyzeHeadless executable."""
+    """Resolve a Ghidra launcher, preferring PyGhidra for the Python export scripts."""
     ghidra = ghidra.expanduser().resolve()
     candidates = [ghidra]
     if ghidra.is_dir():
         candidates = [
+            ghidra / "support" / "pyghidraRun",
             ghidra / "support" / "analyzeHeadless",
             ghidra / "support" / "analyzeHeadless.bat",
             ghidra / "analyzeHeadless",
         ]
+    elif ghidra.name.lower().startswith("analyzeheadless"):
+        pyghidra = ghidra.parent / "pyghidraRun"
+        if pyghidra.is_file():
+            candidates.insert(0, pyghidra)
     for candidate in candidates:
         if candidate.is_file():
             return candidate
     raise FileNotFoundError(f"could not find analyzeHeadless under {ghidra}")
 
 
-def decompile_elf(path: Path, out: Path, ghidra: Path, timeout: int = 90, nid_db: Optional[Path] = None, scope: str = "hinted", limit: int = 0) -> Dict[str, object]:
+def decompile_elf(
+    path: Path,
+    out: Path,
+    ghidra: Path,
+    timeout: int = 90,
+    nid_db: Optional[Path] = None,
+    scope: str = "hinted",
+    limit: int = 0,
+    function_vas: Optional[Sequence[int]] = None,
+) -> Dict[str, object]:
     """Index an ELF and run Ghidra headlessly to export local pseudocode."""
     if scope not in {"hinted", "all"}:
         raise ValueError("scope must be hinted or all")
     if limit < 0:
         raise ValueError("limit must be >= 0")
+    if function_vas is not None and any(va < 0 for va in function_vas):
+        raise ValueError("function VAs must be non-negative")
     analyze_headless = resolve_analyze_headless(ghidra)
     out = out.resolve()
     index_dir = out / "index"
@@ -1597,8 +1613,17 @@ def decompile_elf(path: Path, out: Path, ghidra: Path, timeout: int = 90, nid_db
     project_dir.mkdir(parents=True, exist_ok=True)
     script_dir = Path(__file__).resolve().parent / "ghidra"
     project_name = "gtdecomp_" + str(index_manifest["sha256"])[:12]
-    cmd = [
-        str(analyze_headless),
+    manifest_path = decompiled_dir / "decompilation_manifest.csv"
+    summary_path = out / "decompile-summary.json"
+    for stale_output in (manifest_path, summary_path):
+        if stale_output.exists():
+            stale_output.unlink()
+    cmd = [str(analyze_headless)]
+    if analyze_headless.name == "pyghidraRun":
+        # pyghidraRun -H supplies AnalyzeHeadless itself; its remaining
+        # arguments begin with the project location and project name.
+        cmd.append("-H")
+    cmd.extend([
         str(project_dir),
         project_name,
         "-import",
@@ -1616,28 +1641,47 @@ def decompile_elf(path: Path, out: Path, ghidra: Path, timeout: int = 90, nid_db
         str(timeout),
         scope,
         str(limit),
-    ]
+        ",".join("0x%08x" % va for va in (function_vas or [])),
+    ])
     subprocess.run(cmd, check=True)
-    manifest_path = decompiled_dir / "decompilation_manifest.csv"
+    if not manifest_path.is_file():
+        raise RuntimeError("Ghidra export script did not produce decompilation_manifest.csv")
+    selected = 0
     exported = 0
     failed = 0
-    if manifest_path.exists():
-        with manifest_path.open("r", newline="", encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                if row.get("status") == "ok":
-                    exported += 1
-                elif row.get("status") == "failed":
-                    failed += 1
+    exported_vas = set()
+    with manifest_path.open("r", newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            selected += 1
+            if row.get("code_va"):
+                exported_vas.add(int(row["code_va"], 16))
+            if row.get("status") == "ok":
+                exported += 1
+            elif row.get("status") == "failed":
+                failed += 1
+    expected_vas = set(function_vas or [])
+    if limit > 0:
+        expected_vas = set(sorted(expected_vas)[:limit])
+    if function_vas and exported_vas != expected_vas:
+        missing = sorted(expected_vas - exported_vas)
+        extra = sorted(exported_vas - expected_vas)
+        raise RuntimeError(
+            "Ghidra export manifest does not match requested function selection"
+            + ("; missing: " + ", ".join(_fmt_hex(va) for va in missing) if missing else "")
+            + ("; unexpected: " + ", ".join(_fmt_hex(va) for va in extra) if extra else "")
+        )
     result = {
         "schema": 1,
         "input_sha256": index_manifest["sha256"],
         "index_dir": str(index_dir),
         "decompiled_dir": str(decompiled_dir),
         "ghidra_project_dir": str(project_dir),
+        "selected_functions": selected,
         "exported_functions": exported,
         "failed_functions": failed,
         "scope": scope,
         "limit": limit,
+        "function_vas": ["0x%08x" % va for va in (function_vas or [])],
     }
     (out / "decompile-summary.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return result
@@ -1666,6 +1710,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p_decompile.add_argument("--nid-db", type=Path, help="optional external PS3 NID name database")
     p_decompile.add_argument("--scope", choices=("hinted", "all"), default="hinted", help="functions to export; hinted is the practical first pass")
     p_decompile.add_argument("--limit", type=int, default=0, help="maximum functions to export (0 = no limit)")
+    p_decompile.add_argument(
+        "--function-va",
+        action="append",
+        type=lambda value: int(value, 16),
+        help="export only this indexed function VA; repeat to select multiple functions",
+    )
     args = ap.parse_args(argv)
 
     if args.command == "index":
@@ -1675,7 +1725,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     elif args.command == "import-ghidra-c":
         result = import_ghidra_c(args.c_export, args.index, args.out)
     else:
-        result = decompile_elf(args.elf, args.out, args.ghidra, timeout=args.timeout, nid_db=args.nid_db, scope=args.scope, limit=args.limit)
+        result = decompile_elf(
+            args.elf,
+            args.out,
+            args.ghidra,
+            timeout=args.timeout,
+            nid_db=args.nid_db,
+            scope=args.scope,
+            limit=args.limit,
+            function_vas=args.function_va,
+        )
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 

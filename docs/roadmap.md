@@ -31,6 +31,7 @@ The executable-intelligence layer is the current engineering priority.
 - [x] Add canonical BCUS-98158 GT5 Prologue build profile.
 - [x] Resolve the GT5P bootstrap into reviewed function notes.
 - [x] Record the NPEA-00050 `0x00010360` startup function and audit its portable P-code export.
+- [x] Record a targeted decompilation of the NPEA-00050 startup continuation at `0x00010730` without promoting an unsupported semantic name ([review](../analysis/evidence/gt5p-npea00050-startup-continuation-10730-review-20261017.md)).
 - [x] Reconcile Ghidra and static-indexer boundaries for `0x00010360` with branch-aware range traversal and a synthetic regression test.
 
 ## Phase 2 — Cross-build common-code map
@@ -99,6 +100,7 @@ For each subsystem:
 - [x] Add reviewed symbol/address catalog validation and search.
 - [x] Add ELF-backed verification of reviewed build/function metadata.
 - [x] Automate full cross-build verification from local indexes for both builds.
+- [x] Allow targeted Ghidra decompilation by indexed function VA.
 - Add confidence-scored fuzzy cross-build matching only where deterministic matching is insufficient.
 
 ## Phase 6 — Integration

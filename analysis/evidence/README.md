@@ -8,6 +8,7 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 - [GT5 to NPEA-00050 function-candidate review](gt5p-npea00050-function-candidate-review-20261017.md) — one wrapper pair inspected; helper behavior remains unverified and no match is promoted.
 - [NPEA-00050 startup function](../functions/gt5p-npea00050-startup-10360.yaml) — Ghidra-reviewed `0x00010360` body and audited one-function portable P-code corpus.
 - [GT5 to NPEA-00050 startup coordinator review](gt5p-npea00050-gt5-startup-coordinator-review-20261017.md) — manual role-level comparison; full function identity remains pending.
+- [NPEA-00050 startup continuation](gt5p-npea00050-startup-continuation-10730-review-20261017.md) — targeted Ghidra export for `0x00010730`; reachable from the reviewed coordinator, with no semantic name or cross-build identity promoted.
 
 ## Minimum record
 
