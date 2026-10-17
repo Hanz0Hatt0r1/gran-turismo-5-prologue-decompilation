@@ -1,0 +1,30 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00bb6dbc
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00bb6dbc
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00013b50
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 80-byte function body with one exact callee pair and two exact caller pairs at matching offsets; no semantic or source identity asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 80-byte, 20-instruction bodies independently index to normalized SHA-1 03737ecf00ab0a013646ab319fb3254e80901624."
+  - type: callgraph
+    detail: "At +0x34 (callsites 0x00bb6df0 / 0x00013b84), both call exact normalized-full candidate 0x00bb6d74 / 0x00013b08 (72 bytes, SHA-1 c46391a1b562c0af723f469ede93c114e1af4e69)."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00bb7560 / 0x00014740 (68 bytes, SHA-1 32bc0eca6a7e1bdd20fbf8df70ed2bffe6d2ebeb) calls this pair at +0x28 (callsites 0x00bb7588 / 0x00014768)."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00bb7a50 / 0x00014c70 (72 bytes, SHA-1 d79309563b4208c2fdd724d369560dac1bbf6111) calls this pair at +0x2c (callsites 0x00bb7a7c / 0x00014c9c)."
+  - type: cross_build
+    detail: "GT5 has another indexed incoming caller at 0x00c678c4 from 0x00c677e8; it has no generated cross-build caller pair and is not used as shared-caller evidence."
+notes:
+  - "The generated row remains candidate/speculative at score 70; this separate pending record adds two exact incoming caller pairs."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."
