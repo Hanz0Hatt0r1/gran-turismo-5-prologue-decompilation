@@ -12,6 +12,7 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 - [GT5 to NPEA-00050 helper-body review](gt5p-npea00050-helper-00d1a534-review-20261017.md) — exact normalized body plus matched caller context; probable/pending function-body relationship without a semantic name.
 - [GT5 to NPEA-00050 prefix-role cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-prefix-00d19ca0.yaml) — probable/pending shared call-graph role for a normalized 256-byte prefix; full function identity remains unresolved.
 - [GT5 to NPEA-00050 exact-body cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1a96c.yaml) — probable/pending 576-byte normalized-full body relationship supported by four aligned callee edges; no semantic identity asserted.
+- [GT5 to NPEA-00050 startup-cluster cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6dbc.yaml) — probable/pending exact 80-byte body relationship supported by one callee and two caller pairs.
 
 ## Minimum record
 
