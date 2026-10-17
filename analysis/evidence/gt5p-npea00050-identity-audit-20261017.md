@@ -53,8 +53,10 @@ their generated rows remain speculative. The review of `0x00d19ca0` to
 `0x00053118` adds a separate probable/pending role-level cross-reference with
 full function identity unresolved. The review of `0x00d1a96c` to `0x00053e00`
 adds a probable/pending exact-body relationship. The review of `0x00bb6dbc` to
-`0x00013b50` adds another probable/pending exact-body relationship; the current
-unreviewed total is 113.
+`0x00013b50` adds another probable/pending exact-body relationship. The
+subsequent review of `0x00bb6e0c` to `0x00013ba0` adds an exact-body
+relationship with one exact callee pair; incoming caller identities remain
+unresolved, and 112 candidates are unreviewed.
 The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.
