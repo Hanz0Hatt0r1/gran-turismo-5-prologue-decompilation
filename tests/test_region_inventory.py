@@ -6,6 +6,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class RegionInventoryTests(unittest.TestCase):
+    def test_gt5_asia_disc_id_is_separate_from_packaging_code(self):
+        text = (ROOT / "analysis" / "builds" / "region-inventory.yaml").read_text(encoding="utf-8")
+        gt5 = text.split("  - game: Gran Turismo 5\n", 1)[1].split(
+            "  - game: Gran Turismo 5 Prologue\n", 1
+        )[0]
+        self.assertIn("      Asia:\n        - BCAS-20151", gt5)
+        self.assertIn("    packaging_product_codes:\n      Asia:\n        - BCAS-20164", gt5)
+        evidence = " ".join(
+            (ROOT / "docs" / "evidence" / "gt5-asia-release-identifiers-20261017.md")
+            .read_text(encoding="utf-8")
+            .split()
+        )
+        self.assertIn("only locally verified GT5 executable profile", evidence)
+
     def test_verified_build_profiles_remain_separate_from_public_release_ids(self):
         text = (ROOT / "analysis" / "builds" / "region-inventory.yaml").read_text(encoding="utf-8")
         self.assertIn("title_id: BCUS-98114", text)

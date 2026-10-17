@@ -10,6 +10,7 @@
 - [x] Initial GT5 BCUS-98114 reference-build profile
 - [x] Establish an initial build/region inventory for GT5 and GT5 Prologue.
 - [ ] Complete remaining region/revision inventory as additional verified builds become available.
+- [x] Separate the GT5 Asia disc title ID `BCAS-20151` from packaging code `BCAS-20164`.
 - [x] Finalize semantic naming conventions
 
 ## Phase 1 — Executable Intelligence
