@@ -37,7 +37,8 @@ The earlier linear-range comparison emitted 131 rows. After CFG-aware function
 ranges, the current comparison emits 127 rows: 117 normalized-full and 10
 normalized-prefix candidates. All remain `candidate` and `speculative`; 22 have
 supporting callgraph context and 7 have supporting import context. None was
-ranked probable. The full CSV is
+ranked probable. Two rows have been manually reviewed; both remain speculative,
+leaving 125 for review. The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.
 
