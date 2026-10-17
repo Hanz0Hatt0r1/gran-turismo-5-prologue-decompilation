@@ -39,10 +39,11 @@ The executable-intelligence layer is the current engineering priority.
 - [ ] Compare GT5 retail against GT5 Prologue.
   - [x] Add the locally supplied UK-marked NPEA-00050 Prologue ELF as a separately hash-pinned comparison build; keep it distinct from the canonical US BCUS-98158 profile.
   - [x] Accept the BCUS-98114 to NPEA-00050 ELFv1 entry-role relationship with scope limited to startup role; the first direct-call targets and normalized entry prefixes differ.
-  - [ ] Review the 121 remaining of 127 generated normalized fingerprint candidates; the current comparison ranks all as speculative.
+  - [ ] Review the 120 remaining of 127 generated normalized fingerprint candidates; the generated comparison ranks all as speculative, with one separately reviewed relation pending at probable confidence.
     - [x] Inspect `0x00bb6ce0` to `0x00013a70`; the wrapper bodies match after branch normalization, but downstream helpers remain unverified, so both rows stay speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
     - [x] Inspect `0x00cf2e10` to `0x0004b188`; both have the same 188-byte normalized body and imported `_cellGcmSetFlipCommand` call; the game-function role remains unresolved, so the row stays speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
     - [x] Inspect `0x00cf2ecc` to `0x0004b270`, `0x00d01688` to `0x00050ac0`, and `0x00d01774` to `0x00050bb8`; each pair has an exact normalized body and matching imported API identity (`_cellGcmInitBody`, `sys_lwmutex_unlock`, or `sys_lwmutex_destroy`), while the game-function roles remain speculative ([review note](evidence/gt5p-npea00050-function-candidate-review-20261017.md)).
+    - [x] Review `0x00d1cd64` to `0x00056270`; identical normalized bodies call the same `sys_lwmutex_lock` import and three exact caller pairs reach them at matching offsets, recorded as a probable/pending helper relation ([cross-reference](crossref/gt5-bcus98114-vs-gt5p-npea00050-lwmutex-lock-helper.yaml)).
   - [x] Audit the currently available local input identity; its raw ELF hash
     matches BCUS-98114, while its entry descriptor and TOC differ from the
     BCUS-98158 profile. The former SELF-vs-ELF hash comparison was invalid and

@@ -52,14 +52,30 @@ these names under the matching import libraries. An [RPCS3 loader trace](https:/
 independently reports the same library/NID/name tuples. These sources identify
 platform imports; they do not name the GT5/Prologue functions that call them.
 
+## Candidate `0x00d1cd64` to `0x00056270`
+
+Both 60-byte bodies independently recompute to normalized SHA-1
+`15c114e437488a6cba2537234a19075a1061d6d0`. Each makes one direct call at
+function offset `0x10` to `sysPrxForUser` NID `0x1573dc3f`, identified as
+`sys_lwmutex_lock` by the NID table and loader trace above.
+
+Three separately normalized-full caller pairs call this helper at matching
+relative offsets: `0x00d1bf50` to `0x00055438` at `+0x60`, `0x00d1c130` to
+`0x00055618` at `+0x4c`, and `0x00d1ecc4` to `0x00056b40` at `+0x74`. This
+supports the same lock-helper role in both builds. The generated row remains
+`candidate` / `speculative` at score 70 because its automatic context does not
+include these incoming caller edges. A separate manual cross-reference records
+the relationship as `probable` / `pending`, scoped to this helper body and
+import call; it does not assign a game-function name or accept the match.
+
 ## Review result
 
 The first pair has matching wrapper bodies but unresolved downstream helpers.
-The other five rows have identical normalized bodies and matched imported API
-identities. Neither review establishes source identity or a supported semantic
-name for any game function. Keep all six reviewed pairs at `candidate` /
-`speculative`; do not transfer platform API names to game functions or add
-accepted cross-references. Six match rows have been inspected; 121 of the 127
-generated rows remain unreviewed.
+The other five speculative rows have identical normalized bodies and matched
+imported API identities. Six match rows remain `candidate` / `speculative`; the
+lock-helper row has a separate `probable` / `pending` cross-reference. Do not
+transfer platform API names to game functions or add accepted cross-references.
+Seven match rows have been inspected; 120 of the 127 generated rows remain
+unreviewed.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.
