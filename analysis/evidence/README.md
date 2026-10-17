@@ -5,11 +5,12 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 ## Current local-input audit
 
 - [NPEA-00050 UK-marked Prologue ELF identity and first GT5 comparison](gt5p-npea00050-identity-audit-20261017.md) — exact input hash, local index, reviewed entry-role scope, and unreviewed fingerprint candidates.
-- [GT5 to NPEA-00050 function-candidate review](gt5p-npea00050-function-candidate-review-20261017.md) — one wrapper pair inspected; helper behavior remains unverified and no match is promoted.
+- [GT5 to NPEA-00050 function-candidate review](gt5p-npea00050-function-candidate-review-20261017.md) — selected exact and prefix candidate reviews with import/callgraph context; generated rows remain speculative.
 - [NPEA-00050 startup function](../functions/gt5p-npea00050-startup-10360.yaml) — Ghidra-reviewed `0x00010360` body and audited one-function portable P-code corpus.
 - [GT5 to NPEA-00050 startup coordinator review](gt5p-npea00050-gt5-startup-coordinator-review-20261017.md) — manual role-level comparison; full function identity remains pending.
 - [NPEA-00050 startup continuation](gt5p-npea00050-startup-continuation-10730-review-20261017.md) — targeted Ghidra export for `0x00010730`; reachable from the reviewed coordinator, with no semantic name or cross-build identity promoted.
 - [GT5 to NPEA-00050 helper-body review](gt5p-npea00050-helper-00d1a534-review-20261017.md) — exact normalized body plus matched caller context; probable/pending function-body relationship without a semantic name.
+- [GT5 to NPEA-00050 prefix-role cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-prefix-00d19ca0.yaml) — probable/pending shared call-graph role for a normalized 256-byte prefix; full function identity remains unresolved.
 
 ## Minimum record
 

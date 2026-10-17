@@ -49,7 +49,10 @@ note](gt5p-npea00050-helper-00d1a534-review-20261017.md).
 Subsequent reviews of `0x00d18dd0` to `0x00052228`, `0x00d1cda0` to
 `0x000562e8`, and `0x00d1ce8c` to `0x000564d0` are documented in the
 [candidate review note](gt5p-npea00050-function-candidate-review-20261017.md);
-all remain speculative, bringing the current unreviewed total to 116.
+their generated rows remain speculative. The review of `0x00d19ca0` to
+`0x00053118` adds a separate probable/pending role-level cross-reference with
+full function identity unresolved, bringing the current unreviewed total to
+115.
 The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.

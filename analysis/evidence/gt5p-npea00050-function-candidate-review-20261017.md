@@ -88,6 +88,30 @@ The matching body is recorded as reviewed, but the candidate remains
 `candidate` / `speculative`; no cross-reference or semantic identity is
 promoted.
 
+## Candidate `0x00d19ca0` to `0x00053118`
+
+The generated row is a 256-byte `normalized-prefix` match with score 60 and
+speculative confidence. The shared prefix SHA-1 is
+`94864a1f8b683fe3132445ff143d1ec714510a10`; the full bodies differ in size
+(756 / 760 bytes) and SHA-1
+(`0849b1efef20442864cfe3bc9fb789c65493ab88` /
+`219f6dc11bb77599f17923f9163976412c4aef0b`). Neither function has a
+source-file hint or string reference.
+
+Two exact normalized-full caller pairs reach the functions at matching
+offsets: `0x00d1a96c` / `0x00053e00` at `+0x1e4` and `0x00d1a534` /
+`0x000539c0` at `+0x10c`. A third normalized-prefix caller pair,
+`0x00d1abac` / `0x00054040`, reaches them at `+0x110`; its own full sizes
+differ. Other indexed callers do not form generated cross-build pairs.
+
+The functions each have five outgoing calls. Only one target pair,
+`0x00d189c0` / `0x00051e10`, has a generated match, and that match is also
+prefix-only; the remaining callees are unresolved. The three incoming caller
+pairs support a probable shared call-graph role for the common prefix, but do
+not establish full function or source identity. The generated row stays
+candidate/speculative; a separate [cross-reference record](../crossref/gt5-bcus98114-vs-gt5p-npea00050-prefix-00d19ca0.yaml)
+is probable/pending and not accepted.
+
 ## Candidate `0x00d1cda0` to `0x000562e8`
 
 Both bodies are 56 bytes (14 instructions) with normalized SHA-1
@@ -138,8 +162,8 @@ At the time of this review, seven match rows had been inspected and 120 of the
 `0x00d1a534` to `0x000539c0` is recorded in the [helper-body review
 note](gt5p-npea00050-helper-00d1a534-review-20261017.md), and the review of
 `0x00d18dd0` to `0x00052228` plus the two import-context pairs above, bringing
-the current totals to eleven inspected rows and 116 unreviewed rows. The
-reviewed generated rows remain candidate/speculative; all three cross-reference
-records remain pending.
+the current totals to twelve inspected rows and 115 unreviewed rows. The
+reviewed generated rows remain candidate/speculative; all four probable
+cross-reference records remain pending.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.
