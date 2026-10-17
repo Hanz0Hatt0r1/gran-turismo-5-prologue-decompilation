@@ -16,6 +16,9 @@ Evidence notes explain why a function, structure, relationship, or subsystem cla
 - [GT5 to NPEA-00050 adjacent startup-cluster cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6e0c.yaml) — probable/pending exact 76-byte body relationship supported by an aligned exact callee pair; incoming callers remain unresolved.
 - [GT5 to NPEA-00050 central startup-cluster cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6d74.yaml) — probable/pending exact 72-byte body relationship supported by two aligned caller pairs; the outgoing callee remains unresolved.
 - [GT5 to NPEA-00050 shared startup-helper cross-reference](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00bb6c90.yaml) — probable/pending exact 80-byte body relationship supported by two aligned caller pairs; the outgoing callee remains unresolved.
+- [GT5 to NPEA-00050 lock-helper caller `0x00d1bf50`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1bf50.yaml) — probable/pending exact 376-byte body with an aligned call to the reviewed lock helper.
+- [GT5 to NPEA-00050 lock-helper caller `0x00d1c130`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1c130.yaml) — probable/pending exact 136-byte body with an aligned call to the reviewed lock helper.
+- [GT5 to NPEA-00050 lock-helper caller `0x00d1ecc4`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-00d1ecc4.yaml) — probable/pending exact 184-byte body with an aligned call to the reviewed lock helper.
 
 ## Minimum record
 
