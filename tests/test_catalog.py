@@ -78,6 +78,20 @@ observations:
         self.assertEqual(result["record_count"], 3)
         self.assertEqual(result["duplicate_function_addresses"], [])
 
+    def test_validation_rejects_unknown_executable_hash_scope(self):
+        root = self._fixture()
+        build = root / "analysis" / "builds" / "gt5.json"
+        record = json.loads(build.read_text(encoding="utf-8"))
+        record["executable_sha256_scope"] = "archive"
+        build.write_text(json.dumps(record), encoding="utf-8")
+
+        result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))
+        self.assertFalse(result["valid"])
+        self.assertIn(
+            "executable_sha256_scope must be elf or container",
+            [error["message"] for error in result["errors"]],
+        )
+
     def test_validation_rejects_duplicate_function_address(self):
         root = self._fixture(duplicate=True)
         result = gtcatalog.validate_records(list(gtcatalog.iter_records(root)))

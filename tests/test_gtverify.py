@@ -141,6 +141,50 @@ fingerprints:
             result = gtverify.verify_build_record(elf, record)
             self.assertTrue(result["valid"])
 
+    def test_container_scoped_build_record_requires_matching_container(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            elf_path = self.make_elf(root)
+            elf = gtverify.gtdecomp.PS3ELF(elf_path)
+            container = root / "EBOOT.BIN"
+            container.write_bytes(b"synthetic SELF container")
+            record_path = root / "build-self.json"
+            record_path.write_text(json.dumps({
+                "schema": 1,
+                "game": "Synthetic",
+                "title_id": "SYNTH",
+                "role": "test",
+                "executable_sha256": gtverify._sha256_file(container),
+                "executable_sha256_scope": "container",
+                "format": "ELF64-big-endian-PowerPC64",
+                "executable_format": "PS3 SELF v2 APP",
+                "entry_descriptor_va": "0x00003000",
+                "entry_code_va": "0x00001000",
+                "toc_va": "0x00003800",
+            }), encoding="utf-8")
+            record = gtcatalog.load_record(record_path, root)
+
+            missing = gtverify.verify_build_record(elf, record)
+            self.assertFalse(missing["valid"])
+            self.assertEqual(missing["checks"][0]["status"], "not_checked")
+
+            matching = gtverify.verify_build_record(elf, record, container)
+            self.assertTrue(matching["valid"])
+            self.assertIn("does not prove", matching["notes"][0])
+            self.assertTrue(
+                gtverify.verify(elf_path, record_path, [], container_path=container)["valid"]
+            )
+
+            container.write_bytes(b"different container")
+            mismatch = gtverify.verify_build_record(elf, record, container)
+            self.assertFalse(mismatch["valid"])
+
+    def test_parser_accepts_container(self):
+        args = gtverify._parser().parse_args([
+            "verify", "--elf", "EBOOT.ELF", "--container", "EBOOT.BIN",
+        ])
+        self.assertEqual(args.container, Path("EBOOT.BIN"))
+
     def test_verify_source_xref_function_map(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
