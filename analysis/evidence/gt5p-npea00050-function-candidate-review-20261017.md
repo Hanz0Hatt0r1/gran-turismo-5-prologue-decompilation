@@ -88,6 +88,44 @@ The matching body is recorded as reviewed, but the candidate remains
 `candidate` / `speculative`; no cross-reference or semantic identity is
 promoted.
 
+## Candidate `0x00d1cda0` to `0x000562e8`
+
+Both bodies are 56 bytes (14 instructions) with normalized SHA-1
+`851bc1bccd846f8c7b8b034d4a876b6d142af6b4`. The generated row is
+`normalized-full` with supporting import context, neutral callgraph/vtable
+context, and score 70 (`speculative`). Neither function has a source-file hint
+or string reference.
+
+At `+0x10` (callsites `0x00d1cdb0` and `0x000562f8`), both call the same raw
+import tuple: `sysPrxForUser`, NID `0x2f85c0ef`; local indexes have no resolved
+name. At `+0x30`, they call `0x00d01898` and `0x00050da8`, which have no
+generated candidate pairing. Each function has two indexed callers, but no
+cross-build caller pair: GT5 callers `0x00d1b370` and `0x00d1eca0` call at
+`+0xc`, while NPEA callers `0x00054810` and `0x00056b10` call at `+0x14`.
+
+The body and import context do not establish the function's higher-level role.
+The generated row remains `candidate` / `speculative`; no cross-reference or
+semantic name is promoted.
+
+## Candidate `0x00d1ce8c` to `0x000564d0`
+
+Both bodies are 72 bytes (18 instructions) with normalized SHA-1
+`d82893edf401acdf85a611ae050e8ef380198a2b`. The generated row is
+`normalized-full` with supporting import context, neutral callgraph/vtable
+context, and score 70 (`speculative`). Neither function has a source-file hint
+or string reference.
+
+At `+0x20` (callsites `0x00d1ceac` and `0x000564f0`), both call
+`sysPrxForUser`, NID `0x2f85c0ef`; the local indexes leave the import name
+unresolved. At `+0x40` (callsites `0x00d1cecc` and `0x00056510`), they call
+`0x00d01898` and `0x00050da8`, which have no generated candidate pairing.
+Each function has one indexed caller immediately after its body; callers
+`0x00d1ced4` and `0x00056518` are not a generated cross-build candidate pair.
+
+The exact body and raw import tuple are useful cross-build evidence, but the
+callee and caller identities remain unresolved. The generated row stays
+`candidate` / `speculative`, with no cross-reference or semantic name promoted.
+
 ## Review result
 
 The first pair has matching wrapper bodies but unresolved downstream helpers.
@@ -99,8 +137,9 @@ At the time of this review, seven match rows had been inspected and 120 of the
 127 generated rows remained unreviewed. A later review of
 `0x00d1a534` to `0x000539c0` is recorded in the [helper-body review
 note](gt5p-npea00050-helper-00d1a534-review-20261017.md), and the review of
-`0x00d18dd0` to `0x00052228` above, bringing the current totals to nine
-inspected rows and 118 unreviewed rows. The reviewed generated rows remain
-candidate/speculative; all three cross-reference records remain pending.
+`0x00d18dd0` to `0x00052228` plus the two import-context pairs above, bringing
+the current totals to eleven inspected rows and 116 unreviewed rows. The
+reviewed generated rows remain candidate/speculative; all three cross-reference
+records remain pending.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.

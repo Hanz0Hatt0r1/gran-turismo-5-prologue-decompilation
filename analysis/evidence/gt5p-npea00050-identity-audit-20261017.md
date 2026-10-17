@@ -45,10 +45,11 @@ relationship between `0x00010338` and `0x00010360`; the full fingerprints differ
 pair is not added to the generated table. At that point the CSV contained 127
 candidate/speculative rows, with 120 not yet reviewed. The later review of
 `0x00d1a534` to `0x000539c0` is documented in the [helper-body review
-note](gt5p-npea00050-helper-00d1a534-review-20261017.md). The subsequent
-review of `0x00d18dd0` to `0x00052228` is documented in the [candidate review
-note](gt5p-npea00050-function-candidate-review-20261017.md); it remains
-speculative, bringing the current unreviewed total to 118.
+note](gt5p-npea00050-helper-00d1a534-review-20261017.md).
+Subsequent reviews of `0x00d18dd0` to `0x00052228`, `0x00d1cda0` to
+`0x000562e8`, and `0x00d1ce8c` to `0x000564d0` are documented in the
+[candidate review note](gt5p-npea00050-function-candidate-review-20261017.md);
+all remain speculative, bringing the current unreviewed total to 116.
 The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.
