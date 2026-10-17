@@ -1,0 +1,28 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00bb6e0c
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00bb6e0c
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00013ba0
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 76-byte function body with a direct call to an exact callee pair at a matching offset; incoming caller identities remain unresolved, and no semantic or source identity is asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 76-byte, 19-instruction bodies independently index to normalized SHA-1 600c57d1fc55f8a69229d66d8172ad871c105a65."
+  - type: callgraph
+    detail: "At +0x30 (callsites 0x00bb6e3c / 0x00013bd0), both call 0x00bb6d74 / 0x00013b08, the exact normalized 72-byte body pair with SHA-1 c46391a1b562c0af723f469ede93c114e1af4e69."
+  - type: cross_build
+    detail: "GT5 incoming callers 0x00bb7214 and 0x00bb7404 (80 bytes; SHA-1 afb230f3085edfb85046900fca35ad95fc638260 and 12a892f9855a7c441e051e55eda836bf41e6e1f2) do not match the NPEA callers 0x000143e8 and 0x000145d8 (88 bytes; SHA-1 35758f9e832d56affad3c5c557ba37240bf3f26f and 43865582a27eee403c70f75fbfedf9390ee2fdf6)."
+  - type: cross_build
+    detail: "Neither function has an indexed source-file hint or string reference."
+notes:
+  - "The generated row remains candidate/speculative at score 70; incoming caller pairs are not established."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."
