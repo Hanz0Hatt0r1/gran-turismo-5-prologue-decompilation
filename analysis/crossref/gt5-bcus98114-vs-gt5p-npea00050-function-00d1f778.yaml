@@ -1,0 +1,30 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00d1f778
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00d1f778
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x000575a8
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 220-byte function body with one unique exact callee pair; other outgoing targets are ambiguous or differ, and incoming caller identity is unresolved"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 220-byte, 55-instruction bodies independently index to normalized SHA-1 69c7eadba43b06733f3cfd50ad6dc27c0c68456b."
+  - type: callgraph
+    detail: "At +0x74 (callsites 0x00d1f7ec / 0x0005761c), both call exact normalized-full candidate 0x00d1f31c / 0x00057130 (220 bytes, SHA-1 e6da9def8b0fdfb0338969db490629730024a909)."
+  - type: cross_build
+    detail: "At +0x48 (callsites 0x00d1f7c0 / 0x000575f0), both call a 56-byte body with SHA-1 2259d3449fa50fb26e4c58423b4104e52676fc9a, but that fingerprint occurs at three GT5 addresses (0x00d17c14, 0x00d1b030, 0x00d1f28c) and three NPEA addresses (0x00050fa8, 0x000544d0, 0x000570a0), so no unique pair is inferred."
+  - type: cross_build
+    detail: "At +0x64 (callsites 0x00d1f7dc / 0x0005760c), targets 0x00d1f6ac and 0x000574d0 differ in size (204 / 212 bytes) and normalized hash (4f84e06645a7f41d1f8b7e09184875cc4aaebed7 / 2b8d9625ab4b8bed438903643514c39c37dbd25f)."
+  - type: cross_build
+    detail: "Incoming callers do not form a generated pair: GT5 caller 0x00d1f998 is 1,668 bytes, while NPEA callers 0x000577d0 and 0x00057910 are 320 and 1,312 bytes. Neither function has an indexed source-file hint or string reference."
+notes:
+  - "The generated row remains candidate/speculative at score 70; only the exact normalized body and unique callee edge support this probable/pending record."
+  - "No function name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."
