@@ -1,0 +1,30 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-function-00d1a96c
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00d1a96c
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00053e00
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 576-byte function body with four aligned direct-call pairs; no semantic or source identity and no callee pair is accepted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 576-byte, 144-instruction bodies independently index to normalized SHA-1 3223b3b107559c76900a3f7ddc500af3d30d29dd."
+  - type: callgraph
+    detail: "Calls at +0xf0 (0x00d1aa5c / 0x00053ef0) target exact normalized-full candidate 0x00d1a534 / 0x000539c0 (320 bytes, SHA-1 50fe7748517a22753cb4f97aaceb4228fc892146)."
+  - type: callgraph
+    detail: "Calls at +0x210 (0x00d1ab7c / 0x00054010) target exact normalized-full candidate 0x00d1a830 / 0x00053cc0 (68 bytes, SHA-1 0177f87399f83ae41ea3b8e0bb9ed3eef0012bea)."
+  - type: callgraph
+    detail: "Calls at +0x1e4 (0x00d1ab50 / 0x00053fe4) target normalized-prefix candidate 0x00d19ca0 / 0x00053118; calls at +0x22c (0x00d1ab98 / 0x0005402c) target normalized-prefix candidate 0x00d19f94 / 0x00053410. These callees have different full sizes/hashes and remain unaccepted candidates."
+  - type: cross_build
+    detail: "Calls at +0x200 (0x00d1ab6c / 0x00054000) and +0x21c (0x00d1ab88 / 0x0005401c) have no generated target pairs. Each function has one indexed incoming caller at 0x00d2010c / 0x00057f18, but callers 0x00d200a4 / 0x00057ec0 have no generated cross-build pair."
+notes:
+  - "The generated row remains candidate/speculative at score 70; this separate pending record documents the exact body and reviewed call offsets."
+  - "No function name, subsystem, source identity, code, or callee identity is transferred."
+  - "The relationship is probable/pending, not accepted."
