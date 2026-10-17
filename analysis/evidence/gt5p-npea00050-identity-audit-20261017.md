@@ -63,6 +63,9 @@ unreviewed. The subsequent review of `0x00bb6c90` to `0x00013a20` adds an
 exact-body relationship supported by two exact caller pairs. Three later
 reviews of callers to the reviewed lock helper add exact-body relationships
 supported by aligned calls to that helper; 107 candidates remain unreviewed.
+The review of `0x00d1f778` to `0x000575a8` adds a probable/pending exact-body
+relationship with one unique matched callee; repeated and differing targets
+remain unresolved, leaving 106 candidates unreviewed.
 The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.
