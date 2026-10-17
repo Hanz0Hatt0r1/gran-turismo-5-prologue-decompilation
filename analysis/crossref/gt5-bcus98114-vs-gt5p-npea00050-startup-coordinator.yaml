@@ -1,0 +1,32 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-startup-coordinator
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00010338
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00010360
+method: manual
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "probable early runtime/startup coordinator role based on a shared 100-byte normalized instruction excerpt, matching import-NID context, and a call to the ELF initialization entry; no full function or source identity asserted"
+evidence:
+  - type: entry_chain
+    detail: "In both inputs, the ELFv1 entry code at 0x00010230 calls the respective startup candidate."
+  - type: normalized_prefix
+    detail: "The first 25 normalized instructions (100 bytes) match exactly, SHA-1 e6c01d78a3be289a05a0e4299adedcb30774035a; this manually scoped excerpt is shorter than the matcher's 256-byte prefix."
+  - type: stack_prologue
+    detail: "Both functions establish a 160-byte PPC64 frame and preserve the same nonvolatile register set."
+  - type: import
+    detail: "In order, both call sysPrxForUser import NIDs 0x744680a2, 0x8461e528, 0x42b23552, 0x2c847572, and 0x96328741; callsite offsets differ slightly after the first import."
+  - type: direct_call
+    detail: "Both functions call 0x00010200, at offsets +0x11c in GT5 and +0x124 in NPEA-00050."
+  - type: cross_build
+    detail: "The reviewed full ranges are 444 and 488 bytes and have different normalized full and 256-byte prefix fingerprints; this record asserts only the early startup role."
+notes:
+  - "The generated comparison CSV does not contain this pair; this is an independently recorded manual relationship."
+  - "The relationship is probable and pending, not accepted."
+  - "No game-function name, source identity, application-loader identity, or code is transferred."
