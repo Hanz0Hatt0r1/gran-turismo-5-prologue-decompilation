@@ -68,6 +68,26 @@ include these incoming caller edges. A separate manual cross-reference records
 the relationship as `probable` / `pending`, scoped to this helper body and
 import call; it does not assign a game-function name or accept the match.
 
+## Candidate `0x00d18dd0` to `0x00052228`
+
+Both indexed bodies are 172 bytes (43 instructions) and have normalized SHA-1
+`559c1f8ca33e7a6952795e99a39a8bf7797d6d03`. The generated row reports
+`normalized-full`, strong callgraph evidence, neutral import and vtable context,
+and score 70 (`speculative`). Neither function has an indexed incoming caller,
+source-file hint, or string reference.
+
+Each body has two direct calls at matching offsets. At `+0x3c` (callsites
+`0x00d18e0c` and `0x00052264`), GT5 calls `0x00c0e9c0` and NPEA calls
+`0x000509e8`; that target pair is absent from the generated candidate table.
+At `+0x54` (callsites `0x00d18e24` and `0x0005227c`), the targets are
+`0x00d189c0` and `0x00051e10`, a separate `normalized-prefix` candidate with
+sizes 1040 and 1048 bytes and no secondary context. The callgraph score
+therefore does not establish matching identities for all outgoing targets.
+
+The matching body is recorded as reviewed, but the candidate remains
+`candidate` / `speculative`; no cross-reference or semantic identity is
+promoted.
+
 ## Review result
 
 The first pair has matching wrapper bodies but unresolved downstream helpers.
@@ -78,9 +98,9 @@ transfer platform API names to game functions or add accepted cross-references.
 At the time of this review, seven match rows had been inspected and 120 of the
 127 generated rows remained unreviewed. A later review of
 `0x00d1a534` to `0x000539c0` is recorded in the [helper-body review
-note](gt5p-npea00050-helper-00d1a534-review-20261017.md), bringing the current
-totals to eight inspected rows and 119 unreviewed rows. The reviewed generated
-rows remain candidate/speculative; all three cross-reference records remain
-pending.
+note](gt5p-npea00050-helper-00d1a534-review-20261017.md), and the review of
+`0x00d18dd0` to `0x00052228` above, bringing the current totals to nine
+inspected rows and 118 unreviewed rows. The reviewed generated rows remain
+candidate/speculative; all three cross-reference records remain pending.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.
