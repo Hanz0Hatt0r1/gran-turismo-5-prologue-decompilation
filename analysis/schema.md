@@ -20,6 +20,8 @@ Build records live under `analysis/builds/`.
 
 Required fields: `schema`, `game`, `title_id`, `role`, `executable_sha256`, `format`, `entry_descriptor_va`, `entry_code_va`, and `toc_va` when known.
 
+`executable_sha256_scope` is optional and defaults to `elf`. Set it to `container` when the digest identifies an outer executable such as a PS3 SELF while `format` and entry metadata describe its embedded ELF. Verification then requires the matching container as `--container`; it checks the container digest separately from the supplied ELF metadata.
+
 Recommended derived fields include `observed_title_ids`, `observed_build_strings`, and provenance/verification notes. These record what the executable contains without silently overriding the canonical build identity established from provenance.
 
 Roles currently used:

@@ -5,6 +5,7 @@
   "role": "target-build",
   "module": "EBOOT.BIN",
   "executable_sha256": "f58e36b3cb371e357ae0f3a019fb339c653682bc7ff6423abf3c2c7db50eef2a",
+  "executable_sha256_scope": "container",
   "format": "ELF64-big-endian-PowerPC64",
   "executable_format": "PS3 SELF v2 APP",
   "embedded_format": "ELF64-big-endian-PowerPC64",

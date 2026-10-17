@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -94,10 +95,50 @@ def verify_source_xref_function_map(elf: gtdecomp.PS3ELF, map_path: Path) -> Dic
         "checks": checks,
     }
 
-def verify_build_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord) -> Dict[str, Any]:
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_build_record(
+    elf: gtdecomp.PS3ELF,
+    record: gtcatalog.CatalogRecord,
+    container_path: Optional[Path] = None,
+) -> Dict[str, Any]:
     checks: List[Dict[str, Any]] = []
     expected_sha = str(_field(record, "executable_sha256") or "").lower()
-    checks.append({"check": "sha256", "expected": expected_sha, "actual": elf.sha256, "ok": expected_sha == elf.sha256})
+    sha_scope = str(_field(record, "executable_sha256_scope") or "elf").lower()
+    if sha_scope == "elf":
+        checks.append({"check": "sha256", "scope": "elf", "expected": expected_sha, "actual": elf.sha256, "ok": expected_sha == elf.sha256})
+    elif sha_scope == "container":
+        if container_path is None:
+            checks.append({
+                "check": "container_sha256",
+                "expected": expected_sha,
+                "actual": None,
+                "status": "not_checked",
+                "reason": "this build record hashes the outer executable container; pass --container",
+                "ok": False,
+            })
+        else:
+            actual_sha = _sha256_file(container_path)
+            checks.append({
+                "check": "container_sha256",
+                "path": str(container_path),
+                "expected": expected_sha,
+                "actual": actual_sha,
+                "ok": expected_sha == actual_sha,
+            })
+    else:
+        checks.append({
+            "check": "executable_sha256_scope",
+            "expected": "elf or container",
+            "actual": sha_scope,
+            "ok": False,
+        })
 
     entry_expected = _hex(_field(record, "entry_descriptor_va"))
     checks.append({"check": "entry_descriptor_va", "expected": _hex(_field(record, "entry_descriptor_va")), "actual": elf.entry, "ok": entry_expected == elf.entry})
@@ -110,12 +151,17 @@ def verify_build_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord) -
     checks.append({"check": "entry_code_va", "expected": code_expected, "actual": actual_code, "ok": code_expected == actual_code})
     checks.append({"check": "toc_va", "expected": toc_expected, "actual": actual_toc, "ok": toc_expected == actual_toc})
 
-    return {
+    result = {
         "path": record.path,
         "kind": record.kind,
         "valid": all(item["ok"] for item in checks),
         "checks": checks,
     }
+    if sha_scope == "container":
+        result["notes"] = [
+            "The container digest and ELF metadata are checked independently; this does not prove the ELF was extracted from the supplied container."
+        ]
+    return result
 
 
 def verify_function_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord) -> Dict[str, Any]:
@@ -154,13 +200,21 @@ def verify_function_record(elf: gtdecomp.PS3ELF, record: gtcatalog.CatalogRecord
     }
 
 
-def verify(elf_path: Path, build_record: Optional[Path], function_records: Sequence[Path], source_xref_map: Optional[Path] = None) -> Dict[str, Any]:
+def verify(
+    elf_path: Path,
+    build_record: Optional[Path],
+    function_records: Sequence[Path],
+    source_xref_map: Optional[Path] = None,
+    container_path: Optional[Path] = None,
+) -> Dict[str, Any]:
+    if container_path is not None and build_record is None:
+        raise ValueError("--container requires --build-record")
     elf = gtdecomp.PS3ELF(elf_path)
     results: List[Dict[str, Any]] = []
 
     if build_record:
         record = gtcatalog.load_record(build_record, build_record.parent)
-        results.append(verify_build_record(elf, record))
+        results.append(verify_build_record(elf, record, container_path))
 
     for path in function_records:
         record = gtcatalog.load_record(path, path.parent)
@@ -182,6 +236,7 @@ def _parser() -> argparse.ArgumentParser:
     cmd = sub.add_parser("verify")
     cmd.add_argument("--elf", required=True, type=Path)
     cmd.add_argument("--build-record", type=Path)
+    cmd.add_argument("--container", type=Path, help="outer executable container when the build record hashes a container")
     cmd.add_argument("--function-record", action="append", default=[], type=Path)
     cmd.add_argument("--function-dir", action="append", default=[], type=Path)
     cmd.add_argument("--source-xref-function-map", type=Path)
@@ -199,7 +254,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             )
         )
     try:
-        result = verify(args.elf, args.build_record, function_records, args.source_xref_function_map)
+        result = verify(args.elf, args.build_record, function_records, args.source_xref_function_map, args.container)
     except (OSError, ValueError, KeyError) as exc:
         print(json.dumps({"valid": False, "error": str(exc)}, indent=2, sort_keys=True))
         return 2

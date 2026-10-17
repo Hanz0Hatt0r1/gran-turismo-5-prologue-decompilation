@@ -77,8 +77,15 @@ flags so reconstructed behavior cannot silently regress.
 ## Metadata verification
 
 Use `tools/gtverify.py` to verify a user-provided ELF against reviewed build and function metadata.
-A build record checks SHA-256, ELF entry descriptor, entry code, and TOC. Function records check
-the declared/verifiable range plus normalized full and prefix fingerprints.
+A build record checks the hash in its declared scope, ELF entry descriptor, entry code, and TOC. The hash scope defaults to the parsed ELF; container-scoped profiles (such as PS3 SELF) require `--container`:
+
+```bash
+python3 tools/gtverify.py verify --elf /path/to/decrypted/EBOOT.ELF \
+  --container /path/to/original/EBOOT.BIN \
+  --build-record analysis/builds/gt5p-bcus98158.json
+```
+
+The verifier checks the container digest and ELF metadata independently. It does not prove that the supplied ELF was extracted from that container. Function records check the declared/verifiable range plus normalized full and prefix fingerprints.
 
 Single function:
 

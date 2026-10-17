@@ -278,6 +278,12 @@ def validate_records(records: Sequence[CatalogRecord]) -> Dict[str, Any]:
                     "path": record.path,
                     "message": "executable_sha256 is not 64 hex characters",
                 })
+            sha_scope = _as_text(record.fields.get("executable_sha256_scope"))
+            if sha_scope and sha_scope not in {"elf", "container"}:
+                errors.append({
+                    "path": record.path,
+                    "message": "executable_sha256_scope must be elf or container",
+                })
             for field in ("entry_descriptor_va", "entry_code_va", "toc_va"):
                 if field in record.fields and normalize_address(record.fields[field]) is None:
                     errors.append({
