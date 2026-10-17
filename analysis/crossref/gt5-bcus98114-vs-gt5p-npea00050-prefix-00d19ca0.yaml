@@ -1,0 +1,30 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-callgraph-prefix-00d19ca0
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00d19ca0
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x00053118
+method: normalized-prefix
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "probable shared call-graph role for the common normalized 256-byte prefix; full-body equality and semantic identity are not asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "The first 256 normalized bytes have SHA-1 94864a1f8b683fe3132445ff143d1ec714510a10; full sizes are 756 and 760 bytes and full SHA-1 values differ (0849b1efef20442864cfe3bc9fb789c65493ab88 / 219f6dc11bb77599f17923f9163976412c4aef0b)."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00d1a96c / 0x00053e00 (576 bytes, SHA-1 3223b3b107559c76900a3f7ddc500af3d30d29dd) calls this pair at +0x1e4 (callsites 0x00d1ab50 / 0x00053fe4)."
+  - type: callgraph
+    detail: "Exact normalized-full caller 0x00d1a534 / 0x000539c0 (320 bytes, SHA-1 50fe7748517a22753cb4f97aaceb4228fc892146) calls this pair at +0x10c (callsites 0x00d1a640 / 0x00053acc)."
+  - type: callgraph
+    detail: "A third generated normalized-prefix caller pair 0x00d1abac / 0x00054040 calls at +0x110 (callsites 0x00d1acbc / 0x00054150); its full sizes differ (576 / 580 bytes), so it is corroborative only."
+  - type: cross_build
+    detail: "Other indexed incoming callers have no generated cross-build pair. Of five outgoing calls, only 0x00d189c0 / 0x00051e10 has a generated pairing, and that is normalized-prefix only; the other target pairs remain unresolved."
+notes:
+  - "The generated row remains candidate/speculative at score 60; this separate pending record adds reviewed incoming-call context."
+  - "No semantic name, subsystem, source identity, or code is transferred."
+  - "The relationship is probable/pending, not accepted."

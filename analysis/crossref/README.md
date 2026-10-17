@@ -16,13 +16,15 @@ comparison build. Its identity audit and fingerprint candidates are recorded in
 [`analysis/evidence/gt5p-npea00050-identity-audit-20261017.md`](../evidence/gt5p-npea00050-identity-audit-20261017.md).
 It does not replace the canonical US BCUS-98158 target. The accepted GT5 to
 NPEA relation covers only the ELFv1 entry role. Separate probable/pending
-cross-reference records cover one startup-coordinator role relationship and
-two function-body relationships, none of which asserts semantic or source-level
+cross-reference records cover one startup-coordinator role, two function-body
+relationships, and one shared-prefix call-graph role; none asserts semantic or source-level
 function identity. The generated function matches remain candidate/speculative,
-with 116 of 127 still unreviewed. The reviewed pairs are documented in [the candidate-review
+with 115 of 127 still unreviewed. The reviewed pairs are documented in [the candidate-review
 note](../evidence/gt5p-npea00050-function-candidate-review-20261017.md) and [the
 startup comparison](../evidence/gt5p-npea00050-gt5-startup-coordinator-review-20261017.md),
 as well as the [helper-body review](../evidence/gt5p-npea00050-helper-00d1a534-review-20261017.md).
+The new [prefix-role cross-reference](gt5-bcus98114-vs-gt5p-npea00050-prefix-00d19ca0.yaml)
+remains probable/pending, with complete function identity unresolved.
 
 ## Match lifecycle
 
