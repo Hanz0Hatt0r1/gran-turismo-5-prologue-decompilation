@@ -37,13 +37,16 @@ The earlier linear-range comparison emitted 131 rows. After CFG-aware function
 ranges, the current comparison emits 127 rows: 117 normalized-full and 10
 normalized-prefix candidates. All remain `candidate` and `speculative`; 22 have
 supporting callgraph context and 7 have supporting import context. None was
-ranked probable. Seven generated rows have been manually reviewed: six remain
-speculative, and a separate pending cross-reference records the 60-byte
-`0x00d1cd64` to `0x00056270` lock-helper relationship as probable. A second
-manual pending cross-reference records the role-level startup relationship
-between `0x00010338` and `0x00010360`; the full fingerprints differ, so this
-pair is not added to the generated table. The CSV still contains 127
-candidate/speculative rows, with 120 not yet reviewed.
+ranked probable. At the time of this initial audit, seven generated rows had
+been reviewed; six remained speculative. A separate pending cross-reference
+records the 60-byte `0x00d1cd64` to `0x00056270` lock-helper relationship as
+probable. A second pending cross-reference records the role-level startup
+relationship between `0x00010338` and `0x00010360`; the full fingerprints differ, so the
+pair is not added to the generated table. At that point the CSV contained 127
+candidate/speculative rows, with 120 not yet reviewed. The later review of
+`0x00d1a534` to `0x000539c0` is documented in the [helper-body review
+note](gt5p-npea00050-helper-00d1a534-review-20261017.md); the current
+unreviewed total is 119.
 The full CSV is
 [`gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv`](../crossref/gt5-bcus98114-vs-gt5p-npea00050-function-match-candidates.csv).
 No candidate was emitted for entry code `0x00010230`.

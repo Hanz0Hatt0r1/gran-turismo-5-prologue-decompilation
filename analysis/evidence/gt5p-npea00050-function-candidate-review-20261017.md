@@ -75,7 +75,12 @@ The other five speculative rows have identical normalized bodies and matched
 imported API identities. Six match rows remain `candidate` / `speculative`; the
 lock-helper row has a separate `probable` / `pending` cross-reference. Do not
 transfer platform API names to game functions or add accepted cross-references.
-Seven match rows have been inspected; 120 of the 127 generated rows remain
-unreviewed.
+At the time of this review, seven match rows had been inspected and 120 of the
+127 generated rows remained unreviewed. A later review of
+`0x00d1a534` to `0x000539c0` is recorded in the [helper-body review
+note](gt5p-npea00050-helper-00d1a534-review-20261017.md), bringing the current
+totals to eight inspected rows and 119 unreviewed rows. The reviewed generated
+rows remain candidate/speculative; all three cross-reference records remain
+pending.
 
 The instruction comparison is reproducible from the pinned local ELF inputs by comparing each 32-bit word after `normalize_ppc_instruction` in `tools/gtdecomp.py`. The direct branch displacement is normalized away, while the caller and callee addresses above remain separately recorded. No executable bytes or decompiler output are committed.

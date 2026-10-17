@@ -1,0 +1,28 @@
+schema: 1
+id: gt5-bcus98114-vs-gt5p-npea00050-helper-00d1a534
+reference:
+  build: BCUS-98114
+  module: EBOOT.BIN
+  va: 0x00d1a534
+target:
+  build: NPEA-00050
+  module: EBOOT.elf
+  va: 0x000539c0
+method: normalized-full
+confidence: probable
+review_status: pending
+relationship:
+  identity_scope: "same normalized 320-byte function body with a matching normalized-full caller at the same call offset; no subsystem or source identity asserted"
+evidence:
+  - type: normalized_fingerprint
+    detail: "Both 320-byte, 80-instruction bodies independently index to normalized SHA-1 50fe7748517a22753cb4f97aaceb4228fc892146."
+  - type: callgraph
+    detail: "GT5 caller 0x00d1a96c and NPEA caller 0x00053e00 have the same normalized-full 576-byte body (SHA-1 3223b3b107559c76900a3f7ddc500af3d30d29dd); both call the reviewed pair at function offset +0xf0."
+  - type: callgraph
+    detail: "At function offset +0x10c, the pair calls 0x00d19ca0 and 0x00053118; those 756/760-byte callees share normalized-prefix SHA-1 94864a1f8b683fe3132445ff143d1ec714510a10. Their full identities remain unreviewed."
+  - type: cross_build
+    detail: "The second direct-call site aligns at +0x120, but its targets 0x00cf9050 and 0x0004bc50 have no generated candidate pairing. Another incoming edge exists on each side with different offsets and no matched caller identity."
+notes:
+  - "The generated CSV row remains candidate/speculative at score 70; this separate pending record adds independently checked incoming-caller context."
+  - "No semantic function name, subsystem label, import identity, or code is transferred."
+  - "The relationship has not been accepted."
